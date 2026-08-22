@@ -1,10 +1,10 @@
-import { connectToDatabase } from '../lib/db'
-import { Student } from '../models/Student'
-import { Course } from '../models/Course'
-import { Branch } from '../models/Branch'
-import { Evaluation } from '../models/Evaluation'
-import { PrevUniSubjects } from '../models/PrevUniSubjects'
-import { parseAndValidateStudentJson } from '../lib/studentParser'
+import { connectToDatabase } from '../lib/db.js'
+import { Student } from '../models/Student.js'
+import { Course } from '../models/Course.js'
+import { Branch } from '../models/Branch.js'
+import { Evaluation } from '../models/Evaluation.js'
+import { PrevUniSubjects } from '../models/PrevUniSubjects.js'
+import { parseAndValidateStudentJson } from '../lib/studentParser.js'
 
 export async function authenticateStudent(email: string, phoneInput: string) {
   await connectToDatabase()

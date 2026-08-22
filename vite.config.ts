@@ -19,7 +19,7 @@ function apiServerPlugin(): Plugin {
         res.setHeader('Content-Type', 'application/json')
 
         try {
-          const { importStudentsToDatabase, fetchStudentsFromDatabase, clearAllStudentsFromDatabase, authenticateStudent } = await import('./src/server/studentService')
+          const { importStudentsToDatabase, fetchStudentsFromDatabase, clearAllStudentsFromDatabase, authenticateStudent } = await import('./src/server/studentService.js')
 
           if (req.method === 'POST' && pathname === '/api/auth/student-login') {
             let body = ''
