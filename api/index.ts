@@ -6,21 +6,21 @@ import {
   authenticateStudent,
 } from '../src/server/studentService'
 
-export default async function handler(req: IncomingMessage & { query?: Record<string, string>; body?: unknown }, res: ServerResponse & { status: (code: number) => { json: (data: unknown) => void } }) {
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200
-    res.end()
-    return
-  }
-
-  const url = req.url || ''
-
+export default async function handler(req: IncomingMessage & { query?: Record<string, string>; body?: unknown }, res: ServerResponse) {
   try {
+    res.setHeader('Content-Type', 'application/json')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+    if (req.method === 'OPTIONS') {
+      res.statusCode = 200
+      res.end(JSON.stringify({ ok: true }))
+      return
+    }
+
+    const url = req.url || ''
+
     if (req.method === 'POST' && url.includes('/auth/student-login')) {
       let bodyStr = ''
       if (typeof req.body === 'object' && req.body !== null) {
@@ -72,15 +72,15 @@ export default async function handler(req: IncomingMessage & { query?: Record<st
     res.end(JSON.stringify({ success: false, error: 'API route not found' }))
   } catch (err) {
     res.statusCode = 500
-    res.end(JSON.stringify({ success: false, error: (err as Error).message }))
+    res.end(JSON.stringify({ success: false, error: (err as Error).message || 'Server error' }))
   }
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let body = ''
     req.on('data', chunk => { body += chunk })
     req.on('end', () => resolve(body))
-    req.on('error', reject)
+    req.on('error', () => resolve(''))
   })
 }

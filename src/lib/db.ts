@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://abhijithsd_db_user:xZkEpNyz2YNvVzZw@cluster0.xxtejas.mongodb.net/'
+const FALLBACK_URI = 'mongodb+srv://abhijithsd_db_user:xZkEpNyz2YNvVzZw@cluster0.xxtejas.mongodb.net/'
 
 interface MongooseCache {
   conn: typeof mongoose | null
@@ -18,17 +18,16 @@ if (!globalThis.mongooseCache) {
 }
 
 export async function connectToDatabase(): Promise<typeof mongoose> {
-  if (cached.conn) {
+  if (cached.conn && cached.conn.connection && cached.conn.connection.readyState === 1) {
     return cached.conn
   }
 
-  const uri = process.env.MONGO_URI || MONGO_URI
-  if (!uri) {
-    throw new Error('MONGO_URI is missing in .env file')
-  }
+  const uri = process.env.MONGO_URI || FALLBACK_URI
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(uri).then(m => m)
+    cached.promise = mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 8000,
+    }).then(m => m)
   }
 
   try {
