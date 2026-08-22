@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.ts"
-    }
+    { "source": "/api/students/import", "destination": "/api/import.ts" },
+    { "source": "/api/auth/student-login", "destination": "/api/login.ts" },
+    { "source": "/api/students", "destination": "/api/students.ts" }
   ]
 }
