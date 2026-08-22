@@ -36,6 +36,7 @@ import {
   Pie, 
   Cell 
 } from 'recharts';
+import StudentDashboard, { LoggedInStudent } from './StudentDashboard';
 
 export interface Student {
   id: string;
@@ -218,6 +219,8 @@ export default function Dashboard() {
   const [projects] = useState<Project[]>(initialProjects);
   const [classes, setClasses] = useState<ClassItem[]>(initialClasses);
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [currentStudent, setCurrentStudent] = useState<LoggedInStudent | null>(null);
+  const [selectedUni, setSelectedUni] = useState<'BTU' | 'TGU'>('BTU');
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -226,18 +229,42 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('edupulse-theme') || 'dark';
+      const savedTheme = localStorage.getItem('university-theme') || 'dark';
       setTheme(savedTheme);
       document.documentElement.dataset.theme = savedTheme;
+
+      const savedUni = (localStorage.getItem('selected-university') as 'BTU' | 'TGU') || 'BTU';
+      setSelectedUni(savedUni);
+
+      const savedStudent = localStorage.getItem('current-student');
+      if (savedStudent) {
+        try {
+          setCurrentStudent(JSON.parse(savedStudent));
+        } catch {
+          // invalid
+        }
+      }
     }
   }, []);
+
+  const handleSignOutStudent = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('current-student');
+    }
+    setCurrentStudent(null);
+    navigate({ to: '/login' });
+  };
+
+  if (currentStudent) {
+    return <StudentDashboard student={currentStudent} onSignOut={handleSignOutStudent} />;
+  }
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     if (typeof window !== 'undefined') {
       document.documentElement.dataset.theme = nextTheme;
-      localStorage.setItem('edupulse-theme', nextTheme);
+      localStorage.setItem('university-theme', nextTheme);
     }
   };
 
@@ -363,10 +390,10 @@ export default function Dashboard() {
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="font-extrabold text-[15px] text-white tracking-wide flex items-center">
-                  EduPulse <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">v4.0</span>
+                <h1 className="font-extrabold text-[14px] text-white tracking-wide flex items-center">
+                  BTU <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">Campus OS</span>
                 </h1>
-                <p className="text-xs text-slate-400">TanStack Start Campus OS</p>
+                <p className="text-[11px] text-slate-400 font-medium">Bir Tikendrajit University</p>
               </div>
             </div>
 

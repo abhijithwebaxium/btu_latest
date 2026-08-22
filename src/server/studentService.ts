@@ -26,7 +26,10 @@ export async function authenticateStudent(email: string, phoneInput: string) {
     .lean()
 
   if (!student) {
-    return { success: false, error: 'No student record found with this email address in MongoDB.' }
+    return {
+      success: false,
+      error: `No student record found with email '${cleanEmail}' in Bir Tikendrajit University (BTU) database.`,
+    }
   }
 
   const personal = student.personalDetails || {}
@@ -66,7 +69,7 @@ export async function importStudentsToDatabase(jsonContent: string) {
   const records = parseResult.records
 
   for (const rec of records) {
-    const university = rec.university || 'BTU'
+    const university = 'BTU'
     const courseName = rec.academicDetails?.nameOfPrograme || (typeof rec.course === 'object' && rec.course ? (rec.course as { name?: string }).name : null) || 'General Program'
     const branchName = rec.academicDetails?.branch || (typeof rec.branch === 'object' && rec.branch ? (rec.branch as { name?: string }).name : null) || 'General Branch'
 
@@ -133,6 +136,7 @@ export async function importStudentsToDatabase(jsonContent: string) {
 
     // 5. Link normalized IDs
     const studentData = rec as unknown as Record<string, unknown>
+    studentData.university = university
     studentData.course = courseDoc._id.toString()
     studentData.branch = branchDoc._id.toString()
     if (prevUniId) studentData.prevUniSubjects = prevUniId

@@ -71,11 +71,11 @@ function JsonImportPage() {
       const data = await res.json()
 
       if (data.success) {
-        setSuccessMsg(`Successfully processed ${data.count} student record(s) into MongoDB!`)
+        setSuccessMsg(`Successfully processed ${data.count} student record(s) into BTU MongoDB database!`)
         setLastImported(data.records || null)
         await loadDbCount()
       } else {
-        setErrorMsg(data.error || 'Failed to import student JSON into MongoDB.')
+        setErrorMsg(data.error || 'Failed to import student JSON into BTU MongoDB database.')
       }
     } catch (err) {
       setErrorMsg(`File reading error: ${(err as Error).message}`)
@@ -93,17 +93,17 @@ function JsonImportPage() {
   }
 
   const handleClear = async () => {
-    if (confirm('Are you sure you want to clear all imported students from MongoDB?')) {
+    if (confirm('Are you sure you want to clear all Bir Tikendrajit University (BTU) student records from MongoDB?')) {
       setIsLoading(true)
       try {
         const res = await fetch('/api/students', { method: 'DELETE' })
         const data = await res.json()
         if (data.success) {
-          setSuccessMsg('All imported records have been cleared from MongoDB.')
+          setSuccessMsg('All imported BTU records have been cleared from MongoDB.')
           setLastImported(null)
           setTotalDbCount(0)
         } else {
-          setErrorMsg(`Failed to clear database: ${data.error}`)
+          setErrorMsg(`Failed to clear BTU database: ${data.error}`)
         }
       } catch (err) {
         setErrorMsg(`Clear failed: ${(err as Error).message}`)
@@ -120,9 +120,9 @@ function JsonImportPage() {
         <div>
           <div className="flex items-center gap-2 text-[#ed143d] text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-4 h-4" />
-            <span>MongoDB Data Synchronization Hub</span>
+            <span>BTU Data Synchronization Hub</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Import Student JSON to Database</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white">Import Student JSON (BTU)</h1>
           <p className="text-sm text-slate-400 mt-1">
             Upload student JSON records exported from BTU ERP to populate your MongoDB cluster.
           </p>
@@ -131,7 +131,7 @@ function JsonImportPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-emerald-400">
             <Database className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span>MongoDB Connected ({totalDbCount} Records)</span>
+            <span>MongoDB Connected ({totalDbCount} BTU Records)</span>
           </div>
 
           {totalDbCount > 0 && (
@@ -140,13 +140,13 @@ function JsonImportPage() {
                 onClick={() => navigate({ to: '/students' })}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ed143d] text-white font-bold text-sm shadow-lg shadow-[#ed143d]/30 hover:bg-rose-700 transition-all"
               >
-                <span>View Database ({totalDbCount})</span>
+                <span>View BTU DB ({totalDbCount})</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={handleClear}
                 className="p-2.5 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition-colors"
-                title="Clear Database Records"
+                title="Clear BTU Database Records"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -189,7 +189,7 @@ function JsonImportPage() {
 
           <div className="space-y-1">
             <p className="text-lg font-bold text-white">
-              {isLoading ? 'Processing & Persisting to MongoDB...' : 'Drop your BTU ERP Student JSON file here'}
+              {isLoading ? 'Processing & Persisting to BTU Database...' : 'Drop your BTU ERP Student JSON file here'}
             </p>
             <p className="text-xs text-slate-400">
               or click to browse your computer (e.g. <span className="font-mono text-[#ed143d] font-semibold">Student_Export_*.json</span>)
@@ -198,7 +198,7 @@ function JsonImportPage() {
 
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ed143d]/10 border border-[#ed143d]/30 text-xs font-semibold text-[#ed143d]">
             <Upload className="w-3.5 h-3.5" />
-            <span>Select .json file</span>
+            <span>Select .json file for BTU</span>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@ function JsonImportPage() {
         <div className="space-y-4 pt-4 border-t border-slate-800">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5 text-[#ed143d]" />
-            <span>Recently Imported Records Summary</span>
+            <span>Recently Imported BTU Records</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
 
 export const Route = createFileRoute('/students')({
   component: StudentDirectoryPage,
@@ -68,11 +68,11 @@ function StudentDirectoryPage() {
         <div>
           <div className="flex items-center gap-2 text-[#ed143d] text-xs font-bold uppercase tracking-wider mb-1">
             <Database className="w-4 h-4" />
-            <span>MongoDB Live Database</span>
+            <span>MongoDB Database Directory — BTU</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Student Directory</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white">Bir Tikendrajit University Student Directory</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Real-time student records persisted in MongoDB from BTU ERP imports.
+            Real-time student records persisted in MongoDB for Bir Tikendrajit University (BTU).
           </p>
         </div>
 
@@ -100,7 +100,7 @@ function StudentDirectoryPage() {
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Search by name, ID, email, or program..."
+            placeholder="Search BTU students by name, ID, email, or program..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#ed143d] focus:ring-1 focus:ring-[#ed143d] transition-all"
@@ -135,13 +135,13 @@ function StudentDirectoryPage() {
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#ed143d]" />
-                    <span>Loading database records...</span>
+                    <span>Loading BTU database records...</span>
                   </td>
                 </tr>
               ) : students.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">
-                    No student records found in MongoDB. Use the <strong className="text-slate-300">Import JSON</strong> button to add records.
+                    No student records found in MongoDB for <strong className="text-slate-300">Bir Tikendrajit University (BTU)</strong>. Use the <strong className="text-slate-300">Import JSON</strong> button to add records.
                   </td>
                 </tr>
               ) : (
@@ -162,7 +162,10 @@ function StudentDirectoryPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="p-4 font-semibold text-slate-300">{student.university || 'BTU'}</td>
+                    <td className="p-4 font-semibold text-slate-300 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                      <span>{student.university || 'BTU'}</span>
+                    </td>
                     <td className="p-4 text-xs font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</td>
                     <td className="p-4">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
