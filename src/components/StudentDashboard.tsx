@@ -193,14 +193,14 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   const navGroups = [
     {
       label: 'Overview',
-      items: [{ id: 'overview' as Tab, label: 'Overview', icon: BarChart3, badge: null }],
+      items: [{ id: 'overview' as Tab, label: 'Dashboard', icon: BarChart3, badge: null }],
     },
     {
       label: 'Academic Record',
       items: [
-        { id: 'evaluation'  as Tab, label: 'BTU Evaluation',   icon: Award,     badge: evalSubs.length || null },
-        { id: 'transcripts' as Tab, label: 'Credit Transfers', icon: FileText,  badge: prevSubs.length || null },
-        { id: 'classes'     as Tab, label: 'My Classes',       icon: BookOpen,  badge: reappearSubs.length || null },
+        { id: 'evaluation'  as Tab, label: 'Evaluation', icon: Award,     badge: evalSubs.length || null },
+        { id: 'transcripts' as Tab, label: 'Assessment',  icon: FileText,  badge: prevSubs.length || null },
+        { id: 'classes'     as Tab, label: 'Classes',     icon: BookOpen,  badge: reappearSubs.length || null },
       ],
     },
     {

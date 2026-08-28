@@ -304,10 +304,10 @@ export default function Dashboard() {
     {
       label: 'Academics',
       items: [
-        { id: 'students', label: 'Students DB', icon: Users, badge: 'MongoDB' },
-        { id: 'import', label: 'Import JSON', icon: FileJson, badge: 'BTU ERP' },
+        { id: 'students', label: 'Students', icon: Users, badge: null },
+        { id: 'import', label: 'Import JSON', icon: FileJson, badge: null },
         { id: 'assignments', label: 'Assignments', icon: BookOpen, badge: assignments.length },
-        { id: 'classes', label: 'Classes', icon: Video, badge: 'Live' },
+        { id: 'classes', label: 'Classes', icon: Video, badge: null },
       ],
     },
     {
@@ -426,10 +426,7 @@ export default function Dashboard() {
           onClose={() => setMobileNavOpen(false)}
           onSignOut={handleAdminSignOut}
           badges={{
-            students: 'MongoDB',
-            import: 'BTU ERP',
             assignments: assignments.length,
-            classes: 'Live',
             internships: internships.length,
             projects: projects.length,
             tickets: tickets.filter(ticket => ticket.status === 'Open').length,

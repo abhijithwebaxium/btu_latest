@@ -56,7 +56,7 @@ export default function AdminPageShell({ activeItem, children }: Props) {
   }
 
   return <div className="min-h-screen bg-slate-950 text-slate-100">
-    <AdminSidebar activeItem={activeItem} mobileOpen={mobileNavOpen} onNavigate={navigateTo} onClose={() => setMobileNavOpen(false)} onSignOut={signOut} badges={{ students: 'MongoDB', import: 'BTU ERP', classes: 'Live' }} />
+    <AdminSidebar activeItem={activeItem} mobileOpen={mobileNavOpen} onNavigate={navigateTo} onClose={() => setMobileNavOpen(false)} onSignOut={signOut} badges={{  }} />
     <main className="min-h-screen lg:ml-[260px]">
       <AdminNavbar theme={theme} searchQuery={searchQuery} onSearchChange={setSearchQuery} onToggleNavigation={() => setMobileNavOpen(prev => !prev)} onToggleTheme={toggleTheme} onNewTicket={() => navigateTo('tickets')} />
       {children}

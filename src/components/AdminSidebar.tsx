@@ -18,7 +18,7 @@ type AdminSidebarProps = {
 const groups = [
   { label: 'Overview', items: [{ id: 'dashboard' as const, label: 'Dashboard', icon: BarChart3 }] },
   { label: 'Academics', items: [
-    { id: 'students' as const, label: 'Students DB', icon: Users },
+    { id: 'students' as const, label: 'Students', icon: Users },
     { id: 'import' as const, label: 'Import JSON', icon: FileJson },
     { id: 'assignments' as const, label: 'Assignments', icon: BookOpen },
     { id: 'classes' as const, label: 'Classes', icon: Video },
