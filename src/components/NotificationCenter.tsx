@@ -74,13 +74,13 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
   const fetchNotifications = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await fetch(`/api/notifications?${buildParams({ filter })}`)
+      const r = await fetch(`/api/notifications?${buildParams({ filter: 'all' })}`)
       const d = await r.json()
       if (d.success) setItems(d.items || [])
     } catch { /* silent */ } finally {
       setLoading(false)
     }
-  }, [buildParams, filter])
+  }, [buildParams])
 
   useEffect(() => {
     fetchUnread()
@@ -90,7 +90,7 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
 
   useEffect(() => {
     if (open) fetchNotifications()
-  }, [open, filter, fetchNotifications])
+  }, [open, fetchNotifications])
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
