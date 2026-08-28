@@ -32,17 +32,25 @@ export async function authenticateStudent(email: string, phoneInput: string) {
     }
   }
 
+  if (cleanPhone.length < 10) {
+    return { success: false, error: 'Please enter your full mobile number (at least 10 digits).' }
+  }
+
   const personal = student.personalDetails || {}
   const mob = String(personal.mobileNumber || '').replace(/\D/g, '')
   const wa = String(personal.whatsAppNumber || '').replace(/\D/g, '')
   const alt = String(personal.alternateContact || '').replace(/\D/g, '')
   const fMob = String(personal.fatherContactNumber || '').replace(/\D/g, '')
 
+  // Normalise to last 10 digits to handle country code prefix variations,
+  // but require input to be at least 10 digits to prevent partial guessing.
+  const tail = (n: string) => n.slice(-10)
+  const inputTail = tail(cleanPhone)
   const isPhoneMatch =
-    (mob && (mob.endsWith(cleanPhone) || cleanPhone.endsWith(mob))) ||
-    (wa && (wa.endsWith(cleanPhone) || cleanPhone.endsWith(wa))) ||
-    (alt && (alt.endsWith(cleanPhone) || cleanPhone.endsWith(alt))) ||
-    (fMob && (fMob.endsWith(cleanPhone) || cleanPhone.endsWith(fMob)))
+    (mob.length >= 10 && tail(mob) === inputTail) ||
+    (wa.length >= 10 && tail(wa) === inputTail) ||
+    (alt.length >= 10 && tail(alt) === inputTail) ||
+    (fMob.length >= 10 && tail(fMob) === inputTail)
 
   if (!isPhoneMatch) {
     return { success: false, error: 'Incorrect phone number for this student account.' }
@@ -100,7 +108,7 @@ export async function importStudentsToDatabase(jsonContent: string) {
     )
 
     // 3. Upsert PrevUniSubjects if present
-    let prevUniId: string | null = null
+    let prevUniObjectId = null
     if (rec.prevUniSubjects && typeof rec.prevUniSubjects === 'object') {
       const prevData = rec.prevUniSubjects as { prevUniSubDetails?: unknown[]; markList?: unknown[] }
       const prevDoc = await PrevUniSubjects.findOneAndUpdate(
@@ -112,13 +120,23 @@ export async function importStudentsToDatabase(jsonContent: string) {
         },
         { upsert: true, new: true }
       )
-      prevUniId = prevDoc._id.toString()
+      prevUniObjectId = prevDoc._id
     }
 
     // 4. Upsert Evaluation if present
-    let evalId: string | null = null
+    let evalObjectId = null
     if (rec.evaluation && typeof rec.evaluation === 'object') {
       const evalData = rec.evaluation as { approvalStage?: number; evaluationStatus?: string; subjects?: unknown[] }
+      const BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
+      const normalizedSubjects = ((evalData.subjects || []) as Record<string, unknown>[]).map(subj => {
+        const s = { ...subj }
+        if (!s.btuSubjectCode && s.equalizedSubject) {
+          const m = String(s.equalizedSubject).match(BTU_CODE_RE)
+          if (m) { s.btuSubjectCode = m[1].trim(); s.btuSubjectTitle = m[2].trim() }
+          else    { s.btuSubjectTitle = s.btuSubjectTitle || String(s.equalizedSubject) }
+        }
+        return s
+      })
       const evalDoc = await Evaluation.findOneAndUpdate(
         { student: rec._id },
         {
@@ -127,20 +145,20 @@ export async function importStudentsToDatabase(jsonContent: string) {
           branch: branchDoc._id,
           approvalStage: evalData.approvalStage || 0,
           evaluationStatus: evalData.evaluationStatus || 'Pending',
-          subjects: evalData.subjects || [],
+          subjects: normalizedSubjects,
         },
         { upsert: true, new: true }
       )
-      evalId = evalDoc._id.toString()
+      evalObjectId = evalDoc._id
     }
 
-    // 5. Link normalized IDs
+    // 5. Link normalized ObjectIds
     const studentData = rec as unknown as Record<string, unknown>
     studentData.university = university
-    studentData.course = courseDoc._id.toString()
-    studentData.branch = branchDoc._id.toString()
-    if (prevUniId) studentData.prevUniSubjects = prevUniId
-    if (evalId) studentData.evaluation = evalId
+    studentData.course = courseDoc._id
+    studentData.branch = branchDoc._id
+    if (prevUniObjectId) studentData.prevUniSubjects = prevUniObjectId
+    if (evalObjectId) studentData.evaluation = evalObjectId
   }
 
   // 6. Bulk Upsert into Student Collection
@@ -169,7 +187,8 @@ export async function fetchStudentsFromDatabase(searchQuery: string = '', limit:
   const filter: Record<string, unknown> = {}
 
   if (searchQuery.trim()) {
-    const regex = new RegExp(searchQuery.trim(), 'i')
+    const escaped = searchQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(escaped, 'i')
     filter.$or = [
       { _id: regex },
       { enrollmentID: regex },
@@ -190,6 +209,52 @@ export async function fetchStudentsFromDatabase(searchQuery: string = '', limit:
     .lean()
 
   return { success: true, students: JSON.parse(JSON.stringify(docs)) }
+}
+
+export async function updateEvaluationSubjects(
+  rows: Array<{ enrollmentID: string; btuSubjectCode: string; btuSubjectTitle: string; semester: number; credits: number }>
+) {
+  await connectToDatabase()
+  let updated = 0
+  let notFound = 0
+
+  for (const row of rows) {
+    const { enrollmentID, btuSubjectCode, btuSubjectTitle, semester, credits } = row
+    if (!enrollmentID || !btuSubjectCode || !btuSubjectTitle) continue
+
+    const student = await Student.findOne({
+      $or: [{ enrollmentID }, { _id: enrollmentID }, { applicationID: enrollmentID }],
+    }).lean()
+
+    if (!student) { notFound++; continue }
+
+    const evalDoc = await Evaluation.findOne({ student: (student as Record<string, unknown>)._id })
+    if (!evalDoc) { notFound++; continue }
+
+    const subjects = (evalDoc.subjects || []) as Record<string, unknown>[]
+    let matched = false
+    for (const sub of subjects) {
+      const semMatch     = !semester || Number(sub.semester) === Number(semester)
+      const credMatch    = !credits  || Number(sub.credits)  === Number(credits)
+      const noCodeYet    = !sub.btuSubjectCode
+      if (semMatch && credMatch && noCodeYet) {
+        sub.btuSubjectCode  = btuSubjectCode.trim()
+        sub.btuSubjectTitle = btuSubjectTitle.trim()
+        matched = true
+        break
+      }
+    }
+
+    if (matched) {
+      evalDoc.markModified('subjects')
+      await evalDoc.save()
+      updated++
+    } else {
+      notFound++
+    }
+  }
+
+  return { success: true, updated, notFound }
 }
 
 export async function clearAllStudentsFromDatabase() {

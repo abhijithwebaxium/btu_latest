@@ -120,7 +120,7 @@ export function parseAndValidateStudentJson(rawContent: string | unknown): Valid
       const rec = item as unknown as StudentRecord
 
       if (!rec._id) {
-        rec._id = rec.enrollmentID || rec.applicationID || ('STU_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8))
+        rec._id = rec.enrollmentID || rec.applicationID || ('STU_' + crypto.randomUUID())
       }
 
       rec.importedAt = new Date().toISOString()

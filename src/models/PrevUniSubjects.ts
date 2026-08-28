@@ -22,7 +22,7 @@ export interface IPrevUniSubjects {
 
 const PrevUniSubjectsSchema = new Schema<IPrevUniSubjects>(
   {
-    student: { type: Schema.Types.Mixed, index: true },
+    student: { type: String, index: true },
     prevUniSubDetails: [
       {
         subjectTitle: String,

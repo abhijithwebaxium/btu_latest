@@ -1,18 +1,11 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
-  GraduationCap,
-  LogOut,
-  User,
-  CheckCircle2,
-  FileText,
-  Building2,
-  Calendar,
-  Sparkles,
-  BookOpen,
-  Award,
-  Mail,
-  MapPin,
+  GraduationCap, LogOut, User, CheckCircle2, FileText,
+  Building2, Calendar, Award, Mail, MapPin, Menu,
+  ChevronRight, Phone, BadgeCheck, Clock, AlertCircle,
+  BarChart3, Shield, TrendingUp, BookOpen, Sun, Moon,
+  ArrowUpRight, Layers, Activity,
 } from 'lucide-react'
 
 export interface LoggedInStudent {
@@ -27,354 +20,919 @@ export interface LoggedInStudent {
   isProfileVerified?: boolean
   isFeeCompleted?: boolean
   personalDetails?: {
-    name?: string
-    fatherName?: string
-    motherName?: string
-    dateOfBirth?: string
-    mobileNumber?: string | number
-    whatsAppNumber?: string | number
-    email?: string
-    gender?: string
-    category?: string
-    bloodGroup?: string
-    permanentAddress?: string
-    district?: string
-    state?: string
-    country?: string
+    name?: string; fatherName?: string; motherName?: string
+    dateOfBirth?: string; mobileNumber?: string | number
+    whatsAppNumber?: string | number; email?: string; gender?: string
+    category?: string; bloodGroup?: string; permanentAddress?: string
+    district?: string; state?: string; country?: string
   }
   academicDetails?: {
-    nameOfPrograme?: string
-    branch?: string
-    parentUniversity?: string
-    semesterCompletedAtParentUniversity?: number
-    academicSession?: string
+    nameOfPrograme?: string; branch?: string; parentUniversity?: string
+    semesterCompletedAtParentUniversity?: number; academicSession?: string
   }
-  course?: {
-    name?: string
-    shortCode?: string
-    university?: string
-  }
-  branch?: {
-    name?: string
-    shortCode?: string
-  }
+  course?: { name?: string; shortCode?: string; university?: string }
+  branch?: { name?: string; shortCode?: string }
   evaluation?: {
-    approvalStage?: number
-    evaluationStatus?: string
+    approvalStage?: number; evaluationStatus?: string
     subjects?: Array<{
-      btuSubjectCode?: string
-      btuSubjectTitle?: string
-      semester?: number
-      equalized?: string
-      grade?: string
-      mark?: number | string
-      credits?: number
-      examBatch?: string
-      examStatus?: string
+      btuSubjectCode?: string; btuSubjectTitle?: string; semester?: number
+      equalized?: string; grade?: string; mark?: number | string
+      credits?: number; examBatch?: string; examStatus?: string
     }>
   }
   prevUniSubjects?: {
     prevUniSubDetails?: Array<{
-      subjectTitle?: string
-      subjectCode?: string
-      credits?: number
-      grade?: string
-      mark?: number | string
-      result?: string
-      semester?: number
+      subjectTitle?: string; subjectCode?: string; credits?: number
+      grade?: string; mark?: number | string; result?: string; semester?: number
     }>
   }
 }
 
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'profile'
+
+/* ── Status badge (same style as staff badges) ── */
+function StatusBadge({ status }: { status?: string }) {
+  const s = (status || '').toLowerCase()
+  if (!status) return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">—</span>
+  if (s.includes('approv') || s.includes('complet') || s.includes('pass') || s.includes('equalized'))
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle2 className="w-2.5 h-2.5" />{status}</span>
+  if (s.includes('pending') || s.includes('process') || s.includes('review'))
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20"><Clock className="w-2.5 h-2.5" />{status}</span>
+  if (s.includes('reject') || s.includes('fail'))
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><AlertCircle className="w-2.5 h-2.5" />{status}</span>
+  return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">{status}</span>
+}
+
+/* ── KPI card — mirrors staff ModernCard with kpi-card CSS class ── */
+function KpiCard({ title, value, sub, icon: Icon, change }: {
+  title: string; value: React.ReactNode; sub: string
+  icon: React.ElementType; change?: string
+}) {
+  return (
+    <div className="kpi-card group relative cursor-default overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+      <div className="kpi-glow pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#ed143d] opacity-10 blur-2xl" />
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-slate-400 text-sm font-medium tracking-wide">{title}</span>
+        <div className="kpi-icon rounded-xl bg-slate-800/80 p-3 text-[#ed143d]">
+          <Icon className="w-5 h-5" />
+        </div>
+      </div>
+      <div className="flex items-baseline space-x-3 mb-2">
+        <span className="text-3xl font-extrabold text-white tracking-tight">{value}</span>
+        {change && (
+          <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <TrendingUp className="w-3 h-3 mr-1" />{change}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-slate-400 flex items-center justify-between">
+        <span>{sub}</span>
+        <ArrowUpRight className="kpi-arrow h-4 w-4 text-slate-500" />
+      </p>
+    </div>
+  )
+}
+
+/* ── Profile field with icon ── */
+function ProfileField({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 px-5 py-3.5 border-b border-slate-800/50 last:border-0">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-800">
+        <Icon className="w-3.5 h-3.5 text-slate-500" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none mb-0.5">{label}</p>
+        <p className="text-sm font-semibold text-slate-200 truncate">{value || <span className="text-slate-600 font-normal">—</span>}</p>
+      </div>
+    </div>
+  )
+}
+
+/* ── Info row (compact key-value) ── */
+function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-6 py-2.5 border-b border-slate-800/50 last:border-0">
+      <span className="text-[11px] text-slate-500 shrink-0">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-200 text-right">{value || <span className="text-slate-600">—</span>}</span>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════════════════ */
 export default function StudentDashboard({ student, onSignOut }: { student: LoggedInStudent; onSignOut: () => void }) {
-  const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'overview' | 'evaluation' | 'transcripts' | 'profile'>('overview')
+  const [tab, setTab]         = useState<Tab>('overview')
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [theme, setTheme]     = useState<string>('dark')
 
-  const personal = student.personalDetails || {}
-  const academic = student.academicDetails || {}
-  const evalData = student.evaluation || {}
-  const prevData = student.prevUniSubjects || {}
+  useEffect(() => {
+    const saved = localStorage.getItem('university-theme') || 'dark'
+    setTheme(saved)
+    document.documentElement.dataset.theme = saved
+  }, [])
 
-  const evalSubjects = evalData.subjects || []
-  const prevSubjects = prevData.prevUniSubDetails || []
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.dataset.theme = next
+    localStorage.setItem('university-theme', next)
+  }
+
+  /* Derived data */
+  const p  = student.personalDetails  || {}
+  const a  = student.academicDetails  || {}
+  const ev = student.evaluation        || {}
+  const pr = student.prevUniSubjects   || {}
+  const evalSubs = ev.subjects                 || []
+  const prevSubs = pr.prevUniSubDetails         || []
+  const name     = p.name || 'Student'
+  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+  const program  = a.nameOfPrograme || (student.course as { name?: string })?.name || 'Degree Program'
+  const branch   = a.branch         || (student.branch  as { name?: string })?.name || ''
+  const sid      = student.enrollmentID || student.applicationID || student._id
+  const prevCr   = prevSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const evalCr   = evalSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+
+  /* Nav groups — mirrors staff structure */
+  const navGroups = [
+    {
+      label: 'Overview',
+      items: [{ id: 'overview' as Tab, label: 'Overview', icon: BarChart3, badge: null }],
+    },
+    {
+      label: 'Academic Record',
+      items: [
+        { id: 'evaluation'  as Tab, label: 'BTU Evaluation',   icon: Award,    badge: evalSubs.length || null },
+        { id: 'transcripts' as Tab, label: 'Credit Transfers', icon: FileText, badge: prevSubs.length || null },
+      ],
+    },
+    {
+      label: 'Account',
+      items: [{ id: 'profile' as Tab, label: 'My Profile', icon: User, badge: null }],
+    },
+  ]
+
+  function navigate(id: Tab) { setTab(id); setMobileOpen(false) }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
-      {/* Header Bar */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#ed143d] to-rose-500 shadow-xl shadow-[#ed143d]/25">
-            <GraduationCap className="h-7 w-7 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#ed143d] uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Bir Tikendrajit University (BTU)</span>
-            </div>
-            <h1 className="text-2xl font-black text-white">{personal.name || 'Student Account'}</h1>
-          </div>
-        </div>
+    <div className="h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-[#ed143d] selection:text-white antialiased">
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate({ to: '/students' })}
-            className="px-4 py-2 rounded-xl border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
-          >
-            Student Directory
-          </button>
-          <button
-            onClick={onSignOut}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold hover:bg-rose-500/20 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </header>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-slate-950/70 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-      {/* Student Banner Card */}
-      <div className="relative rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl overflow-hidden">
-        <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-[#ed143d]/10 blur-3xl pointer-events-none" />
+      {/* ─────────────── SIDEBAR ─────────────── */}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-slate-900/95 border-r border-slate-800 flex flex-col justify-between backdrop-blur-2xl overflow-y-auto transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#ed143d] to-rose-700 text-white font-black text-3xl flex items-center justify-center shadow-lg shadow-[#ed143d]/30 shrink-0">
-              {personal.name?.charAt(0) || 'S'}
+        <div>
+          {/* Logo — identical to staff */}
+          <div className="p-6 flex items-center space-x-3 border-b border-slate-800/80">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ed143d] to-rose-500 flex items-center justify-center shadow-lg shadow-[#ed143d]/30">
+              <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded-md bg-slate-800 text-rose-400 font-bold border border-slate-700">
-                  ID: {student.enrollmentID || student.applicationID || student._id}
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  {student.isProfileVerified ? 'Verified Profile' : 'Pending Verification'}
-                </span>
-              </div>
-
-              <h2 className="text-2xl font-black text-white">{personal.name || 'Unnamed Student'}</h2>
-              <p className="text-sm text-slate-400 mt-0.5">
-                {academic.nameOfPrograme || (student.course as { name?: string })?.name || 'Degree Program'} — {academic.branch || (student.branch as { name?: string })?.name || 'Branch'}
-              </p>
+              <h1 className="font-extrabold text-[14px] text-white tracking-wide flex items-center">
+                BTU <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">Student</span>
+              </h1>
+              <p className="text-[11px] text-slate-400 font-medium">Bir Tikendrajit University</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap md:flex-col gap-2 text-xs text-slate-300 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
+          {/* Nav groups */}
+          <nav className="p-4 space-y-5">
+            {navGroups.map((group) => (
+              <div key={group.label}>
+                <p className="px-4 mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                  {group.label}
+                </p>
+                <div className="space-y-1">
+                  {group.items.map(({ id, label, icon: Icon, badge }) => {
+                    const active = tab === id
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => navigate(id)}
+                        className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
+                          active ? 'text-white font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        }`}
+                      >
+                        {active && (
+                          <motion.div
+                            layoutId="studentActiveTab"
+                            className="absolute inset-0 bg-gradient-to-r from-[#ed143d] to-rose-600 rounded-xl shadow-lg shadow-[#ed143d]/30"
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          />
+                        )}
+                        <div className="relative z-10 flex items-center space-x-3">
+                          <Icon className={`w-[18px] h-[18px] ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                          <span className="sidebar-nav-label">{label}</span>
+                        </div>
+                        {badge !== null && badge !== undefined && (
+                          <span className={`relative z-10 text-xs px-2 py-0.5 rounded-full font-bold ${
+                            active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
+                          }`}>
+                            {badge}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* Student identity card — mirrors staff user card */}
+        <div className="p-4 border-t border-slate-800/80 m-3 rounded-2xl bg-slate-950/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ed143d] to-rose-700 flex items-center justify-center font-bold text-white text-xs shadow-md shrink-0">
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-white truncate">{name}</p>
+                <p className="text-[10px] text-slate-400 font-mono truncate">{sid}</p>
+              </div>
+            </div>
+            <button
+              onClick={onSignOut}
+              aria-label="Sign out"
+              title="Sign out"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#ed143d]/10 hover:text-[#ed143d] shrink-0"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+          {student.isProfileVerified && (
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400">
+              <BadgeCheck className="w-3.5 h-3.5" />
+              <span>Profile Verified</span>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* ─────────────── MAIN ─────────────── */}
+      <main className="h-screen overflow-y-auto bg-slate-950 lg:ml-[260px]">
+
+        {/* Navbar — same structure as staff */}
+        <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(prev => !prev)}
+              aria-label="Toggle navigation"
+              className="lg:hidden shrink-0 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Breadcrumb */}
+            <div className="flex items-center space-x-2 text-sm text-slate-500">
+              <GraduationCap className="w-4 h-4 text-[#ed143d]" />
+              <span className="hidden sm:inline">Student Portal</span>
+              <ChevronRight className="w-3 h-3 hidden sm:inline" />
+              <span className="font-semibold text-white">
+                {navGroups.flatMap(g => g.items).find(i => i.id === tab)?.label}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {/* Batch badge */}
+            {student.admissionBatch && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                <Calendar className="w-3.5 h-3.5 text-[#ed143d]" />
+                <span>Batch <strong className="text-white">{student.admissionBatch}</strong></span>
+              </div>
+            )}
+
+            {/* Theme toggle — identical to staff */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            {/* Avatar */}
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ed143d] to-rose-700 flex items-center justify-center font-bold text-white text-xs shadow-md">
+              {initials}
+            </div>
+          </div>
+        </header>
+
+        {/* ─── Page content ─── */}
+        <div className="p-6 md:p-8 space-y-8 w-full">
+
+          {/* ══ OVERVIEW ══ */}
+          {tab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-8"
+            >
+              {/* Page header */}
+              <div className="flex flex-col gap-5 py-2 md:flex-row md:items-end md:justify-between">
+                <div className="max-w-2xl">
+                  <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                    Welcome back, {name.split(' ')[0]} 👋
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    {program}{branch ? ` · ${branch}` : ''} — Bir Tikendrajit University Credit Transfer
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                    {student.studyMode || 'Credit Transfer'}
+                  </span>
+                  <span className="rounded-full border border-[#ed143d]/30 bg-[#ed143d]/10 px-3 py-1 text-xs font-semibold text-[#ed143d]">
+                    {ev.evaluationStatus || 'Pending Evaluation'}
+                  </span>
+                </div>
+              </div>
+
+              {/* KPI cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                <KpiCard title="EVALUATION STATUS" value={ev.evaluationStatus || 'Pending'} sub={`Stage ${ev.approvalStage ?? 0} Approval`} icon={Activity} />
+                <KpiCard title="BTU SUBJECTS"      value={evalSubs.length}                  sub="Equalized Courses"                          icon={Award}    change={evalSubs.length > 0 ? 'Mapped' : undefined} />
+                <KpiCard title="TRANSFER CREDITS"  value={prevCr}                           sub={`${prevSubs.length} Subjects Submitted`}    icon={BarChart3} />
+                <KpiCard title="EVAL CREDITS"      value={evalCr}                           sub="BTU Credit Mapping"                         icon={TrendingUp} change={evalCr > 0 ? 'Credited' : undefined} />
+              </div>
+
+              {/* Info grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Student overview card */}
+                <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+                  <div className="flex flex-col gap-3 border-b border-slate-800 p-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+                        <BookOpen className="w-5 h-5 text-[#ed143d]" />
+                        <span>Academic Profile</span>
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-400">Current academic standing and university mapping details</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {student.isProfileVerified && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+                          <BadgeCheck className="w-3.5 h-3.5" /> Verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[480px] border-collapse text-left">
+                      <tbody className="divide-y divide-slate-800/60">
+                        {[
+                          { label: 'Enrollment ID', value: <span className="font-mono text-[#ed143d] font-bold">{sid}</span> },
+                          { label: 'Programme',     value: program },
+                          { label: 'Branch',        value: branch || '—' },
+                          { label: 'Parent University', value: a.parentUniversity || '—' },
+                          { label: 'Academic Session',  value: a.academicSession || '—' },
+                          { label: 'Admission Batch',   value: student.admissionBatch || '—' },
+                          { label: 'Study Mode',        value: <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span> },
+                          { label: 'Profile Status',    value: student.isProfileVerified
+                              ? <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold"><CheckCircle2 className="w-3.5 h-3.5" />Verified</span>
+                              : <span className="inline-flex items-center gap-1 text-amber-400 font-semibold"><Clock className="w-3.5 h-3.5" />Pending</span>
+                          },
+                        ].map((row, i) => (
+                          <tr key={i} className="group transition-colors hover:bg-slate-800/40">
+                            <td className="px-6 py-3.5">
+                              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{row.label}</span>
+                            </td>
+                            <td className="px-6 py-3.5">
+                              <span className="text-sm font-medium text-slate-200">{row.value}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Stats summary card */}
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 flex items-center space-x-2">
+                      <Layers className="w-5 h-5 text-[#ed143d]" />
+                      <span>Credit Summary</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-6">Your academic credit transfer progress</p>
+
+                    <div className="space-y-5">
+                      {[
+                        { label: 'BTU Evaluation', count: evalSubs.length, total: Math.max(evalSubs.length, prevSubs.length, 1), color: '#ed143d', sub: `${evalCr} credits mapped` },
+                        { label: 'Credit Transfers', count: prevSubs.length, total: Math.max(prevSubs.length, 1), color: '#f59e0b', sub: `${prevCr} credits submitted` },
+                        { label: 'Semesters Completed', count: a.semesterCompletedAtParentUniversity || 0, total: 8, color: '#10b981', sub: 'at parent university' },
+                      ].map(item => (
+                        <div key={item.label}>
+                          <div className="flex justify-between text-xs font-medium text-slate-400 mb-1.5">
+                            <span className="text-slate-300">{item.label}</span>
+                            <span className="text-white font-bold">{item.count}</span>
+                          </div>
+                          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${Math.min((item.count / item.total) * 100, 100)}%`, backgroundColor: item.color }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-slate-600 mt-1">{item.sub}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-slate-500" />Status</span>
+                      <StatusBadge status={student.status || 'Active'} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400 flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-slate-500" />Fee</span>
+                      {student.isFeeCompleted
+                        ? <span className="text-emerald-400 font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />Completed</span>
+                        : <span className="text-amber-400 font-semibold flex items-center gap-1"><Clock className="w-3.5 h-3.5" />Pending</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+
+          {/* ══ BTU EVALUATION ══ */}
+          {tab === 'evaluation' && (
+            <motion.div
+              key="evaluation"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">BTU Evaluation</h2>
+                  <p className="text-slate-400 text-sm">Subject equalization and credit mapping at Bir Tikendrajit University.</p>
+                </div>
+                <StatusBadge status={ev.evaluationStatus} />
+              </div>
+
+              {/* Stats strip */}
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Subjects', value: evalSubs.length,                               color: 'text-white' },
+                  { label: 'Total Credits',  value: evalCr,                                        color: 'text-emerald-400' },
+                  { label: 'Approval Stage', value: `Stage ${ev.approvalStage ?? 0}`,              color: 'text-amber-400' },
+                ].map(s => (
+                  <div key={s.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Table */}
+              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-slate-800 p-6">
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <Award className="w-5 h-5 text-[#ed143d]" />
+                    <span>Subject Mapping & Equalization</span>
+                  </h3>
+                  <span className="text-xs text-slate-400">{evalSubs.length} subjects</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px] border-collapse text-left table-fixed">
+                    <colgroup>
+                      <col className="w-[16%]" />
+                      <col className="w-[34%]" />
+                      <col className="w-[8%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[12%]" />
+                      <col className="w-[20%]" />
+                    </colgroup>
+                    <thead>
+                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        <th className="px-6 py-3.5">Subject Code</th>
+                        <th className="px-4 py-3.5">BTU Subject Title</th>
+                        <th className="px-4 py-3.5">Sem</th>
+                        <th className="px-4 py-3.5">Credits</th>
+                        <th className="px-4 py-3.5">Grade / Mark</th>
+                        <th className="px-6 py-3.5 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {evalSubs.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center">
+                            <Award className="w-8 h-8 mx-auto mb-3 text-slate-700" />
+                            <p className="text-sm text-slate-500">No evaluated subjects available yet.</p>
+                          </td>
+                        </tr>
+                      ) : evalSubs.map((sub, i) => {
+                        const s = sub as Record<string, unknown>
+                        const BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
+                        const eqRaw = (s.equalizedSubject || '') as string
+                        const eqMatch = eqRaw ? eqRaw.match(BTU_CODE_RE) : null
+                        const isReappear = s.equalized !== 'equalized'
+                        const code  = (s.btuSubjectCode  || (eqMatch ? eqMatch[1] : '')) as string
+                        const title = (s.btuSubjectTitle || (eqMatch ? eqMatch[2] : ''))  as string
+                        const examBatch  = (s.examBatch  || '') as string
+                        const examStatus = (s.examStatus || '') as string
+                        return (
+                          <tr key={i} className="group transition-colors hover:bg-slate-800/40">
+                            <td className="px-6 py-4">
+                              {code ? (
+                                <span className="block truncate text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700" title={code}>
+                                  {code}
+                                </span>
+                              ) : isReappear && examBatch ? (
+                                <span className="block truncate text-xs font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20" title={examBatch}>
+                                  {examBatch}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-slate-600">—</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-4">
+                              {title ? (
+                                <span className="block truncate text-sm font-semibold text-white" title={title}>{title}</span>
+                              ) : isReappear ? (
+                                <div>
+                                  <span className="text-sm font-semibold text-amber-400">Reappear Exam</span>
+                                  {examStatus && <p className="text-[10px] text-slate-500 mt-0.5 truncate">{examStatus}</p>}
+                                </div>
+                              ) : (
+                                <span className="text-sm text-slate-600">—</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-sm font-mono text-slate-300">{(s.semester as number) ?? '—'}</td>
+                            <td className="px-4 py-4 text-sm font-bold text-slate-200">{(s.credits as number) ?? '—'}</td>
+                            <td className="px-4 py-4 text-sm font-bold text-emerald-400">{(s.grade || s.mark || '—') as string}</td>
+                            <td className="px-6 py-4 text-right">
+                              <StatusBadge status={(s.equalized || s.examStatus) as string | undefined} />
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ══ CREDIT TRANSFERS ══ */}
+          {tab === 'transcripts' && (
+            <motion.div
+              key="transcripts"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white">Credit Transfers</h2>
+                <p className="text-slate-400 text-sm">
+                  Academic record from {a.parentUniversity || 'previous university'} — submitted for BTU credit mapping.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Subjects', value: prevSubs.length,                                                                  color: 'text-white' },
+                  { label: 'Total Credits',  value: prevCr,                                                                           color: 'text-amber-400' },
+                  { label: 'Semesters',      value: a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Sem` : '—', color: 'text-blue-400' },
+                ].map(s => (
+                  <div key={s.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-slate-800 p-6">
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <FileText className="w-5 h-5 text-[#ed143d]" />
+                    <span>Transfer Subjects — {a.parentUniversity || 'Parent University'}</span>
+                  </h3>
+                  <span className="text-xs text-slate-400">{prevSubs.length} subjects · {prevCr} credits</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[640px] border-collapse text-left">
+                    <thead>
+                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        <th className="px-6 py-3.5">Subject Code</th>
+                        <th className="px-4 py-3.5">Subject Title</th>
+                        <th className="px-4 py-3.5">Sem</th>
+                        <th className="px-4 py-3.5">Credits</th>
+                        <th className="px-4 py-3.5">Mark / Grade</th>
+                        <th className="px-6 py-3.5 text-right">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {prevSubs.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center">
+                            <FileText className="w-8 h-8 mx-auto mb-3 text-slate-700" />
+                            <p className="text-sm text-slate-500">No credit transfer subjects listed.</p>
+                          </td>
+                        </tr>
+                      ) : prevSubs.map((sub, i) => (
+                        <tr key={i} className="group transition-colors hover:bg-slate-800/40">
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">
+                              {sub.subjectCode || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="text-sm font-semibold text-white">{sub.subjectTitle || '—'}</span>
+                          </td>
+                          <td className="px-4 py-4 text-sm font-mono text-slate-300">{sub.semester ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm font-bold text-slate-200">{sub.credits ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm font-bold text-emerald-400">{sub.grade || sub.mark || '—'}</td>
+                          <td className="px-6 py-4 text-right"><StatusBadge status={sub.result} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ══ PROFILE ══ */}
+          {tab === 'profile' && (
+            <motion.div
+              key="profile"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* ── Hero banner ── */}
+              <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                {/* Background glows */}
+                <div className="pointer-events-none absolute -right-24 -top-24 w-80 h-80 rounded-full bg-[#ed143d]/10 blur-3xl" />
+                <div className="pointer-events-none absolute -left-12 bottom-0 w-52 h-52 rounded-full bg-rose-900/10 blur-3xl" />
+
+                <div className="relative p-6 sm:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-end gap-6">
+                    {/* Avatar */}
+                    <div className="relative shrink-0">
+                      <div className="absolute inset-0 rounded-3xl bg-[#ed143d]/40 blur-xl scale-110 pointer-events-none" />
+                      <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#ed143d] to-rose-700 text-white font-black text-4xl flex items-center justify-center shadow-2xl shadow-[#ed143d]/30 select-none">
+                        {initials}
+                      </div>
+                      {student.isProfileVerified && (
+                        <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-slate-900 flex items-center justify-center shadow-lg">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Name & chips */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700 tracking-wider">
+                          {sid}
+                        </span>
+                        {student.isProfileVerified
+                          ? <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold"><BadgeCheck className="w-2.5 h-2.5" />Verified</span>
+                          : <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold"><Clock className="w-2.5 h-2.5" />Pending Verification</span>
+                        }
+                      </div>
+                      <h2 className="text-3xl font-black text-white leading-tight">{name}</h2>
+                      <p className="text-slate-400 mt-1 text-sm">{program}{branch ? ` · ${branch}` : ''}</p>
+
+                      {/* Stat strip */}
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5 pt-5 border-t border-slate-800">
+                        {[
+                          { icon: Building2, label: 'University', value: 'BTU' },
+                          { icon: Calendar,  label: 'Batch',      value: student.admissionBatch || '—' },
+                          { icon: Layers,    label: 'Mode',       value: student.studyMode || 'Credit Transfer' },
+                          { icon: Shield,    label: 'Status',     value: student.status || 'Active' },
+                        ].map(({ icon: Icon, label, value: val }) => (
+                          <div key={label} className="flex items-center gap-1.5">
+                            <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span className="text-xs text-slate-500">{label}:</span>
+                            <span className="text-xs font-semibold text-slate-200">{val}</span>
+                          </div>
+                        ))}
+                        <div className="ml-auto flex items-center gap-1.5">
+                          {student.isFeeCompleted
+                            ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" />Fee Cleared</span>
+                            : <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400"><Clock className="w-3.5 h-3.5" />Fee Pending</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── 3-column grid ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left 2 columns — details */}
+                <div className="lg:col-span-2 space-y-6">
+
+                  {/* Personal details */}
+                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
+                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
+                      <User className="w-4 h-4 text-[#ed143d]" />
+                      <span className="text-sm font-bold text-white">Personal Details</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-slate-800/50">
+                      <div>
+                        <ProfileField icon={User}     label="Full Name"      value={p.name} />
+                        <ProfileField icon={User}     label="Father's Name"  value={p.fatherName} />
+                        <ProfileField icon={User}     label="Mother's Name"  value={p.motherName} />
+                        <ProfileField icon={Calendar} label="Date of Birth"  value={p.dateOfBirth} />
+                      </div>
+                      <div>
+                        <ProfileField icon={User}    label="Gender"       value={p.gender} />
+                        <ProfileField icon={Layers}  label="Category"     value={p.category} />
+                        <ProfileField icon={Activity} label="Blood Group" value={
+                          p.bloodGroup
+                            ? <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs">{p.bloodGroup}</span>
+                            : undefined
+                        } />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact */}
+                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
+                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
+                      <Phone className="w-4 h-4 text-[#ed143d]" />
+                      <span className="text-sm font-bold text-white">Contact Information</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-slate-800/50">
+                      <ProfileField icon={Mail}  label="Email Address"   value={<span className="truncate block text-xs">{p.email || '—'}</span>} />
+                      <ProfileField icon={Phone} label="Mobile Number"   value={p.mobileNumber?.toString()} />
+                      <ProfileField icon={Phone} label="WhatsApp Number" value={p.whatsAppNumber?.toString()} />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
+                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
+                      <MapPin className="w-4 h-4 text-[#ed143d]" />
+                      <span className="text-sm font-bold text-white">Address</span>
+                    </div>
+                    <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-5">
+                      {[
+                        { label: 'Permanent Address', value: p.permanentAddress, span: 'col-span-2 sm:col-span-4' },
+                        { label: 'District',          value: p.district,         span: '' },
+                        { label: 'State',             value: p.state,            span: '' },
+                        { label: 'Country',           value: p.country,          span: '' },
+                      ].map(item => (
+                        <div key={item.label} className={item.span}>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{item.label}</p>
+                          <p className="text-sm font-semibold text-slate-200">{item.value || <span className="text-slate-600 font-normal">—</span>}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right column — ID card + academic snapshot */}
+                <div className="space-y-5">
+
+                  {/* Student ID card visual */}
+                  <div className={`overflow-hidden rounded-2xl border shadow-2xl ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'}`}>
+                    {/* Card header stripe */}
+                    <div className="relative bg-gradient-to-r from-[#ed143d] to-rose-600 px-5 py-3.5 flex items-center justify-between overflow-hidden">
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+                      <div className="relative flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-white" />
+                        <span className="text-white font-black text-sm tracking-widest">BTU</span>
+                      </div>
+                      <span className="relative text-white/80 text-[10px] font-bold uppercase tracking-widest">Student ID</span>
+                    </div>
+
+                    {/* Card body */}
+                    <div className="p-5 space-y-4">
+                      {/* Avatar + name */}
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ed143d]/20 to-rose-900/30 border border-[#ed143d]/25 flex items-center justify-center text-2xl font-black text-[#ed143d] shrink-0 shadow-inner">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className={`font-bold text-sm leading-tight ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>{name}</p>
+                          <p className={`text-[10px] mt-0.5 truncate ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>{program}</p>
+                          {branch && <p className={`text-[10px] truncate ${theme === 'light' ? 'text-slate-400' : 'text-slate-500'}`}>{branch}</p>}
+                        </div>
+                      </div>
+
+                      {/* Key-value grid */}
+                      <div className="space-y-2 text-[11px] pt-1">
+                        {[
+                          { key: 'ID Number',    val: sid,                                                        mono: true,  accent: true  },
+                          { key: 'Batch',        val: student.admissionBatch || '—',                              mono: false, accent: false },
+                          { key: 'University',   val: 'Bir Tikendrajit Uni.',                                     mono: false, accent: false },
+                          { key: 'Verification', val: student.isProfileVerified ? 'Verified ✓' : 'Pending',      mono: false, accent: false, green: student.isProfileVerified },
+                        ].map(({ key, val, mono, accent, green }) => (
+                          <div key={key} className={`flex items-center justify-between border-b pb-2 last:border-0 last:pb-0 ${theme === 'light' ? 'border-slate-100' : 'border-slate-800/60'}`}>
+                            <span className={theme === 'light' ? 'text-slate-400' : 'text-slate-500'}>{key}</span>
+                            <span className={`font-semibold ${mono ? 'font-mono' : ''} ${accent ? 'text-[#ed143d]' : green ? 'text-emerald-500' : theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>{val}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Decorative barcode */}
+                      <div className={`pt-3 border-t ${theme === 'light' ? 'border-slate-100' : 'border-slate-700/60'}`}>
+                        <div className="flex items-end gap-px h-7">
+                          {Array.from({ length: 42 }).map((_, i) => {
+                            const code = sid.charCodeAt(i % sid.length) || 65
+                            const h = ((code * (i + 1) * 7) % 60) + 40
+                            return (
+                              <div
+                                key={i}
+                                className={`flex-1 rounded-[1px] ${theme === 'light' ? 'bg-slate-400' : 'bg-slate-500'}`}
+                                style={{ height: `${h}%`, opacity: 0.4 + (h / 100) * 0.5 }}
+                              />
+                            )
+                          })}
+                        </div>
+                        <p className={`text-[9px] font-mono text-center mt-1.5 tracking-[0.2em] ${theme === 'light' ? 'text-slate-400' : 'text-slate-700'}`}>BIR TIKENDRAJIT UNIVERSITY</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Academic snapshot */}
+                  <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-xl overflow-hidden">
+                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
+                      <BookOpen className="w-4 h-4 text-[#ed143d]" />
+                      <span className="text-sm font-bold text-white">Academic Snapshot</span>
+                    </div>
+                    <div className="px-5 py-3">
+                      <InfoRow label="Parent University"     value={a.parentUniversity} />
+                      <InfoRow label="Academic Session"      value={a.academicSession} />
+                      <InfoRow label="Sems at Parent Uni"   value={a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Semesters` : undefined} />
+                      <InfoRow label="Marketing Batch"       value={student.marketingBatch} />
+                      <InfoRow label="Evaluated Subjects"    value={evalSubs.length > 0 ? `${evalSubs.length} subjects mapped` : undefined} />
+                      <InfoRow label="Transferred Credits"   value={prevCr > 0 ? `${prevCr} credits` : undefined} />
+                    </div>
+                  </div>
+
+                  {/* Fee status card */}
+                  <div className={`rounded-2xl border shadow-xl overflow-hidden ${student.isFeeCompleted ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
+                    <div className={`px-5 py-3 border-b ${student.isFeeCompleted ? 'border-emerald-500/15' : 'border-amber-500/15'} flex items-center gap-2`}>
+                      {student.isFeeCompleted ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Clock className="w-4 h-4 text-amber-400" />}
+                      <span className="text-sm font-bold text-white">Fee Payment</span>
+                    </div>
+                    <div className="px-5 py-4">
+                      <p className={`text-xl font-extrabold ${student.isFeeCompleted ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {student.isFeeCompleted ? 'Cleared' : 'Pending'}
+                      </p>
+                      <p className={`text-xs mt-1 ${student.isFeeCompleted ? 'text-emerald-500/70' : 'text-amber-500/70'}`}>
+                        {student.isFeeCompleted
+                          ? 'Fee payment confirmed and records updated.'
+                          : 'Please contact the BTU accounts office to clear dues.'}
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+        </div>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-800 bg-slate-950/60 px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-600">
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-slate-500" />
-              <span>University: <strong className="text-white">Bir Tikendrajit University (BTU)</strong></span>
+              <GraduationCap className="w-3.5 h-3.5 text-[#ed143d]" />
+              <span>Bir Tikendrajit University (BTU) — Student Academic Portal</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-500" />
-              <span>Admission Batch: <strong className="text-white">{student.admissionBatch || 'N/A'}</strong></span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-slate-500" />
-              <span>Study Mode: <strong className="text-amber-400 font-mono">{student.studyMode || 'Credit Transfer'}</strong></span>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1"><Phone className="w-3 h-3" />Credit Transfer Cell</span>
+              <span className="flex items-center gap-1"><Mail className="w-3 h-3" />academics@btu.ac.in</span>
             </div>
           </div>
-        </div>
-      </div>
+        </footer>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-800 gap-2">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'overview'
-              ? 'border-[#ed143d] text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Overview</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('evaluation')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'evaluation'
-              ? 'border-[#ed143d] text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          <span>BTU Evaluation ({evalSubjects.length})</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('transcripts')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'transcripts'
-              ? 'border-[#ed143d] text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Transcripts ({prevSubjects.length})</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'profile'
-              ? 'border-[#ed143d] text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <User className="w-4 h-4" />
-          <span>Personal Info</span>
-        </button>
-      </div>
-
-      {/* Tab Contents */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">BTU Evaluation Status</p>
-              <p className="text-2xl font-black text-white">{evalData.evaluationStatus || 'Pending'}</p>
-              <p className="text-xs text-slate-500">Stage {evalData.approvalStage || 0} Approval</p>
-            </div>
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">BTU Evaluated Subjects</p>
-              <p className="text-2xl font-black text-emerald-400">{evalSubjects.length}</p>
-              <p className="text-xs text-slate-500">Equalized Courses</p>
-            </div>
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transferred Subjects</p>
-              <p className="text-2xl font-black text-amber-400">{prevSubjects.length}</p>
-              <p className="text-xs text-slate-500">Parent University Credits</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'evaluation' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-          <div className="p-4 border-b border-slate-800 font-bold text-white flex items-center justify-between">
-            <span>Bir Tikendrajit University (BTU) Academic Evaluation & Subject Mapping</span>
-            <span className="text-xs text-slate-400 font-normal">Status: {evalData.evaluationStatus || 'Pending'}</span>
-          </div>
-
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
-                <th className="p-4 font-semibold">Subject Code</th>
-                <th className="p-4 font-semibold">BTU Subject Title</th>
-                <th className="p-4 font-semibold">Sem</th>
-                <th className="p-4 font-semibold">Grade / Mark</th>
-                <th className="p-4 font-semibold">Equalized Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {evalSubjects.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-500">
-                    No evaluated subjects available yet.
-                  </td>
-                </tr>
-              ) : (
-                evalSubjects.map((sub, i) => (
-                  <tr key={i} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 font-mono font-bold text-[#ed143d]">{sub.btuSubjectCode || 'N/A'}</td>
-                    <td className="p-4 font-semibold text-white">{sub.btuSubjectTitle || 'General Subject'}</td>
-                    <td className="p-4 font-mono text-slate-300">{sub.semester || 1}</td>
-                    <td className="p-4 font-bold text-emerald-400">{sub.grade || sub.mark || 'A'}</td>
-                    <td className="p-4 text-xs">
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
-                        {sub.equalized || 'Approved'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === 'transcripts' && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-          <div className="p-4 border-b border-slate-800 font-bold text-white">
-            <span>Previous University Credit Transfers ({academic.parentUniversity || 'Parent Uni'})</span>
-          </div>
-
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
-                <th className="p-4 font-semibold">Subject Code</th>
-                <th className="p-4 font-semibold">Original Subject Title</th>
-                <th className="p-4 font-semibold">Sem</th>
-                <th className="p-4 font-semibold">Credits</th>
-                <th className="p-4 font-semibold">Mark / Grade</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {prevSubjects.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-500">
-                    No credit transfer subjects listed.
-                  </td>
-                </tr>
-              ) : (
-                prevSubjects.map((sub, i) => (
-                  <tr key={i} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-4 font-mono font-bold text-amber-400">{sub.subjectCode || 'N/A'}</td>
-                    <td className="p-4 font-semibold text-white">{sub.subjectTitle || 'Transferred Subject'}</td>
-                    <td className="p-4 font-mono text-slate-300">{sub.semester || 1}</td>
-                    <td className="p-4 font-bold text-slate-200">{sub.credits || 3}</td>
-                    <td className="p-4 font-bold text-emerald-400">{sub.grade || sub.mark || 'Passed'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === 'profile' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#ed143d]" />
-              <span>Contact Information</span>
-            </h3>
-            <div className="space-y-2 text-sm text-slate-300">
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">Email Address:</span>
-                <span className="font-semibold text-white">{personal.email || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">Mobile Number:</span>
-                <span className="font-semibold text-white">{personal.mobileNumber || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">WhatsApp Number:</span>
-                <span className="font-semibold text-white">{personal.whatsAppNumber || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#ed143d]" />
-              <span>Address & Bio</span>
-            </h3>
-            <div className="space-y-2 text-sm text-slate-300">
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">Date of Birth:</span>
-                <span className="font-semibold text-white">{personal.dateOfBirth || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">Gender / Category:</span>
-                <span className="font-semibold text-white">{personal.gender || 'N/A'} / {personal.category || 'General'}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800/60 pb-2">
-                <span className="text-slate-400">Permanent Address:</span>
-                <span className="font-semibold text-white truncate max-w-[200px]">{personal.permanentAddress || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </main>
     </div>
   )
 }

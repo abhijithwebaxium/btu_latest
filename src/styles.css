@@ -135,6 +135,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,

@@ -31,30 +31,37 @@ export default function LoginPage() {
   const handleRoleChange = (role: 'staff' | 'student') => {
     setLoginRole(role);
     setErrorMsg(null);
-    if (role === 'staff') {
-      setEmail('admin@btu.ac.in');
-      setPassword('btu123');
-    } else {
-      setEmail('');
-      setPassword('');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMsg(null);
 
-    if (loginRole === 'staff') {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('current-student');
-      }
-      navigate({ to: '/' });
-      return;
-    }
-
-    // Student Login via MongoDB API for BTU
     setIsLoading(true);
     try {
+      if (loginRole === 'staff') {
+        const res = await fetch('/api/auth/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('current-student');
+            localStorage.setItem('staff-session', '1');
+            sessionStorage.setItem('admin-key', password);
+          }
+          navigate({ to: '/' });
+        } else {
+          setErrorMsg(data.error || 'Invalid staff credentials.');
+        }
+        return;
+      }
+
+      // Student Login via MongoDB API for BTU
       const res = await fetch('/api/auth/student-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,6 +72,7 @@ export default function LoginPage() {
 
       if (data.success && data.student) {
         if (typeof window !== 'undefined') {
+          localStorage.removeItem('staff-session');
           localStorage.setItem('current-student', JSON.stringify(data.student));
         }
         navigate({ to: '/' });
@@ -199,9 +207,7 @@ export default function LoginPage() {
                   {loginRole === 'student' ? 'BTU Student Email' : 'Staff Email Address'}
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-20 text-slate-500">
-                    <Mail className="h-4 w-4" />
-                  </div>
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
                   <input
                     id="login-email"
                     name="email"
@@ -209,8 +215,8 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={loginRole === 'student' ? 'e.g. student@btu.ac.in' : 'admin@btu.ac.in'}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30 relative z-10 cursor-text select-text"
+                    placeholder={loginRole === 'student' ? 'e.g. student@btu.ac.in' : 'staff@btu.ac.in'}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
                   />
                 </div>
               </div>
@@ -225,9 +231,10 @@ export default function LoginPage() {
                   )}
                 </div>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-20 text-slate-500">
-                    {loginRole === 'student' ? <Phone className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
-                  </div>
+                  {loginRole === 'student'
+                    ? <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                    : <LockKeyhole className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                  }
                   <input
                     id="login-password"
                     name="password"
@@ -236,7 +243,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={loginRole === 'student' ? 'e.g. 9876543210' : '••••••••'}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30 relative z-10 cursor-text select-text"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
                   />
                 </div>
               </div>

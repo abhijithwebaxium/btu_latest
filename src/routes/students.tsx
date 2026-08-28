@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
 
 export const Route = createFileRoute('/students')({
+  beforeLoad: () => {
+    if (typeof window === 'undefined') return
+    const hasAuth = localStorage.getItem('staff-session') || localStorage.getItem('current-student')
+    if (!hasAuth) throw redirect({ to: '/login' })
+  },
   component: StudentDirectoryPage,
 })
 

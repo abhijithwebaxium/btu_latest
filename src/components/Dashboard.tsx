@@ -1,33 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, 
-  BookOpen, 
-  Briefcase, 
-  Folder, 
-  Video, 
-  LifeBuoy, 
-  Search, 
-  Bell, 
+import {
+  Users,
+  BookOpen,
+  Briefcase,
+  Folder,
+  Video,
+  LifeBuoy,
+  Search,
+  Bell,
   FileJson,
-  Plus, 
-  ChevronRight, 
-  TrendingUp, 
-  CheckCircle2, 
-  Clock, 
-  GraduationCap, 
-  X, 
-  Sparkles, 
-  BarChart3, 
-  Layers, 
-  ArrowUpRight, 
-  Activity, 
-  UserPlus, 
-  Code2, 
-  Sun, 
-  Moon, 
-  LogOut 
+  Plus,
+  ChevronRight,
+  TrendingUp,
+  CheckCircle2,
+  Clock,
+  GraduationCap,
+  X,
+  Sparkles,
+  BarChart3,
+  Layers,
+  ArrowUpRight,
+  Activity,
+  UserPlus,
+  Code2,
+  Sun,
+  Moon,
+  LogOut,
+  Menu,
 } from 'lucide-react';
 import { 
   Tooltip, 
@@ -220,7 +221,7 @@ export default function Dashboard() {
   const [classes, setClasses] = useState<ClassItem[]>(initialClasses);
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [currentStudent, setCurrentStudent] = useState<LoggedInStudent | null>(null);
-  const [selectedUni, setSelectedUni] = useState<'BTU' | 'TGU'>('BTU');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -232,9 +233,6 @@ export default function Dashboard() {
       const savedTheme = localStorage.getItem('university-theme') || 'dark';
       setTheme(savedTheme);
       document.documentElement.dataset.theme = savedTheme;
-
-      const savedUni = (localStorage.getItem('selected-university') as 'BTU' | 'TGU') || 'BTU';
-      setSelectedUni(savedUni);
 
       const savedStudent = localStorage.getItem('current-student');
       if (savedStudent) {
@@ -276,6 +274,23 @@ export default function Dashboard() {
     setNotification(msg);
     setTimeout(() => setNotification(null), 3000);
   };
+
+  const q = searchQuery.toLowerCase();
+  const filteredAssignments = q
+    ? assignments.filter(a => a.title.toLowerCase().includes(q) || a.course.toLowerCase().includes(q))
+    : assignments;
+  const filteredInternships = q
+    ? internships.filter(i => i.company.toLowerCase().includes(q) || i.role.toLowerCase().includes(q))
+    : internships;
+  const filteredProjects = q
+    ? projects.filter(p => p.title.toLowerCase().includes(q) || p.lead.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))
+    : projects;
+  const filteredClasses = q
+    ? classes.filter(c => c.title.toLowerCase().includes(q) || c.instructor.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+    : classes;
+  const filteredTickets = q
+    ? tickets.filter(t => t.subject.toLowerCase().includes(q) || t.user.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
+    : tickets;
 
   const navGroups = [
     {
@@ -383,7 +398,14 @@ export default function Dashboard() {
 
       <div className="min-h-full">
 
-        <aside className="fixed inset-y-0 left-0 z-40 w-[260px] bg-slate-900/95 border-r border-slate-800 flex-col justify-between hidden lg:flex backdrop-blur-2xl overflow-y-auto">
+        {mobileNavOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-slate-950/70 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
+
+        <aside className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-slate-900/95 border-r border-slate-800 flex flex-col justify-between backdrop-blur-2xl overflow-y-auto transition-transform duration-300 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <div>
             <div className="p-6 flex items-center space-x-3 border-b border-slate-800/80">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ed143d] to-rose-500 flex items-center justify-center shadow-lg shadow-[#ed143d]/30">
@@ -411,6 +433,7 @@ export default function Dashboard() {
                         <button
                           key={item.id}
                           onClick={() => {
+                            setMobileNavOpen(false);
                             if (item.id === 'import') {
                               navigate({ to: '/import' })
                             } else if (item.id === 'students') {
@@ -459,16 +482,23 @@ export default function Dashboard() {
           <div className="p-4 border-t border-slate-800/80 m-3 rounded-2xl bg-slate-950/50 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-[#ed143d] flex items-center justify-center font-bold text-white shadow-md">
-                DR
+                <GraduationCap className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-white">Dr. Rachel Vance</p>
-                <p className="text-xs text-slate-400">Head of Department</p>
+                <p className="text-xs font-semibold text-white">BTU Admin</p>
+                <p className="text-xs text-slate-400">Staff Portal</p>
               </div>
             </div>
             <button
               type="button"
-              onClick={() => navigate({ to: '/login' })}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem('staff-session');
+                  localStorage.removeItem('current-student');
+                  sessionStorage.removeItem('admin-key');
+                }
+                navigate({ to: '/login' });
+              }}
               aria-label="Log out"
               title="Log out"
               className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#ed143d]/10 hover:text-[#ed143d]"
@@ -482,6 +512,14 @@ export default function Dashboard() {
           
           <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-4 flex-1 max-w-md">
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(prev => !prev)}
+                aria-label="Toggle navigation"
+                className="lg:hidden shrink-0 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               <div className="relative w-full">
                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
@@ -572,7 +610,7 @@ export default function Dashboard() {
                     change="+12.4%"
                     icon={Users}
                     subtitle="98% Active Enrolled"
-                    onClick={() => setActiveTab('students')}
+                    onClick={() => navigate({ to: '/students' })}
                   />
                   <ModernCard
                     title="ACTIVE ASSIGNMENTS"
@@ -611,9 +649,9 @@ export default function Dashboard() {
                         <p className="mt-1 text-xs text-slate-400">Six-month academic health and engagement summary</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          Live data
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                          Sample data
                         </span>
                         <span className="rounded-full border border-[#ed143d]/30 bg-[#ed143d]/10 px-3 py-1 text-xs font-semibold text-[#ed143d]">
                           +6.5% growth
@@ -831,62 +869,6 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'students' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Student Directory</h2>
-                    <p className="text-slate-400 text-sm">Manage student profiles, GPA scores, and attendance rates.</p>
-                  </div>
-                  <button 
-                    onClick={() => { setModalType('student'); setIsModalOpen(true); }}
-                    className="px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Register Student</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
-                          <th className="p-4 font-semibold">Student ID</th>
-                          <th className="p-4 font-semibold">Name & Email</th>
-                          <th className="p-4 font-semibold">Department</th>
-                          <th className="p-4 font-semibold">GPA</th>
-                          <th className="p-4 font-semibold">Attendance</th>
-                          <th className="p-4 font-semibold">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/60">
-                        {students.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
-                          <tr key={student.id} className="hover:bg-slate-800/40 transition-colors">
-                            <td className="p-4 font-mono font-bold text-[#ed143d]">{student.id}</td>
-                            <td className="p-4">
-                              <p className="font-semibold text-white">{student.name}</p>
-                              <p className="text-xs text-slate-400">{student.email}</p>
-                            </td>
-                            <td className="p-4 text-slate-300">{student.department}</td>
-                            <td className="p-4 font-bold text-amber-400">{student.gpa}</td>
-                            <td className="p-4 text-emerald-400 font-semibold">{student.attendance}</td>
-                            <td className="p-4">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                student.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              }`}>
-                                {student.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
             {activeTab === 'assignments' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -904,7 +886,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {assignments.map((asn) => {
+                  {filteredAssignments.map((asn) => {
                     const percentage = Math.round((asn.submitted / asn.total) * 100);
                     return (
                       <div key={asn.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-[#ed143d]/50 transition-all">
@@ -957,7 +939,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {internships.map((intern) => (
+                  {filteredInternships.map((intern) => (
                     <div key={intern.id} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-[#ed143d]/40 transition-all">
                       <div>
                         <div className="flex items-center space-x-3 mb-4">
@@ -999,7 +981,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {projects.map((proj) => (
+                  {filteredProjects.map((proj) => (
                     <div key={proj.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                       <div className="flex items-start justify-between">
                         <div>
@@ -1044,7 +1026,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {classes.map((cls) => (
+                  {filteredClasses.map((cls) => (
                     <div key={cls.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="flex items-center space-x-4">
                         <div className={`p-3.5 rounded-xl ${cls.status === 'Live Now' ? 'bg-[#ed143d] text-white shadow-lg shadow-[#ed143d]/40' : 'bg-slate-800 text-slate-400'}`}>
@@ -1096,7 +1078,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  {tickets.map((tck) => (
+                  {filteredTickets.map((tck) => (
                     <div key={tck.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="p-3 rounded-xl bg-slate-800 text-[#ed143d]">
@@ -1207,7 +1189,7 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <label className="text-xs font-semibold text-slate-300">Deadline</label>
-                        <input name="deadline" type="date" required className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
+                        <input name="deadline" type="date" required min={new Date().toISOString().split('T')[0]} className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
                       </div>
                     </div>
                     <div>
@@ -1227,6 +1209,10 @@ export default function Dashboard() {
                     <div>
                       <label className="text-xs font-semibold text-slate-300">Subject Summary</label>
                       <input name="subject" required placeholder="e.g. Need additional GPU quota for PyTorch model" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-300">Requested By</label>
+                      <input name="user" required placeholder="e.g. Your full name" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-slate-300">Category</label>

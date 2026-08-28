@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload,
@@ -14,10 +14,18 @@ import {
   Trash2,
   Database,
   RefreshCw,
+  FileSpreadsheet,
+  BookOpen,
 } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import type { StudentRecord } from '../lib/studentParser'
 
 export const Route = createFileRoute('/import')({
+  beforeLoad: () => {
+    if (typeof window === 'undefined') return
+    const hasAuth = localStorage.getItem('staff-session') || localStorage.getItem('current-student')
+    if (!hasAuth) throw redirect({ to: '/login' })
+  },
   component: JsonImportPage,
 })
 
@@ -31,6 +39,10 @@ function JsonImportPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [lastImported, setLastImported] = useState<StudentRecord[] | null>(null)
   const [totalDbCount, setTotalDbCount] = useState<number>(0)
+
+  const xlsxInputRef = useRef<HTMLInputElement>(null)
+  const [xlsxLoading, setXlsxLoading] = useState(false)
+  const [xlsxMsg, setXlsxMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const loadDbCount = async () => {
     try {
@@ -96,7 +108,11 @@ function JsonImportPage() {
     if (confirm('Are you sure you want to clear all Bir Tikendrajit University (BTU) student records from MongoDB?')) {
       setIsLoading(true)
       try {
-        const res = await fetch('/api/students', { method: 'DELETE' })
+        const adminKey = typeof window !== 'undefined' ? sessionStorage.getItem('admin-key') || '' : ''
+        const res = await fetch('/api/students', {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': adminKey },
+        })
         const data = await res.json()
         if (data.success) {
           setSuccessMsg('All imported BTU records have been cleared from MongoDB.')
@@ -110,6 +126,59 @@ function JsonImportPage() {
       } finally {
         setIsLoading(false)
       }
+    }
+  }
+
+  const handleSubjectsExcel = async (file: File) => {
+    setXlsxMsg(null)
+    setXlsxLoading(true)
+    try {
+      const buf = await file.arrayBuffer()
+      const wb  = XLSX.read(buf, { type: 'array' })
+      const ws  = wb.Sheets[wb.SheetNames[0]]
+      const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '' })
+
+      const normalize = (k: string) => k.toLowerCase().replace(/[\s_-]/g, '')
+      const pick = (row: Record<string, unknown>, ...keys: string[]) => {
+        for (const key of keys) {
+          for (const col of Object.keys(row)) {
+            if (normalize(col) === normalize(key)) return String(row[col] || '').trim()
+          }
+        }
+        return ''
+      }
+
+      const rows = rawRows
+        .map(row => ({
+          enrollmentID:   pick(row, 'enrollmentID', 'enrollmentId', 'enrollment id', 'enrollment', 'studentID', 'student id', 'id'),
+          btuSubjectCode: pick(row, 'btuSubjectCode', 'subject code', 'subjectCode', 'code'),
+          btuSubjectTitle:pick(row, 'btuSubjectTitle', 'subject title', 'subjectTitle', 'title', 'subject name', 'subjectName', 'name'),
+          semester:       Number(pick(row, 'semester', 'sem')) || 0,
+          credits:        Number(pick(row, 'credits', 'credit')) || 0,
+        }))
+        .filter(r => r.enrollmentID && r.btuSubjectCode && r.btuSubjectTitle)
+
+      if (rows.length === 0) {
+        setXlsxMsg({ type: 'error', text: 'No valid rows found. Ensure columns: Enrollment ID, Subject Code, Subject Title, Semester, Credits.' })
+        return
+      }
+
+      const res  = await fetch('/api/evaluation/update-subjects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rows),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setXlsxMsg({ type: 'success', text: `Updated ${data.updated} subject(s). ${data.notFound} row(s) had no matching evaluation entry.` })
+      } else {
+        setXlsxMsg({ type: 'error', text: data.error || 'Update failed.' })
+      }
+    } catch (err) {
+      setXlsxMsg({ type: 'error', text: `Error: ${(err as Error).message}` })
+    } finally {
+      setXlsxLoading(false)
+      if (xlsxInputRef.current) xlsxInputRef.current.value = ''
     }
   }
 
@@ -237,6 +306,70 @@ function JsonImportPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Subject Codes Excel Upload */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <FileSpreadsheet className="w-5 h-5 text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              Update Reappear Subject Codes
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">Excel</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Upload an <span className="font-mono text-amber-400">.xlsx</span> file to fill in missing BTU subject codes and titles for reappear evaluation entries.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-700/60 bg-slate-950/50 p-4 text-xs text-slate-400 space-y-1">
+          <p className="font-semibold text-slate-300 flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-amber-400" />Required Excel columns (any order, flexible names):</p>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-2">
+            {['Enrollment ID', 'Subject Code', 'Subject Title', 'Semester', 'Credits'].map(col => (
+              <span key={col} className="font-mono px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-center">{col}</span>
+            ))}
+          </div>
+        </div>
+
+        <input
+          ref={xlsxInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          className="hidden"
+          onChange={e => { if (e.target.files?.[0]) handleSubjectsExcel(e.target.files[0]) }}
+        />
+
+        <button
+          onClick={() => xlsxInputRef.current?.click()}
+          disabled={xlsxLoading}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold text-sm hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+        >
+          {xlsxLoading
+            ? <><RefreshCw className="w-4 h-4 animate-spin" /> Processing…</>
+            : <><Upload className="w-4 h-4" /> Upload Excel</>
+          }
+        </button>
+
+        <AnimatePresence mode="wait">
+          {xlsxMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className={`p-3.5 rounded-xl text-sm font-semibold flex items-center gap-2 ${
+                xlsxMsg.type === 'success'
+                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+                  : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+              }`}
+            >
+              {xlsxMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+              <span>{xlsxMsg.text}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Recently Imported Preview */}
       {lastImported && Array.isArray(lastImported) && (

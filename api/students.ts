@@ -18,6 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
+      const adminKey = process.env.ADMIN_PASSWORD
+      if (!adminKey || req.headers['x-admin-key'] !== adminKey) {
+        return res.status(403).json({ success: false, error: 'Forbidden: valid X-Admin-Key header required.' })
+      }
       const result = await clearAllStudentsFromDatabase()
       return res.status(result.success ? 200 : 500).json(result)
     }

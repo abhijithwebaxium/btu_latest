@@ -30,28 +30,14 @@ export interface IEvaluation {
 const EvaluationSchema = new Schema<IEvaluation>(
   {
     student: { type: String, index: true },
-    course: { type: Schema.Types.Mixed, ref: 'Course' },
-    branch: { type: Schema.Types.Mixed, ref: 'Branch' },
-    syllabus: { type: Schema.Types.Mixed },
+    course: { type: Schema.Types.ObjectId, ref: 'Course' },
+    branch: { type: Schema.Types.ObjectId, ref: 'Branch' },
+    syllabus: { type: Schema.Types.ObjectId },
     approvalStage: { type: Number, default: 0 },
     evaluationStatus: { type: String, default: 'Pending' },
     totalCredits: { type: Number, default: 0 },
     remainingCreditsNeeded: { type: Number, default: 0 },
-    subjects: [
-      {
-        btuSubjectCode: String,
-        btuSubjectTitle: String,
-        semester: Number,
-        equalized: String,
-        equalizedSubject: String,
-        grade: String,
-        mark: Schema.Types.Mixed,
-        credits: Number,
-        examBatch: String,
-        examStatus: String,
-        result: String,
-      },
-    ],
+    subjects: { type: [Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }
 )

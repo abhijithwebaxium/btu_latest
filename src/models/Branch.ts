@@ -21,7 +21,7 @@ const BranchSchema = new Schema<IBranch>(
   {
     name: { type: String, required: true, trim: true },
     shortCode: { type: String, required: true, trim: true },
-    course: { type: Schema.Types.Mixed, ref: 'Course' },
+    course: { type: Schema.Types.ObjectId, ref: 'Course' },
     status: { type: Boolean, default: true },
     subjects: [
       {

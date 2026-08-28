@@ -71,11 +71,11 @@ export interface IStudent {
 
   qualificationDetails?: Record<string, unknown>
 
-  course?: Schema.Types.ObjectId | string
-  branch?: Schema.Types.ObjectId | string
-  syllabus?: Schema.Types.ObjectId | string
-  prevUniSubjects?: Schema.Types.ObjectId | string
-  evaluation?: Schema.Types.ObjectId | string
+  course?: Schema.Types.ObjectId
+  branch?: Schema.Types.ObjectId
+  syllabus?: Schema.Types.ObjectId
+  prevUniSubjects?: Schema.Types.ObjectId
+  evaluation?: Schema.Types.ObjectId
 
   fee?: Schema.Types.Mixed
   invoices?: Array<Record<string, unknown>>
@@ -174,10 +174,10 @@ const StudentSchema = new Schema<IStudent>(
       affidavit: Schema.Types.Mixed,
     },
 
-    course: { type: Schema.Types.Mixed, ref: 'Course' },
-    branch: { type: Schema.Types.Mixed, ref: 'Branch' },
-    prevUniSubjects: { type: Schema.Types.Mixed, ref: 'PrevUniSubjects' },
-    evaluation: { type: Schema.Types.Mixed, ref: 'Evaluation' },
+    course: { type: Schema.Types.ObjectId, ref: 'Course' },
+    branch: { type: Schema.Types.ObjectId, ref: 'Branch' },
+    prevUniSubjects: { type: Schema.Types.ObjectId, ref: 'PrevUniSubjects' },
+    evaluation: { type: Schema.Types.ObjectId, ref: 'Evaluation' },
 
     fee: { type: Schema.Types.Mixed },
     invoices: [{ type: Schema.Types.Mixed }],

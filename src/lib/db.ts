@@ -1,7 +1,5 @@
 import mongoose from 'mongoose'
 
-const FALLBACK_URI = 'mongodb+srv://abhijithsd_db_user:xZkEpNyz2YNvVzZw@cluster0.xxtejas.mongodb.net/'
-
 interface MongooseCache {
   conn: typeof mongoose | null
   promise: Promise<typeof mongoose> | null
@@ -22,7 +20,10 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     return cached.conn
   }
 
-  const uri = process.env.MONGO_URI || FALLBACK_URI
+  const uri = process.env.MONGO_URI
+  if (!uri) {
+    throw new Error('MONGO_URI environment variable is not set.')
+  }
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri, {
