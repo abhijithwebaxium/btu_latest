@@ -7,9 +7,10 @@ import {
   ChevronRight, Phone, BadgeCheck, Clock, AlertCircle,
   BarChart3, Shield, TrendingUp, BookOpen, Sun, Moon,
   ArrowUpRight, Layers, Activity, LifeBuoy, ExternalLink,
+  ClipboardList, Folder, MessageSquare, Loader2,
 } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
-import SupportTicketView from './SupportTicketView'
+import SupportTicketView, { type Thread as SupportThread } from './SupportTicketView'
 
 export interface LoggedInStudent {
   _id: string
@@ -51,7 +52,7 @@ export interface LoggedInStudent {
   }
 }
 
-type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'profile' | 'support'
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'profile' | 'support'
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -127,10 +128,31 @@ function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
 export default function StudentDashboard({ student, onSignOut }: { student: LoggedInStudent; onSignOut: () => void }) {
   const [tab, setTab]         = useState<Tab>('overview')
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [theme, setTheme]     = useState<string>('dark')
+  const [theme, setTheme]     = useState<string>('light')
+  const [pendingThread, setPendingThread] = useState<SupportThread | null>(null)
+  const [chatLoading, setChatLoading]     = useState<string | null>(null) // holds subjectCode of loading card
+  const [announcements, setAnnouncements] = useState<Array<{
+    _id: string; title: string; message: string
+    priority: 'normal' | 'high' | 'urgent'; expiresAt: string
+    targetType: string
+  }>>([])
 
   useEffect(() => {
-    const saved = localStorage.getItem('university-theme') || 'dark'
+    const branch = student.academicDetails?.branch || ''
+    const params = new URLSearchParams({
+      studentId: student._id,
+      ...(student.enrollmentID  ? { enrollmentID:  student.enrollmentID  } : {}),
+      ...(student.applicationID ? { applicationID: student.applicationID } : {}),
+      ...(branch                ? { branch }                              : {}),
+    })
+    fetch(`/api/announcements?${params}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setAnnouncements(d.announcements) })
+      .catch(() => {})
+  }, [student._id, student.enrollmentID, student.applicationID, student.academicDetails?.branch])
+
+  useEffect(() => {
+    const saved = localStorage.getItem('university-theme') || 'light'
     setTheme(saved)
     document.documentElement.dataset.theme = saved
   }, [])
@@ -189,6 +211,18 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   const prevCr   = prevSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
   const evalCr   = evalSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
 
+  const ASSIGNMENT_DATES: Record<string, string> = {
+    'Dec-2024': '30th October 2024', 'June-2025': '30th April 2025',
+    'Dec-2025': '30th October 2025', 'June-2026': '30th April 2026',
+    'Dec-2026': '30th October 2026', 'June-2027': '30th April 2027',
+  }
+  const assignmentSubs = reappearSubs.filter(s => s.examStatus === 'A.E.B.T.U.C')
+  const projectSubs    = reappearSubs.filter(s => ['M.I.P.R.S', 'M.A.P.R.S.I', 'M.A.P.R.S.II', 'I.R.S'].includes(s.examStatus))
+  const projectTypeLabel: Record<string, string> = {
+    'M.I.P.R.S': 'Mini Project', 'M.A.P.R.S.I': 'Major Project I',
+    'M.A.P.R.S.II': 'Major Project II', 'I.R.S': 'Internship',
+  }
+
   /* Nav groups — mirrors staff structure */
   const navGroups = [
     {
@@ -198,9 +232,11 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
     {
       label: 'Academic Record',
       items: [
-        { id: 'evaluation'  as Tab, label: 'Evaluation', icon: Award,     badge: evalSubs.length || null },
-        { id: 'transcripts' as Tab, label: 'Assessment',  icon: FileText,  badge: prevSubs.length || null },
-        { id: 'classes'     as Tab, label: 'Classes',     icon: BookOpen,  badge: reappearSubs.length || null },
+        { id: 'evaluation'   as Tab, label: 'Evaluation',  icon: Award,         badge: evalSubs.length || null },
+        { id: 'transcripts'  as Tab, label: 'Assessment',  icon: FileText,      badge: prevSubs.length || null },
+        { id: 'classes'      as Tab, label: 'Classes',     icon: BookOpen,      badge: reappearSubs.length || null },
+        { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: assignmentSubs.length || null },
+        { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: projectSubs.length || null },
       ],
     },
     {
@@ -214,6 +250,33 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   ]
 
   function navigate(id: Tab) { setTab(id); setMobileOpen(false) }
+
+  async function openChat(cardKey: string, subject: string, body: string) {
+    setChatLoading(cardKey)
+    try {
+      const r = await fetch('/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'createThread',
+          studentId: student._id,
+          studentName: p.name || 'Student',
+          subject,
+          body,
+          category: 'academic',
+          priority: 'normal',
+        }),
+      })
+      const d = await r.json()
+      if (d.success) {
+        setPendingThread(d.thread)
+        setTab('support')
+        setMobileOpen(false)
+      }
+    } catch { /* silent */ } finally {
+      setChatLoading(null)
+    }
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-[#ed143d] selection:text-white antialiased">
@@ -408,6 +471,41 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </span>
                 </div>
               </div>
+
+              {/* Announcements */}
+              {announcements.length > 0 && (
+                <div className="space-y-3">
+                  {announcements.map(ann => {
+                    const urgentStyle  = 'bg-rose-500/10  border-rose-500/30  text-rose-300'
+                    const highStyle    = 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    const normalStyle  = 'bg-blue-500/10  border-blue-500/30  text-blue-300'
+                    const dotStyle     = ann.priority === 'urgent' ? 'bg-rose-400' : ann.priority === 'high' ? 'bg-amber-400' : 'bg-blue-400'
+                    const cardStyle    = ann.priority === 'urgent' ? urgentStyle  : ann.priority === 'high'  ? highStyle    : normalStyle
+                    const timeLeft = (() => {
+                      const diff = new Date(ann.expiresAt).getTime() - Date.now()
+                      if (diff <= 0) return ''
+                      const h = Math.floor(diff / 3_600_000)
+                      const d = Math.floor(h / 24)
+                      return d > 0 ? `${d}d left` : `${h}h left`
+                    })()
+                    return (
+                      <div key={ann._id} className={`flex items-start gap-3 rounded-2xl border px-5 py-4 ${cardStyle}`}>
+                        <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${dotStyle}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-white">{ann.title}</p>
+                            {ann.priority !== 'normal' && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">{ann.priority}</span>
+                            )}
+                          </div>
+                          <p className="text-xs mt-1 leading-5 opacity-80">{ann.message}</p>
+                        </div>
+                        {timeLeft && <span className="text-[10px] font-semibold opacity-50 shrink-0 mt-0.5">{timeLeft}</span>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
               {/* KPI cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -911,6 +1009,287 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             </motion.div>
           )}
 
+          {/* ══ ASSIGNMENTS ══ */}
+          {tab === 'assignments' && (
+            <motion.div
+              key="assignments"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white">Assignments</h2>
+                <p className="text-slate-400 text-sm">
+                  Theory subjects requiring reappear examination — grouped by semester.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Subjects', value: assignmentSubs.length,                                                    color: 'text-white' },
+                  { label: 'Total Credits',  value: assignmentSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0),         color: 'text-[#ed143d]' },
+                  { label: 'Semesters',      value: [...new Set(assignmentSubs.map(s => s.semester).filter(Boolean))].length,  color: 'text-blue-400' },
+                ].map(c => (
+                  <div key={c.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${c.color}`}>{c.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{c.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {assignmentSubs.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center">
+                  <ClipboardList className="w-10 h-10 mx-auto mb-3 text-slate-700" />
+                  <p className="text-sm text-slate-500">No assignment subjects found. Your evaluation may still be pending.</p>
+                </div>
+              ) : (
+                Object.entries(
+                  assignmentSubs.reduce<Record<number, typeof assignmentSubs>>((acc, s) => {
+                    const sem = s.semester ?? 0
+                    ;(acc[sem] = acc[sem] || []).push(s)
+                    return acc
+                  }, {})
+                )
+                  .sort(([a], [b]) => Number(a) - Number(b))
+                  .map(([sem, subs]) => (
+                    <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
+                            {Number(sem) || '?'}
+                          </span>
+                          <h3 className="text-sm font-bold text-white">
+                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
+                          </h3>
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          {subs.length} subject{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
+                        </span>
+                      </div>
+
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {subs.map((sub, i) => {
+                          const deadline = ASSIGNMENT_DATES[sub.examBatch] || ASSIGNMENT_DATES[sub.examSession] || null
+                          const cardKey = `a-${sub.subjectCode}-${i}`
+                          const isCreating = chatLoading === cardKey
+                          return (
+                            <div
+                              key={i}
+                              className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all flex flex-col"
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20">
+                                  {sub.subjectCode || 'N/A'}
+                                </span>
+                                {sub.credits && (
+                                  <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
+                                    {sub.credits} CR
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-sm font-semibold text-white leading-snug mb-3">
+                                {sub.subjectTitle || '—'}
+                              </p>
+
+                              <div className="space-y-1 flex-1">
+                                {sub.examBatch && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                    <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                    <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
+                                  </div>
+                                )}
+                                {deadline && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-amber-400 mt-1">
+                                    <Clock className="w-3 h-3 shrink-0" />
+                                    <span>Submit by: <span className="font-semibold">{deadline}</span></span>
+                                  </div>
+                                )}
+                                <div className="mt-1.5">
+                                  <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                    sub.equalized === 'improvement'
+                                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                      : sub.equalized === 're-submission'
+                                        ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                                        : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                  }`}>
+                                    {sub.equalized === 'improvement' ? 'Improvement' : sub.equalized === 're-submission' ? 'Re-submission' : 'Reappear'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => openChat(
+                                  cardKey,
+                                  `Assignment Query: ${sub.subjectTitle || sub.subjectCode || 'Subject'}`,
+                                  `I need assistance with my reappear assignment for:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}${deadline ? `\nSubmission Deadline: ${deadline}` : ''}\n\nPlease guide me on the next steps.`,
+                                )}
+                                disabled={isCreating}
+                                className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                {isCreating
+                                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</>
+                                  : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>
+                                }
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </motion.div>
+          )}
+
+          {/* ══ PROJECTS ══ */}
+          {tab === 'projects' && (
+            <motion.div
+              key="projects"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white">Projects</h2>
+                <p className="text-slate-400 text-sm">
+                  Project and internship subjects requiring reappear or re-submission — grouped by semester.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Projects', value: projectSubs.length,                                                    color: 'text-white' },
+                  { label: 'Total Credits',  value: projectSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0),         color: 'text-[#ed143d]' },
+                  { label: 'Semesters',      value: [...new Set(projectSubs.map(s => s.semester).filter(Boolean))].length,  color: 'text-blue-400' },
+                ].map(c => (
+                  <div key={c.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${c.color}`}>{c.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{c.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {projectSubs.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center">
+                  <Folder className="w-10 h-10 mx-auto mb-3 text-slate-700" />
+                  <p className="text-sm text-slate-500">No project subjects found. Your evaluation may still be pending.</p>
+                </div>
+              ) : (
+                Object.entries(
+                  projectSubs.reduce<Record<number, typeof projectSubs>>((acc, s) => {
+                    const sem = s.semester ?? 0
+                    ;(acc[sem] = acc[sem] || []).push(s)
+                    return acc
+                  }, {})
+                )
+                  .sort(([a], [b]) => Number(a) - Number(b))
+                  .map(([sem, subs]) => (
+                    <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
+                            {Number(sem) || '?'}
+                          </span>
+                          <h3 className="text-sm font-bold text-white">
+                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
+                          </h3>
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          {subs.length} project{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
+                        </span>
+                      </div>
+
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {subs.map((sub, i) => {
+                          const typeLabel = projectTypeLabel[sub.examStatus] || sub.examStatus
+                          const typeColor = sub.examStatus === 'I.R.S'
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            : sub.examStatus === 'M.I.P.R.S'
+                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          const cardKey = `p-${sub.subjectCode}-${i}`
+                          const isCreating = chatLoading === cardKey
+                          return (
+                            <div
+                              key={i}
+                              className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all flex flex-col"
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${typeColor}`}>
+                                  {typeLabel}
+                                </span>
+                                {sub.credits && (
+                                  <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
+                                    {sub.credits} CR
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-sm font-semibold text-white leading-snug mb-3">
+                                {sub.subjectTitle || '—'}
+                              </p>
+
+                              {sub.subjectCode && (
+                                <div className="mb-2">
+                                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                    {sub.subjectCode}
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="space-y-1 flex-1">
+                                {sub.examBatch && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                    <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                    <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
+                                  </div>
+                                )}
+                                {sub.examSession && (
+                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                    <Clock className="w-3 h-3 shrink-0 text-slate-600" />
+                                    <span className="truncate">{sub.examSession}</span>
+                                  </div>
+                                )}
+                                <div className="mt-1.5">
+                                  <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                    sub.equalized === 'improvement'
+                                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                      : sub.equalized === 're-submission'
+                                        ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                                        : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                  }`}>
+                                    {sub.equalized === 'improvement' ? 'Improvement' : sub.equalized === 're-submission' ? 'Re-submission' : 'Reappear'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => openChat(
+                                  cardKey,
+                                  `${typeLabel} Query: ${sub.subjectTitle || sub.subjectCode || 'Project'}`,
+                                  `I need assistance with my ${typeLabel.toLowerCase()} re-submission:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nType: ${typeLabel}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}\n\nPlease guide me on the next steps.`,
+                                )}
+                                disabled={isCreating}
+                                className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                {isCreating
+                                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</>
+                                  : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>
+                                }
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </motion.div>
+          )}
+
           {/* ══ SUPPORT ══ */}
           {tab === 'support' && (
             <motion.div
@@ -922,6 +1301,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               <SupportTicketView
                 studentId={student._id}
                 studentName={p.name || 'Student'}
+                initialThread={pendingThread}
               />
             </motion.div>
           )}

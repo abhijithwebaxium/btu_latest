@@ -3,6 +3,7 @@
     { "source": "/api/students/import", "destination": "/api/import.ts" },
     { "source": "/api/auth/student-login", "destination": "/api/login.ts" },
     { "source": "/api/auth/admin-login", "destination": "/api/admin-login.ts" },
-    { "source": "/api/students", "destination": "/api/students.ts" }
+    { "source": "/api/students", "destination": "/api/students.ts" },
+    { "source": "/api/announcements", "destination": "/api/announcements.ts" }
   ]
 }

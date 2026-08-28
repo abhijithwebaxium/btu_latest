@@ -4,7 +4,7 @@ import AdminNavbar from './AdminNavbar'
 import AdminSidebar, { type AdminSection } from './AdminSidebar'
 
 type AppTheme = 'dark' | 'light'
-type Props = { activeItem: 'students' | 'import'; children: ReactNode }
+type Props = { activeItem: 'students' | 'import' | 'announcements'; children: ReactNode }
 
 function getActiveTheme(): AppTheme {
   if (typeof document !== 'undefined') {
@@ -14,9 +14,9 @@ function getActiveTheme(): AppTheme {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('university-theme')
     if (saved === 'light' || saved === 'dark') return saved
-    if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light'
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
   }
-  return 'dark'
+  return 'light'
 }
 
 export default function AdminPageShell({ activeItem, children }: Props) {

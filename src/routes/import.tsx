@@ -132,9 +132,9 @@ function JsonImportPage() {
             <Sparkles className="w-4 h-4" />
             <span>BTU Data Synchronization Hub</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Import Student JSON (BTU)</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white">Import Evaluation (BTU)</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Upload student JSON records exported from BTU ERP to populate your MongoDB cluster.
+            Upload student evaluation JSON records exported from BTU ERP to populate your database.
           </p>
         </div>
 

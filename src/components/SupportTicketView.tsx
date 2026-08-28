@@ -5,7 +5,7 @@ import {
   AlertCircle, RefreshCw, MessageSquare, Loader2,
 } from 'lucide-react'
 
-interface Thread {
+export interface Thread {
   _id: string
   subject: string
   status: string
@@ -26,6 +26,7 @@ interface Message {
 interface Props {
   studentId: string
   studentName: string
+  initialThread?: Thread | null
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -62,7 +63,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-export default function SupportTicketView({ studentId, studentName }: Props) {
+export default function SupportTicketView({ studentId, studentName, initialThread }: Props) {
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -105,6 +106,7 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
   // Initial loads
   useEffect(() => { fetchThreads() }, [fetchThreads])
   useEffect(() => { if (activeThread) { prevMsgCount.current = 0; fetchMessages(activeThread._id) } }, [activeThread, fetchMessages])
+  useEffect(() => { if (initialThread) { setShowNewForm(false); setActiveThread(initialThread) } }, [initialThread])
 
   // Real-time polling
   useEffect(() => {

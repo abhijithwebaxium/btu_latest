@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import {
-  BarChart3, BookOpen, Briefcase, FileJson, Folder, GraduationCap,
+  BarChart3, Bell, BookOpen, Briefcase, FileJson, Folder, GraduationCap,
   LifeBuoy, LogOut, Users, Video, X,
 } from 'lucide-react'
 
-export type AdminSection = 'dashboard' | 'students' | 'import' | 'assignments' | 'classes' | 'internships' | 'projects' | 'tickets'
+export type AdminSection = 'dashboard' | 'students' | 'import' | 'assignments' | 'classes' | 'internships' | 'projects' | 'tickets' | 'announcements'
 
 type AdminSidebarProps = {
   activeItem: AdminSection
@@ -19,7 +19,7 @@ const groups = [
   { label: 'Overview', items: [{ id: 'dashboard' as const, label: 'Dashboard', icon: BarChart3 }] },
   { label: 'Academics', items: [
     { id: 'students' as const, label: 'Students', icon: Users },
-    { id: 'import' as const, label: 'Import JSON', icon: FileJson },
+    { id: 'import' as const, label: 'Import Evaluation', icon: FileJson },
     { id: 'assignments' as const, label: 'Assignments', icon: BookOpen },
     { id: 'classes' as const, label: 'Classes', icon: Video },
   ] },
@@ -27,7 +27,10 @@ const groups = [
     { id: 'internships' as const, label: 'Internships', icon: Briefcase },
     { id: 'projects' as const, label: 'Projects', icon: Folder },
   ] },
-  { label: 'Support', items: [{ id: 'tickets' as const, label: 'Support Tickets', icon: LifeBuoy }] },
+  { label: 'Support', items: [
+    { id: 'tickets'       as const, label: 'Support Tickets', icon: LifeBuoy },
+    { id: 'announcements' as const, label: 'Announcements',   icon: Bell     },
+  ] },
 ]
 
 export default function AdminSidebar({ activeItem, mobileOpen, onNavigate, onClose, onSignOut, badges = {} }: AdminSidebarProps) {

@@ -4,6 +4,8 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 export const Route = createFileRoute('/report')({
   beforeLoad: () => {
     if (typeof window === 'undefined') return
+    const isAdminPreview = new URLSearchParams(window.location.search).get('admin') === '1'
+    if (isAdminPreview && localStorage.getItem('admin-preview-student')) return
     const student = localStorage.getItem('current-student')
     if (!student) throw redirect({ to: '/login' })
   },
@@ -97,6 +99,8 @@ function convertToWord() {
 function CreditEvaluationReport() {
   const navigate = useNavigate()
   const [student, setStudent] = useState<Record<string, any> | null>(null)
+  const isAdminPreview = typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('admin') === '1'
 
   // Inject Bootstrap CSS + CDN scripts for this page only
   useEffect(() => {
@@ -125,10 +129,16 @@ function CreditEvaluationReport() {
   }, [])
 
   useEffect(() => {
-    const raw = localStorage.getItem('current-student')
-    if (!raw) { navigate({ to: '/login' }); return }
-    try { setStudent(JSON.parse(raw)) } catch { navigate({ to: '/login' }) }
-  }, [navigate])
+    if (isAdminPreview) {
+      const raw = localStorage.getItem('admin-preview-student')
+      if (!raw) { navigate({ to: '/students' }); return }
+      try { setStudent(JSON.parse(raw)) } catch { navigate({ to: '/students' }) }
+    } else {
+      const raw = localStorage.getItem('current-student')
+      if (!raw) { navigate({ to: '/login' }); return }
+      try { setStudent(JSON.parse(raw)) } catch { navigate({ to: '/login' }) }
+    }
+  }, [navigate, isAdminPreview])
 
   if (!student) {
     return (
@@ -186,8 +196,8 @@ function CreditEvaluationReport() {
 
       {/* Action buttons */}
       <div className="d-flex justify-content-end mb-4 mx-5 gap-3" style={{ paddingTop: '16px' }}>
-        <button onClick={() => navigate({ to: '/' })} className="btn btn-secondary">
-          ← Back
+        <button onClick={() => isAdminPreview ? window.close() : navigate({ to: '/' })} className="btn btn-secondary">
+          ← {isAdminPreview ? 'Close' : 'Back'}
         </button>
         <button onClick={printTable} className="btn btn-primary">
           Save as PDF

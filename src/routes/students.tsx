@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
-import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
+import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2, Award } from 'lucide-react'
 import AdminPageShell from '../components/AdminPageShell'
 
 export const Route = createFileRoute('/students')({
@@ -32,6 +32,7 @@ interface DbStudent {
     branch?: string
     academicSession?: string
   }
+  evaluation?: Record<string, unknown>
   createdAt?: string
 }
 
@@ -67,6 +68,11 @@ function StudentDirectoryPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  const openEvaluationReport = (student: DbStudent) => {
+    localStorage.setItem('admin-preview-student', JSON.stringify(student))
+    window.open('/report?admin=1', '_blank')
+  }
+
   return (
     <AdminPageShell activeItem="students">
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-950 text-slate-100">
@@ -96,7 +102,7 @@ function StudentDirectoryPage() {
             className="px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2 transition-all"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Import JSON</span>
+            <span>Import Evaluation</span>
           </button>
         </div>
       </div>
@@ -135,20 +141,21 @@ function StudentDirectoryPage() {
                 <th className="p-4 font-semibold">University</th>
                 <th className="p-4 font-semibold">Mode</th>
                 <th className="p-4 font-semibold">Verification</th>
+                <th className="p-4 font-semibold">Report</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {isLoading && students.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
+                  <td colSpan={7} className="p-8 text-center text-slate-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#ed143d]" />
                     <span>Loading BTU database records...</span>
                   </td>
                 </tr>
               ) : students.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
-                    No student records found in MongoDB for <strong className="text-slate-300">Bir Tikendrajit University (BTU)</strong>. Use the <strong className="text-slate-300">Import JSON</strong> button to add records.
+                  <td colSpan={7} className="p-8 text-center text-slate-500">
+                    No student records found in MongoDB for <strong className="text-slate-300">Bir Tikendrajit University (BTU)</strong>. Use the <strong className="text-slate-300">Import Evaluation</strong> button to add records.
                   </td>
                 </tr>
               ) : (
@@ -186,6 +193,15 @@ function StudentDirectoryPage() {
                         <CheckCircle2 className="w-3 h-3" />
                         {student.isProfileVerified ? 'Verified' : 'Pending'}
                       </span>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => openEvaluationReport(student)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ed143d]/10 border border-[#ed143d]/30 text-[#ed143d] text-xs font-semibold hover:bg-[#ed143d]/20 transition-colors"
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                        Evaluation Report
+                      </button>
                     </td>
                   </tr>
                 ))

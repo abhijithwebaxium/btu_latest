@@ -12,8 +12,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'POST') {
-      const { email, password } = req.body || {}
-      const result = await authenticateStudent(email || '', password || '')
+      const { phone, dob } = req.body || {}
+      const result = await authenticateStudent(phone || '', dob || '')
       return res.status(result.success ? 200 : 401).json(result)
     }
 

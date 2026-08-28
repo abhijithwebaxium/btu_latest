@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
+  Bell,
   BookOpen,
   Briefcase,
   Folder,
@@ -36,6 +37,7 @@ import StudentDashboard, { LoggedInStudent } from './StudentDashboard';
 import AdminNavbar from './AdminNavbar';
 import AdminSidebar, { type AdminSection } from './AdminSidebar';
 import AdminTicketDesk from './AdminTicketDesk';
+import AdminAnnouncementDesk from './AdminAnnouncementDesk';
 import NotificationCenter from './NotificationCenter';
 
 export interface Student {
@@ -210,11 +212,11 @@ const ModernCard: React.FC<ModernCardProps> = ({ title, value, change, icon: Ico
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState<string>('dark');
+  const [theme, setTheme] = useState<string>('light');
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window === 'undefined') return 'dashboard';
     const requestedTab = sessionStorage.getItem('admin-active-tab');
-    const validTabs = ['dashboard', 'assignments', 'classes', 'internships', 'projects', 'tickets'];
+    const validTabs = ['dashboard', 'assignments', 'classes', 'internships', 'projects', 'tickets', 'announcements'];
     return requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'dashboard';
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -234,7 +236,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('university-theme') || 'dark';
+      const savedTheme = localStorage.getItem('university-theme') || 'light';
       setTheme(savedTheme);
       document.documentElement.dataset.theme = savedTheme;
 
@@ -320,7 +322,8 @@ export default function Dashboard() {
     {
       label: 'Support',
       items: [
-        { id: 'tickets', label: 'Support Tickets', icon: LifeBuoy, badge: tickets.filter(t => t.status === 'Open').length },
+        { id: 'tickets',       label: 'Support Tickets', icon: LifeBuoy, badge: tickets.filter(t => t.status === 'Open').length },
+        { id: 'announcements', label: 'Announcements',   icon: Bell,     badge: null },
       ],
     },
   ];
@@ -1137,7 +1140,8 @@ export default function Dashboard() {
               </motion.div>
             )}
             </>}
-            {activeTab === 'tickets' && <AdminTicketDesk />}
+            {activeTab === 'tickets'       && <AdminTicketDesk />}
+            {activeTab === 'announcements' && <AdminAnnouncementDesk />}
 
           </div>
         </main>

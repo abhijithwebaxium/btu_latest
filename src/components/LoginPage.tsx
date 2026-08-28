@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowRight, BookOpenCheck, GraduationCap, LockKeyhole, Mail, Moon, ShieldCheck, Sparkles, Sun, UserCheck, AlertCircle, Phone } from 'lucide-react';
+import { ArrowRight, CalendarDays, GraduationCap, LockKeyhole, Mail, Moon, ShieldCheck, Sparkles, Sun, UserCheck, AlertCircle, Phone } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState<string>('dark');
+  const [theme, setTheme] = useState<string>('light');
   const [loginRole, setLoginRole] = useState<'staff' | 'student'>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('university-theme') || 'dark';
+      const savedTheme = localStorage.getItem('university-theme') || 'light';
       setTheme(savedTheme);
       document.documentElement.dataset.theme = savedTheme;
     }
@@ -65,7 +65,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/student-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, university: 'BTU' }),
+        body: JSON.stringify({ phone: email, dob: password, university: 'BTU' }),
       });
 
       const data = await res.json();
@@ -77,7 +77,7 @@ export default function LoginPage() {
         }
         navigate({ to: '/' });
       } else {
-        setErrorMsg(data.error || 'Invalid BTU student email or mobile number.');
+        setErrorMsg(data.error || 'Invalid BTU student phone number or date of birth.');
       }
     } catch (err) {
       setErrorMsg(`Connection error: ${(err as Error).message}`);
@@ -125,18 +125,6 @@ export default function LoginPage() {
             Dedicated university portal for academic evaluation, credit transfer mapping, student progress tracking, and campus administration.
           </p>
 
-          <div className="mt-10 grid max-w-lg grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-              <BookOpenCheck className="mb-3 h-5 w-5 text-[#ed143d]" />
-              <p className="text-sm font-bold text-white">Academic Evaluations</p>
-              <p className="mt-1 text-xs leading-5 text-slate-400">Equalized BTU subject & credit evaluation.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-              <ShieldCheck className="mb-3 h-5 w-5 text-[#ed143d]" />
-              <p className="text-sm font-bold text-white">BTU Student Records</p>
-              <p className="mt-1 text-xs leading-5 text-slate-400">MongoDB persisted ERP data integration.</p>
-            </div>
-          </div>
         </section>
 
         {/* Right Side Login Form */}
@@ -189,7 +177,7 @@ export default function LoginPage() {
               </h2>
               <p className="mt-1 text-xs text-slate-400">
                 {loginRole === 'student'
-                  ? 'Enter your registered student email address and mobile number.'
+                  ? 'Enter your registered mobile number and date of birth.'
                   : 'Access the Bir Tikendrajit University staff dashboard.'}
               </p>
             </div>
@@ -204,18 +192,21 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label htmlFor="login-email" className="block text-xs font-semibold text-slate-300">
-                  {loginRole === 'student' ? 'BTU Student Email' : 'Staff Email Address'}
+                  {loginRole === 'student' ? 'Mobile / WhatsApp Number' : 'Staff Email Address'}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                  {loginRole === 'student'
+                    ? <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                    : <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                  }
                   <input
                     id="login-email"
                     name="email"
-                    type="text"
+                    type={loginRole === 'student' ? 'tel' : 'email'}
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={loginRole === 'student' ? 'e.g. student@btu.ac.in' : 'staff@btu.ac.in'}
+                    placeholder={loginRole === 'student' ? 'e.g. 9876543210' : 'staff@btu.ac.in'}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
                   />
                 </div>
@@ -224,7 +215,7 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label htmlFor="login-password" className="text-xs font-semibold text-slate-300">
-                    {loginRole === 'student' ? 'Mobile / WhatsApp Number' : 'Password'}
+                    {loginRole === 'student' ? 'Date of Birth' : 'Password'}
                   </label>
                   {loginRole === 'staff' && (
                     <button type="button" className="text-xs font-medium text-[#ed143d] hover:underline cursor-pointer">Forgot password?</button>
@@ -232,7 +223,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative">
                   {loginRole === 'student'
-                    ? <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
+                    ? <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
                     : <LockKeyhole className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-slate-500" />
                   }
                   <input
@@ -242,7 +233,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={loginRole === 'student' ? 'e.g. 9876543210' : '••••••••'}
+                    placeholder={loginRole === 'student' ? 'e.g. 18092002 (DDMMYYYY)' : '••••••••'}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
                   />
                 </div>

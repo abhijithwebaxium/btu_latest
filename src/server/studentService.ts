@@ -6,59 +6,80 @@ import { Evaluation } from '../models/Evaluation.js'
 import { PrevUniSubjects } from '../models/PrevUniSubjects.js'
 import { parseAndValidateStudentJson } from '../lib/studentParser.js'
 
-export async function authenticateStudent(email: string, phoneInput: string) {
+export async function authenticateStudent(phone: string, dob: string) {
   await connectToDatabase()
 
-  const cleanEmail = email.trim().toLowerCase()
-  const cleanPhone = phoneInput.trim().replace(/\D/g, '')
+  const cleanPhone = phone.trim().replace(/\D/g, '')
+  const cleanDob = dob.trim()
 
-  if (!cleanEmail || !cleanPhone) {
-    return { success: false, error: 'Please enter both student email and mobile number.' }
-  }
-
-  const student = await Student.findOne({
-    'personalDetails.email': cleanEmail,
-  })
-    .populate('course')
-    .populate('branch')
-    .populate('evaluation')
-    .populate('prevUniSubjects')
-    .lean()
-
-  if (!student) {
-    return {
-      success: false,
-      error: `No student record found with email '${cleanEmail}' in Bir Tikendrajit University (BTU) database.`,
-    }
+  if (!cleanPhone || !cleanDob) {
+    return { success: false, error: 'Please enter your phone number and date of birth.' }
   }
 
   if (cleanPhone.length < 10) {
     return { success: false, error: 'Please enter your full mobile number (at least 10 digits).' }
   }
 
-  const personal = student.personalDetails || {}
-  const mob = String(personal.mobileNumber || '').replace(/\D/g, '')
-  const wa = String(personal.whatsAppNumber || '').replace(/\D/g, '')
-  const alt = String(personal.alternateContact || '').replace(/\D/g, '')
-  const fMob = String(personal.fatherContactNumber || '').replace(/\D/g, '')
-
-  // Normalise to last 10 digits to handle country code prefix variations,
-  // but require input to be at least 10 digits to prevent partial guessing.
   const tail = (n: string) => n.slice(-10)
   const inputTail = tail(cleanPhone)
-  const isPhoneMatch =
-    (mob.length >= 10 && tail(mob) === inputTail) ||
-    (wa.length >= 10 && tail(wa) === inputTail) ||
-    (alt.length >= 10 && tail(alt) === inputTail) ||
-    (fMob.length >= 10 && tail(fMob) === inputTail)
 
-  if (!isPhoneMatch) {
-    return { success: false, error: 'Incorrect phone number for this student account.' }
+  const students = await Student.find({})
+    .populate('course')
+    .populate('branch')
+    .populate('evaluation')
+    .populate('prevUniSubjects')
+    .lean()
+
+  const matched = students.find(s => {
+    const p = ((s as Record<string, unknown>).personalDetails || {}) as Record<string, unknown>
+    const mob  = String(p.mobileNumber       || '').replace(/\D/g, '')
+    const wa   = String(p.whatsAppNumber     || '').replace(/\D/g, '')
+    const alt  = String(p.alternateContact   || '').replace(/\D/g, '')
+    const fMob = String(p.fatherContactNumber || '').replace(/\D/g, '')
+    return (
+      (mob.length  >= 10 && tail(mob)  === inputTail) ||
+      (wa.length   >= 10 && tail(wa)   === inputTail) ||
+      (alt.length  >= 10 && tail(alt)  === inputTail) ||
+      (fMob.length >= 10 && tail(fMob) === inputTail)
+    )
+  })
+
+  if (!matched) {
+    return { success: false, error: 'No student record found with this phone number in BTU database.' }
+  }
+
+  const p = ((matched as Record<string, unknown>).personalDetails || {}) as Record<string, unknown>
+  const storedDob = String(p.dateOfBirth || p.dob || p.DOB || '').trim()
+
+  if (!storedDob) {
+    return { success: false, error: 'Date of birth not on record for this student account.' }
+  }
+
+  // Normalise stored DOB → DDMMYYYY digits.
+  // Handles ISO strings like "2002-09-18T00:00:00.000Z" as well as plain DD/MM/YYYY or DDMMYYYY.
+  const toDDMMYYYY = (raw: string): string => {
+    if (raw.includes('T') || (raw.includes('-') && raw.length > 10)) {
+      const d = new Date(raw)
+      if (!isNaN(d.getTime())) {
+        const dd = String(d.getUTCDate()).padStart(2, '0')
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+        const yyyy = String(d.getUTCFullYear())
+        return `${dd}${mm}${yyyy}`
+      }
+    }
+    return raw.replace(/\D/g, '')
+  }
+
+  const storedDigits = toDDMMYYYY(storedDob)
+  const inputDigits  = cleanDob.replace(/\D/g, '')
+
+  if (!storedDigits || storedDigits !== inputDigits) {
+    return { success: false, error: 'Incorrect date of birth for this student account.' }
   }
 
   return {
     success: true,
-    student: JSON.parse(JSON.stringify(student)),
+    student: JSON.parse(JSON.stringify(matched)),
   }
 }
 

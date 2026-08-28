@@ -23,6 +23,7 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
 
         try {
           const { importStudentsToDatabase, fetchStudentsFromDatabase, clearAllStudentsFromDatabase, authenticateStudent, updateEvaluationSubjects } = await import('./src/server/studentService.js')
+          const { createAnnouncement, getAllAnnouncements, getActiveAnnouncementsForStudent, deleteAnnouncement } = await import('./src/server/announcementService.js')
 
           if (req.method === 'POST' && pathname === '/api/auth/student-login') {
             let body = ''
@@ -30,7 +31,7 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
             req.on('end', async () => {
               try {
                 const parsed = JSON.parse(body)
-                const result = await authenticateStudent(parsed.email, parsed.password)
+                const result = await authenticateStudent(parsed.phone, parsed.dob)
                 res.statusCode = result.success ? 200 : 401
                 res.end(JSON.stringify(result))
               } catch (err) {
@@ -137,6 +138,42 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
             res.statusCode = result.success ? 200 : 500
             res.end(JSON.stringify(result))
             return
+          }
+
+          // ── Announcements ─────────────────────────────────────────────────
+          if (pathname === '/api/announcements') {
+            const isAdmin = req.headers['x-admin-key'] === env.ADMIN_PASSWORD
+            if (req.method === 'GET') {
+              const mode = urlObj.searchParams.get('mode')
+              if (mode === 'admin') {
+                if (!isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }
+                res.end(JSON.stringify(await getAllAnnouncements())); return
+              }
+              const result = await getActiveAnnouncementsForStudent({
+                studentId:     urlObj.searchParams.get('studentId')     || '',
+                enrollmentID:  urlObj.searchParams.get('enrollmentID')  || undefined,
+                applicationID: urlObj.searchParams.get('applicationID') || undefined,
+                branch:        urlObj.searchParams.get('branch')        || undefined,
+              })
+              res.end(JSON.stringify(result)); return
+            }
+            if (req.method === 'POST') {
+              if (!isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }
+              let body = ''
+              req.on('data', chunk => { body += chunk })
+              req.on('end', async () => {
+                try {
+                  const result = await createAnnouncement(JSON.parse(body))
+                  res.statusCode = 201; res.end(JSON.stringify(result))
+                } catch (err) { res.statusCode = 500; res.end(JSON.stringify({ success: false, error: (err as Error).message })) }
+              }); return
+            }
+            if (req.method === 'DELETE') {
+              if (!isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }
+              const id = urlObj.searchParams.get('id') || ''
+              if (!id) { res.statusCode = 400; res.end(JSON.stringify({ success: false, error: 'id required' })); return }
+              res.end(JSON.stringify(await deleteAnnouncement(id))); return
+            }
           }
 
           // ── Notifications ──────────────────────────────────────────────────
