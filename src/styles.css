@@ -284,6 +284,61 @@
   background-color: #fff !important;
 }
 
+:root[data-theme="light"] .notification-center .notification-panel {
+  background-color: #fff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: 0 28px 70px -24px rgb(15 23 42 / 0.3);
+}
+
+:root[data-theme="light"] .notification-center .notification-banner [class~="text-white"] {
+  color: #fff !important;
+}
+
+:root[data-theme="light"] .notification-center .notification-banner [class~="text-white/70"] {
+  color: rgb(255 255 255 / 0.72) !important;
+}
+
+:root[data-theme="light"] .notification-center .notification-banner [class~="text-white/75"] {
+  color: rgb(255 255 255 / 0.78) !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="bg-slate-900/40"] {
+  background-color: #f8fafc !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="bg-slate-900/50"] {
+  background-color: #fff !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="bg-slate-950/30"] {
+  background-color: #f8fafc !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="bg-[#ed143d]/5"] {
+  background-color: #fff1f2 !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="text-slate-600"] {
+  color: #64748b !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="text-slate-700"] {
+  color: #94a3b8 !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="hover:bg-slate-800"]:hover {
+  background-color: #f1f5f9 !important;
+}
+
+:root[data-theme="light"] .notification-center .notification-item:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+:root[data-theme="light"] .notification-center [class~="hover:text-white"]:hover {
+  color: #0f172a !important;
+}
+
 html {
   background: #020617;
 }
@@ -386,4 +441,31 @@ button {
 * {
   scrollbar-width: thin;
   scrollbar-color: #334155 #0f172a;
+}
+
+:root[data-theme="light"] * {
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+aside::-webkit-scrollbar {
+  width: 7px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background: #334155;
+  border: 2px solid #0f172a;
+  border-radius: 999px;
+}
+
+:root[data-theme="light"] aside::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+:root[data-theme="light"] aside::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-color: #f8fafc;
 }
