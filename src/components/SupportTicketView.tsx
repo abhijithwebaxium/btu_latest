@@ -313,7 +313,7 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
         <div className="lg:col-span-1 space-y-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Your Tickets</span>
-            <button onClick={fetchThreads} className="p-1 text-slate-600 hover:text-white rounded transition-colors">
+            <button onClick={() => fetchThreads()} className="p-1 text-slate-600 hover:text-white rounded transition-colors">
               <RefreshCw className={`w-3.5 h-3.5 ${loadingThreads ? 'animate-spin' : ''}`} />
             </button>
           </div>
