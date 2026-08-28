@@ -8,8 +8,6 @@ import {
   Folder,
   Video,
   LifeBuoy,
-  Search,
-  Bell,
   FileJson,
   Plus,
   ChevronRight,
@@ -25,10 +23,7 @@ import {
   Activity,
   UserPlus,
   Code2,
-  Sun,
-  Moon,
   LogOut,
-  Menu,
 } from 'lucide-react';
 import { 
   Tooltip, 
@@ -38,6 +33,8 @@ import {
   Cell 
 } from 'recharts';
 import StudentDashboard, { LoggedInStudent } from './StudentDashboard';
+import AdminNavbar from './AdminNavbar';
+import AdminSidebar, { type AdminSection } from './AdminSidebar';
 
 export interface Student {
   id: string;
@@ -212,7 +209,12 @@ const ModernCard: React.FC<ModernCardProps> = ({ title, value, change, icon: Ico
 export default function Dashboard() {
   const navigate = useNavigate();
   const [theme, setTheme] = useState<string>('dark');
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'dashboard';
+    const requestedTab = sessionStorage.getItem('admin-active-tab');
+    const validTabs = ['dashboard', 'assignments', 'classes', 'internships', 'projects', 'tickets'];
+    return requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'dashboard';
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
@@ -331,6 +333,23 @@ export default function Dashboard() {
     showToast(`Class status updated!`);
   };
 
+  const handleAdminNavigation = (id: AdminSection) => {
+    setMobileNavOpen(false);
+    if (id === 'students') navigate({ to: '/students' });
+    else if (id === 'import') navigate({ to: '/import' });
+    else {
+      sessionStorage.setItem('admin-active-tab', id);
+      setActiveTab(id);
+    }
+  };
+
+  const handleAdminSignOut = () => {
+    localStorage.removeItem('staff-session');
+    localStorage.removeItem('current-student');
+    sessionStorage.removeItem('admin-key');
+    navigate({ to: '/login' });
+  };
+
   const handleAddSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -398,7 +417,24 @@ export default function Dashboard() {
 
       <div className="min-h-full">
 
-        {mobileNavOpen && (
+        <AdminSidebar
+          activeItem={activeTab as AdminSection}
+          mobileOpen={mobileNavOpen}
+          onNavigate={handleAdminNavigation}
+          onClose={() => setMobileNavOpen(false)}
+          onSignOut={handleAdminSignOut}
+          badges={{
+            students: 'MongoDB',
+            import: 'BTU ERP',
+            assignments: assignments.length,
+            classes: 'Live',
+            internships: internships.length,
+            projects: projects.length,
+            tickets: tickets.filter(ticket => ticket.status === 'Open').length,
+          }}
+        />
+
+        {false && <>{mobileNavOpen && (
           <div
             className="fixed inset-0 z-30 bg-slate-950/70 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileNavOpen(false)}
@@ -439,6 +475,7 @@ export default function Dashboard() {
                             } else if (item.id === 'students') {
                               navigate({ to: '/students' })
                             } else {
+                              sessionStorage.setItem('admin-active-tab', item.id)
                               setActiveTab(item.id)
                             }
                           }}
@@ -506,60 +543,18 @@ export default function Dashboard() {
               <LogOut className="h-4 w-4" />
             </button>
           </div>
-        </aside>
+        </aside></>}
 
         <main className="h-screen overflow-y-auto bg-slate-950 lg:ml-[260px]">
           
-          <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-4 flex-1 max-w-md">
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(prev => !prev)}
-                aria-label="Toggle navigation"
-                className="lg:hidden shrink-0 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <div className="relative w-full">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search students, courses, tickets, assignments..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#ed143d] focus:ring-1 focus:ring-[#ed143d] transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
-              >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
-              <button 
-                onClick={() => {
-                  setModalType('ticket');
-                  setIsModalOpen(true);
-                }}
-                className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 transition-all hover:scale-105 active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>New Ticket</span>
-              </button>
-
-              <button className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ed143d] ring-2 ring-slate-950"></span>
-              </button>
-            </div>
-          </header>
+          <AdminNavbar
+            theme={theme}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onToggleNavigation={() => setMobileNavOpen(prev => !prev)}
+            onToggleTheme={toggleTheme}
+            onNewTicket={() => { setModalType('ticket'); setIsModalOpen(true) }}
+          />
 
           <div className="p-6 md:p-8 space-y-8 w-full">
 
@@ -1062,60 +1057,81 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'tickets' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Campus Support Helpdesk</h2>
-                    <p className="text-slate-400 text-sm">Academic, infrastructure, and technical issue tickets.</p>
+              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-[1500px] space-y-7">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="max-w-2xl">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#ed143d]"><LifeBuoy className="h-4 w-4" />Support Center</div>
+                    <h2 className="text-3xl font-extrabold tracking-tight text-white">Campus Support Helpdesk</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">Track and resolve academic, infrastructure, administration, and technical requests.</p>
                   </div>
                   <button 
                     onClick={() => { setModalType('ticket'); setIsModalOpen(true); }}
-                    className="px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#ed143d] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#ed143d]/30 transition-all hover:-translate-y-0.5 hover:bg-rose-700"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Submit Ticket</span>
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  {[
+                    { label: 'Open Tickets', value: tickets.filter(ticket => ticket.status === 'Open').length, icon: LifeBuoy, color: 'text-[#ed143d]', bg: 'bg-[#ed143d]/10' },
+                    { label: 'In Progress', value: tickets.filter(ticket => ticket.status === 'In Progress').length, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                    { label: 'Urgent', value: tickets.filter(ticket => ticket.priority === 'Urgent' && ticket.status !== 'Resolved').length, icon: Activity, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                    { label: 'Resolved', value: tickets.filter(ticket => ticket.status === 'Resolved').length, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                  ].map(({ label, value, icon: Icon, color, bg }) => (
+                    <div key={label} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl sm:p-5">
+                      <div className="flex items-center justify-between"><div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}><Icon className={`h-5 w-5 ${color}`} /></div><span className={`text-3xl font-extrabold ${color}`}>{value}</span></div>
+                      <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="support-ticket-table overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 sm:px-6">
+                    <div><h3 className="font-bold text-white">All Support Requests</h3><p className="mt-0.5 text-xs text-slate-500">{filteredTickets.length} ticket{filteredTickets.length === 1 ? '' : 's'} in the current view</p></div>
+                    <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">Newest first</span>
+                  </div>
+                  <div className="divide-y divide-slate-800/60">
                   {filteredTickets.map((tck) => (
-                    <div key={tck.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-3 rounded-xl bg-slate-800 text-[#ed143d]">
-                          <LifeBuoy className="w-5 h-5" />
+                    <div key={tck.id} className="support-ticket-row group grid gap-5 p-5 transition-colors hover:bg-slate-800/30 sm:p-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${tck.status === 'Resolved' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : tck.priority === 'Urgent' ? 'border-rose-500/20 bg-rose-500/10 text-rose-400' : 'border-slate-700 bg-slate-800 text-[#ed143d]'}`}>
+                        {tck.status === 'Resolved' ? <CheckCircle2 className="h-5 w-5" /> : <LifeBuoy className="h-5 w-5" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-[#ed143d]">{tck.id}</span>
+                          <span className="rounded-md border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-400">{tck.category}</span>
+                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${tck.status === 'Resolved' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : tck.status === 'In Progress' ? 'border-blue-500/20 bg-blue-500/10 text-blue-400' : 'border-amber-500/20 bg-amber-500/10 text-amber-400'}`}>{tck.status}</span>
                         </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-mono font-bold text-[#ed143d]">{tck.id}</span>
-                            <span className="text-xs text-slate-500">• {tck.category}</span>
-                          </div>
-                          <h3 className="text-base font-bold text-white mt-1">{tck.subject}</h3>
-                          <p className="text-xs text-slate-400 mt-0.5">Submitted by {tck.user} • {tck.time}</p>
-                        </div>
+                        <h3 className="break-words text-base font-bold leading-6 text-white">{tck.subject}</h3>
+                        <p className="mt-1.5 text-xs text-slate-400">Submitted by <span className="font-semibold text-slate-300">{tck.user}</span> <span className="mx-1 text-slate-600">•</span> {tck.time}</p>
                       </div>
 
-                      <div className="flex items-center space-x-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                          tck.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-slate-800 text-slate-300'
+                      <div className="flex items-center justify-between gap-3 lg:justify-end">
+                        <span className={`rounded-full border px-3 py-1 text-xs font-bold ${
+                          tck.priority === 'Urgent' ? 'border-rose-500/30 bg-rose-500/10 text-rose-400' : tck.priority === 'High' ? 'border-amber-500/20 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800 text-slate-300'
                         }`}>
-                          {tck.priority}
+                          {tck.priority} Priority
                         </span>
 
                         {tck.status !== 'Resolved' ? (
                           <button
                             onClick={() => handleResolveTicket(tck.id)}
-                            className="px-3.5 py-1.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-[#ed143d]/30 transition-all"
+                            className="rounded-xl bg-[#ed143d] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-[#ed143d]/20 transition-all hover:bg-rose-700"
                           >
                             Mark Resolved
                           </button>
                         ) : (
-                          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold">
-                            Resolved
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Resolved
                           </span>
                         )}
                       </div>
                     </div>
                   ))}
+                  {filteredTickets.length === 0 && <div className="px-6 py-16 text-center"><LifeBuoy className="mx-auto mb-3 h-9 w-9 text-slate-700" /><p className="font-semibold text-slate-400">No support tickets found</p><p className="mt-1 text-xs text-slate-600">Try a different search or submit a new request.</p></div>}
+                  </div>
                 </div>
               </motion.div>
             )}

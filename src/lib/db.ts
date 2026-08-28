@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import dns from 'node:dns'
 
 interface MongooseCache {
   conn: typeof mongoose | null
@@ -13,6 +14,17 @@ declare global {
 const cached: MongooseCache = globalThis.mongooseCache || { conn: null, promise: null }
 if (!globalThis.mongooseCache) {
   globalThis.mongooseCache = cached
+}
+
+// `mongodb+srv` requires Node's DNS resolver to query SRV records. Some local
+// Windows setups expose only a loopback DNS address even when no resolver is
+// listening there, which makes Mongoose fail with `querySrv ECONNREFUSED`.
+const configuredDnsServers = dns.getServers()
+if (
+  configuredDnsServers.length === 0 ||
+  configuredDnsServers.every(server => server === '127.0.0.1' || server === '::1')
+) {
+  dns.setServers(['1.1.1.1', '8.8.8.8'])
 }
 
 export async function connectToDatabase(): Promise<typeof mongoose> {

@@ -96,13 +96,13 @@ function KpiCard({ title, value, sub, icon: Icon, change }: {
 /* ── Profile field with icon ── */
 function ProfileField({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-3 px-5 py-3.5 border-b border-slate-800/50 last:border-0">
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-800">
-        <Icon className="w-3.5 h-3.5 text-slate-500" />
+    <div className="profile-field group rounded-xl border border-slate-800/80 bg-slate-950/35 p-4 transition-colors hover:border-slate-700 hover:bg-slate-950/55">
+      <div className="mb-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#ed143d]/15 bg-[#ed143d]/10">
+        <Icon className="h-4 w-4 text-[#ed143d]" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none mb-0.5">{label}</p>
-        <p className="text-sm font-semibold text-slate-200 truncate">{value || <span className="text-slate-600 font-normal">—</span>}</p>
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+        <p className="break-words text-sm font-semibold leading-5 text-slate-200">{value || <span className="text-slate-600 font-normal">—</span>}</p>
       </div>
     </div>
   )
@@ -111,8 +111,8 @@ function ProfileField({ icon: Icon, label, value }: { icon: React.ElementType; l
 /* ── Info row (compact key-value) ── */
 function InfoRow({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-6 py-2.5 border-b border-slate-800/50 last:border-0">
-      <span className="text-[11px] text-slate-500 shrink-0">{label}</span>
+    <div className="flex items-start justify-between gap-5 border-b border-slate-800/60 py-3.5 last:border-0">
+      <span className="shrink-0 text-xs text-slate-500">{label}</span>
       <span className="text-[11px] font-semibold text-slate-200 text-right">{value || <span className="text-slate-600">—</span>}</span>
     </div>
   )
@@ -375,14 +375,12 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Student overview card */}
-                <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
-                  <div className="flex flex-col gap-3 border-b border-slate-800 p-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-white flex items-center space-x-2">
-                        <BookOpen className="w-5 h-5 text-[#ed143d]" />
-                        <span>Academic Profile</span>
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-400">Current academic standing and university mapping details</p>
+                <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl lg:col-span-2">
+                  <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#ed143d]/5 blur-3xl" />
+                  <div className="relative flex flex-col gap-3 border-b border-slate-800 p-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#ed143d]/20 bg-[#ed143d]/10"><BookOpen className="h-5 w-5 text-[#ed143d]" /></div>
+                      <div><h3 className="text-lg font-bold text-white">Academic Profile</h3><p className="mt-0.5 text-xs text-slate-400">Current academic standing and university mapping details</p></div>
                     </div>
                     <div className="flex items-center gap-2">
                       {student.isProfileVerified && (
@@ -393,33 +391,25 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[480px] border-collapse text-left">
-                      <tbody className="divide-y divide-slate-800/60">
+                  <div className="relative grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
                         {[
-                          { label: 'Enrollment ID', value: <span className="font-mono text-[#ed143d] font-bold">{sid}</span> },
-                          { label: 'Programme',     value: program },
-                          { label: 'Branch',        value: branch || '—' },
-                          { label: 'Parent University', value: a.parentUniversity || '—' },
-                          { label: 'Academic Session',  value: a.academicSession || '—' },
-                          { label: 'Admission Batch',   value: student.admissionBatch || '—' },
-                          { label: 'Study Mode',        value: <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span> },
-                          { label: 'Profile Status',    value: student.isProfileVerified
+                          { label: 'Enrollment ID', icon: User, value: <span className="font-mono text-[#ed143d] font-bold">{sid}</span> },
+                          { label: 'Programme', icon: GraduationCap, value: program },
+                          { label: 'Branch', icon: Layers, value: branch || '—' },
+                          { label: 'Parent University', icon: Building2, value: a.parentUniversity || '—' },
+                          { label: 'Academic Session', icon: Calendar, value: a.academicSession || '—' },
+                          { label: 'Admission Batch', icon: Calendar, value: student.admissionBatch || '—' },
+                          { label: 'Study Mode', icon: FileText, value: <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span> },
+                          { label: 'Profile Status', icon: Shield, value: student.isProfileVerified
                               ? <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold"><CheckCircle2 className="w-3.5 h-3.5" />Verified</span>
                               : <span className="inline-flex items-center gap-1 text-amber-400 font-semibold"><Clock className="w-3.5 h-3.5" />Pending</span>
                           },
-                        ].map((row, i) => (
-                          <tr key={i} className="group transition-colors hover:bg-slate-800/40">
-                            <td className="px-6 py-3.5">
-                              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{row.label}</span>
-                            </td>
-                            <td className="px-6 py-3.5">
-                              <span className="text-sm font-medium text-slate-200">{row.value}</span>
-                            </td>
-                          </tr>
+                        ].map(({ label, icon: Icon, value }) => (
+                          <div key={label} className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-800/80 bg-slate-950/50 p-4 transition-all hover:-translate-y-0.5 hover:border-slate-700 hover:shadow-lg">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-500 transition-colors group-hover:bg-[#ed143d]/10 group-hover:text-[#ed143d]"><Icon className="h-4 w-4" /></div>
+                            <div className="min-w-0"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p><div className="break-words text-sm font-semibold leading-5 text-slate-200">{value}</div></div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
 
@@ -492,21 +482,24 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               </div>
 
               {/* Stats strip */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {[
-                  { label: 'Total Subjects', value: evalSubs.length,                               color: 'text-white' },
-                  { label: 'Total Credits',  value: evalCr,                                        color: 'text-emerald-400' },
-                  { label: 'Approval Stage', value: `Stage ${ev.approvalStage ?? 0}`,              color: 'text-amber-400' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
-                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
-                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{s.label}</p>
+                  { label: 'Total Subjects', value: evalSubs.length, icon: BookOpen, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Subjects evaluated' },
+                  { label: 'Total Credits', value: evalCr, icon: Award, color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits mapped at BTU' },
+                  { label: 'Approval Stage', value: `Stage ${ev.approvalStage ?? 0}`, icon: Shield, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Current review progress' },
+                ].map(({ label, value, icon: Icon, color, glow, note }) => (
+                  <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
+                    <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${glow} opacity-[0.08] blur-2xl group-hover:opacity-[0.14]`} />
+                    <div className="relative mb-3 flex items-start justify-between"><div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-800/80"><Icon className={`h-4 w-4 ${color}`} /></div><ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400" /></div>
+                    <p className={`relative text-2xl font-extrabold tracking-tight ${color}`}>{value}</p>
+                    <p className="relative mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
+                    <p className="relative mt-1 text-[10px] text-slate-600">{note}</p>
                   </div>
                 ))}
               </div>
 
               {/* Table */}
-              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+              <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-slate-800 p-6">
                   <h3 className="text-base font-bold text-white flex items-center space-x-2">
                     <Award className="w-5 h-5 text-[#ed143d]" />
@@ -612,20 +605,23 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {[
-                  { label: 'Total Subjects', value: prevSubs.length,                                                                  color: 'text-white' },
-                  { label: 'Total Credits',  value: prevCr,                                                                           color: 'text-amber-400' },
-                  { label: 'Semesters',      value: a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Sem` : '—', color: 'text-blue-400' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
-                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
-                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{s.label}</p>
+                  { label: 'Total Subjects', value: prevSubs.length, icon: FileText, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Submitted for transfer' },
+                  { label: 'Total Credits', value: prevCr, icon: Award, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Credits submitted' },
+                  { label: 'Semesters', value: a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Sem` : '—', icon: Layers, color: 'text-blue-400', glow: 'bg-blue-500', note: 'At parent university' },
+                ].map(({ label, value, icon: Icon, color, glow, note }) => (
+                  <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
+                    <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${glow} opacity-[0.08] blur-2xl group-hover:opacity-[0.14]`} />
+                    <div className="relative mb-3 flex items-start justify-between"><div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-800/80"><Icon className={`h-4 w-4 ${color}`} /></div><ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400" /></div>
+                    <p className={`relative text-2xl font-extrabold tracking-tight ${color}`}>{value}</p>
+                    <p className="relative mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
+                    <p className="relative mt-1 text-[10px] text-slate-600">{note}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+              <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-slate-800 p-6">
                   <h3 className="text-base font-bold text-white flex items-center space-x-2">
                     <FileText className="w-5 h-5 text-[#ed143d]" />
@@ -684,20 +680,21 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-6"
+              className="student-profile mx-auto max-w-[1500px] space-y-7"
             >
               {/* ── Hero banner ── */}
-              <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+              <div className="profile-hero relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/30 shadow-2xl shadow-black/20">
                 {/* Background glows */}
                 <div className="pointer-events-none absolute -right-24 -top-24 w-80 h-80 rounded-full bg-[#ed143d]/10 blur-3xl" />
                 <div className="pointer-events-none absolute -left-12 bottom-0 w-52 h-52 rounded-full bg-rose-900/10 blur-3xl" />
 
-                <div className="relative p-6 sm:p-8">
-                  <div className="flex flex-col sm:flex-row sm:items-end gap-6">
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#ed143d] via-rose-400 to-transparent" />
+                <div className="relative p-6 sm:p-8 lg:p-10">
+                  <div className="flex flex-col gap-7 sm:flex-row sm:items-center">
                     {/* Avatar */}
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 rounded-3xl bg-[#ed143d]/40 blur-xl scale-110 pointer-events-none" />
-                      <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#ed143d] to-rose-700 text-white font-black text-4xl flex items-center justify-center shadow-2xl shadow-[#ed143d]/30 select-none">
+                      <div className="relative flex h-28 w-28 select-none items-center justify-center rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#ed143d] to-rose-800 text-4xl font-black text-white shadow-2xl shadow-[#ed143d]/30">
                         {initials}
                       </div>
                       {student.isProfileVerified && (
@@ -718,24 +715,26 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           : <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold"><Clock className="w-2.5 h-2.5" />Pending Verification</span>
                         }
                       </div>
-                      <h2 className="text-3xl font-black text-white leading-tight">{name}</h2>
+                      <h2 className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">{name}</h2>
                       <p className="text-slate-400 mt-1 text-sm">{program}{branch ? ` · ${branch}` : ''}</p>
 
                       {/* Stat strip */}
-                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5 pt-5 border-t border-slate-800">
+                      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-800/80 pt-6 md:grid-cols-4">
                         {[
                           { icon: Building2, label: 'University', value: 'BTU' },
                           { icon: Calendar,  label: 'Batch',      value: student.admissionBatch || '—' },
                           { icon: Layers,    label: 'Mode',       value: student.studyMode || 'Credit Transfer' },
                           { icon: Shield,    label: 'Status',     value: student.status || 'Active' },
                         ].map(({ icon: Icon, label, value: val }) => (
-                          <div key={label} className="flex items-center gap-1.5">
-                            <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                            <span className="text-xs text-slate-500">{label}:</span>
-                            <span className="text-xs font-semibold text-slate-200">{val}</span>
+                          <div key={label} className="rounded-xl border border-slate-800 bg-slate-950/35 px-3 py-2.5">
+                            <div className="mb-1 flex items-center gap-1.5 text-slate-500">
+                              <Icon className="h-3.5 w-3.5 shrink-0" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                            </div>
+                            <p className="truncate text-xs font-semibold text-slate-200">{val}</p>
                           </div>
                         ))}
-                        <div className="ml-auto flex items-center gap-1.5">
+                        <div className="col-span-2 flex items-center gap-1.5 md:col-span-4">
                           {student.isFeeCompleted
                             ? <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400"><CheckCircle2 className="w-3.5 h-3.5" />Fee Cleared</span>
                             : <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400"><Clock className="w-3.5 h-3.5" />Fee Pending</span>
@@ -748,25 +747,25 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               </div>
 
               {/* ── 3-column grid ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
 
                 {/* Left 2 columns — details */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-7 xl:col-span-2">
 
                   {/* Personal details */}
-                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
-                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
-                      <User className="w-4 h-4 text-[#ed143d]" />
-                      <span className="text-sm font-bold text-white">Personal Details</span>
+                  <div className="profile-panel overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                    <div className="flex items-center gap-3 border-b border-slate-800 px-6 py-5">
+                      <div className="rounded-lg bg-[#ed143d]/10 p-2"><User className="h-4 w-4 text-[#ed143d]" /></div>
+                      <div><p className="text-sm font-bold text-white">Personal Details</p><p className="mt-0.5 text-xs text-slate-500">Your personal and family information</p></div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-slate-800/50">
-                      <div>
+                    <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="contents">
                         <ProfileField icon={User}     label="Full Name"      value={p.name} />
                         <ProfileField icon={User}     label="Father's Name"  value={p.fatherName} />
                         <ProfileField icon={User}     label="Mother's Name"  value={p.motherName} />
                         <ProfileField icon={Calendar} label="Date of Birth"  value={p.dateOfBirth} />
                       </div>
-                      <div>
+                      <div className="contents">
                         <ProfileField icon={User}    label="Gender"       value={p.gender} />
                         <ProfileField icon={Layers}  label="Category"     value={p.category} />
                         <ProfileField icon={Activity} label="Blood Group" value={
@@ -779,34 +778,34 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </div>
 
                   {/* Contact */}
-                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
-                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
-                      <Phone className="w-4 h-4 text-[#ed143d]" />
-                      <span className="text-sm font-bold text-white">Contact Information</span>
+                  <div className="profile-panel overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                    <div className="flex items-center gap-3 border-b border-slate-800 px-6 py-5">
+                      <div className="rounded-lg bg-[#ed143d]/10 p-2"><Phone className="h-4 w-4 text-[#ed143d]" /></div>
+                      <div><p className="text-sm font-bold text-white">Contact Information</p><p className="mt-0.5 text-xs text-slate-500">Ways the university can reach you</p></div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-slate-800/50">
-                      <ProfileField icon={Mail}  label="Email Address"   value={<span className="truncate block text-xs">{p.email || '—'}</span>} />
+                    <div className="grid grid-cols-1 gap-3 p-5 md:grid-cols-3">
+                      <ProfileField icon={Mail}  label="Email Address"   value={p.email} />
                       <ProfileField icon={Phone} label="Mobile Number"   value={p.mobileNumber?.toString()} />
                       <ProfileField icon={Phone} label="WhatsApp Number" value={p.whatsAppNumber?.toString()} />
                     </div>
                   </div>
 
                   {/* Address */}
-                  <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
-                    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
-                      <MapPin className="w-4 h-4 text-[#ed143d]" />
-                      <span className="text-sm font-bold text-white">Address</span>
+                  <div className="profile-panel overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                    <div className="flex items-center gap-3 border-b border-slate-800 px-6 py-5">
+                      <div className="rounded-lg bg-[#ed143d]/10 p-2"><MapPin className="h-4 w-4 text-[#ed143d]" /></div>
+                      <div><p className="text-sm font-bold text-white">Address</p><p className="mt-0.5 text-xs text-slate-500">Permanent residential details</p></div>
                     </div>
-                    <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-3">
                       {[
-                        { label: 'Permanent Address', value: p.permanentAddress, span: 'col-span-2 sm:col-span-4' },
+                        { label: 'Permanent Address', value: p.permanentAddress, span: 'sm:col-span-3' },
                         { label: 'District',          value: p.district,         span: '' },
                         { label: 'State',             value: p.state,            span: '' },
                         { label: 'Country',           value: p.country,          span: '' },
                       ].map(item => (
-                        <div key={item.label} className={item.span}>
+                        <div key={item.label} className={`profile-field rounded-xl border border-slate-800/80 bg-slate-950/35 p-4 ${item.span}`}>
                           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{item.label}</p>
-                          <p className="text-sm font-semibold text-slate-200">{item.value || <span className="text-slate-600 font-normal">—</span>}</p>
+                          <p className="break-words text-sm font-semibold leading-6 text-slate-200">{item.value || <span className="text-slate-600 font-normal">—</span>}</p>
                         </div>
                       ))}
                     </div>
@@ -817,9 +816,9 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 <div className="space-y-5">
 
                   {/* Student ID card visual */}
-                  <div className={`overflow-hidden rounded-2xl border shadow-2xl ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'}`}>
+                  <div className={`student-id-card overflow-hidden rounded-3xl border shadow-2xl ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700'}`}>
                     {/* Card header stripe */}
-                    <div className="relative bg-gradient-to-r from-[#ed143d] to-rose-600 px-5 py-3.5 flex items-center justify-between overflow-hidden">
+                    <div className="student-id-card-header relative flex items-center justify-between overflow-hidden bg-gradient-to-r from-[#ed143d] to-rose-600 px-5 py-3.5">
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                       <div className="relative flex items-center gap-2">
                         <GraduationCap className="w-5 h-5 text-white" />
@@ -832,7 +831,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                     <div className="p-5 space-y-4">
                       {/* Avatar + name */}
                       <div className="flex items-start gap-3.5">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#ed143d]/20 to-rose-900/30 border border-[#ed143d]/25 flex items-center justify-center text-2xl font-black text-[#ed143d] shrink-0 shadow-inner">
+                        <div className="student-id-avatar flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#ed143d]/25 bg-gradient-to-br from-[#ed143d]/20 to-rose-900/30 text-2xl font-black text-[#ed143d] shadow-inner">
                           {initials}
                         </div>
                         <div className="min-w-0">
@@ -858,7 +857,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                       </div>
 
                       {/* Decorative barcode */}
-                      <div className={`pt-3 border-t ${theme === 'light' ? 'border-slate-100' : 'border-slate-700/60'}`}>
+                      <div className={`student-id-barcode border-t pt-3 ${theme === 'light' ? 'border-slate-100' : 'border-slate-700/60'}`}>
                         <div className="flex items-end gap-px h-7">
                           {Array.from({ length: 42 }).map((_, i) => {
                             const code = sid.charCodeAt(i % sid.length) || 65
@@ -878,7 +877,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </div>
 
                   {/* Academic snapshot */}
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-xl overflow-hidden">
+                  <div className="profile-panel overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl">
                     <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-800">
                       <BookOpen className="w-4 h-4 text-[#ed143d]" />
                       <span className="text-sm font-bold text-white">Academic Snapshot</span>
@@ -894,7 +893,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </div>
 
                   {/* Fee status card */}
-                  <div className={`rounded-2xl border shadow-xl overflow-hidden ${student.isFeeCompleted ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
+                  <div className={`overflow-hidden rounded-3xl border shadow-xl ${student.isFeeCompleted ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
                     <div className={`px-5 py-3 border-b ${student.isFeeCompleted ? 'border-emerald-500/15' : 'border-amber-500/15'} flex items-center gap-2`}>
                       {student.isFeeCompleted ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Clock className="w-4 h-4 text-amber-400" />}
                       <span className="text-sm font-bold text-white">Fee Payment</span>

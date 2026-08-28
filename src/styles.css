@@ -17,6 +17,7 @@
 }
 
 :root[data-theme="light"] [class~="bg-slate-950"],
+:root[data-theme="light"] [class~="bg-slate-950/90"],
 :root[data-theme="light"] [class~="bg-slate-950/80"],
 :root[data-theme="light"] [class~="bg-slate-950/60"],
 :root[data-theme="light"] [class~="bg-slate-950/50"] {
@@ -125,6 +126,72 @@
 :root[data-theme="light"] aside,
 :root[data-theme="light"] header {
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.08);
+}
+
+/* Student profile has layered, translucent dark surfaces that need more
+   specific light-mode treatment than the shared slate token overrides. */
+:root[data-theme="light"] .student-profile .profile-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 58%, #fff1f2 100%) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 22px 55px -32px rgb(15 23 42 / 0.28);
+}
+
+:root[data-theme="light"] .student-profile .profile-panel {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 14px 35px -26px rgb(15 23 42 / 0.3);
+}
+
+:root[data-theme="light"] .student-profile .profile-field,
+:root[data-theme="light"] .student-profile [class~="bg-slate-950/35"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .student-profile .profile-field:hover {
+  background-color: #fff !important;
+  border-color: #cbd5e1 !important;
+}
+
+:root[data-theme="light"] .student-profile [class~="border-slate-800/60"],
+:root[data-theme="light"] .student-profile [class~="border-slate-800/50"] {
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .student-profile .student-id-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: #dbe3ee !important;
+  box-shadow: 0 20px 45px -28px rgb(15 23 42 / 0.35);
+}
+
+:root[data-theme="light"] .student-profile .student-id-card-header,
+:root[data-theme="light"] .student-profile .student-id-card-header * {
+  color: #fff !important;
+}
+
+:root[data-theme="light"] .student-profile .student-id-avatar {
+  background: linear-gradient(145deg, #fff1f2, #ffe4e6) !important;
+  border-color: rgb(237 20 61 / 0.2) !important;
+  color: #ed143d !important;
+}
+
+:root[data-theme="light"] .student-profile .student-id-barcode {
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .support-ticket-table {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 18px 45px -30px rgb(15 23 42 / 0.32);
+}
+
+:root[data-theme="light"] .support-ticket-table > div,
+:root[data-theme="light"] .support-ticket-row {
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .support-ticket-row:hover {
+  background-color: #f8fafc !important;
 }
 
 html {

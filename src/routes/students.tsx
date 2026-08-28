@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
+import AdminPageShell from '../components/AdminPageShell'
 
 export const Route = createFileRoute('/students')({
   beforeLoad: () => {
@@ -67,6 +68,7 @@ function StudentDirectoryPage() {
   }, [searchQuery])
 
   return (
+    <AdminPageShell activeItem="students">
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
@@ -190,5 +192,6 @@ function StudentDirectoryPage() {
         </div>
       </div>
     </div>
+    </AdminPageShell>
   )
 }

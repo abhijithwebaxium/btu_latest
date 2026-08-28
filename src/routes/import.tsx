@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import type { StudentRecord } from '../lib/studentParser'
+import AdminPageShell from '../components/AdminPageShell'
 
 export const Route = createFileRoute('/import')({
   beforeLoad: () => {
@@ -183,6 +184,7 @@ function JsonImportPage() {
   }
 
   return (
+    <AdminPageShell activeItem="import">
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
@@ -421,5 +423,6 @@ function JsonImportPage() {
         </div>
       )}
     </div>
+    </AdminPageShell>
   )
 }
