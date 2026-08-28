@@ -160,6 +160,9 @@ function StudentDirectoryPage() {
                     <td className="p-4">
                       <p className="font-semibold text-white">{student.personalDetails?.name || 'Unnamed Student'}</p>
                       <p className="text-xs text-slate-400">{student.personalDetails?.email || 'N/A'}</p>
+                      {student.personalDetails?.mobileNumber && (
+                        <p className="text-xs text-slate-500 font-mono">{student.personalDetails.mobileNumber}</p>
+                      )}
                     </td>
                     <td className="p-4 text-slate-300">
                       <div className="flex items-center gap-1.5">
