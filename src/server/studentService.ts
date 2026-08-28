@@ -135,6 +135,9 @@ export async function importStudentsToDatabase(jsonContent: string) {
           if (m) { s.btuSubjectCode = m[1].trim(); s.btuSubjectTitle = m[2].trim() }
           else    { s.btuSubjectTitle = s.btuSubjectTitle || String(s.equalizedSubject) }
         }
+        // For reappear/re-submission/improvement: subjectCode & subjectTitle ARE the BTU details
+        if (!s.btuSubjectCode  && s.subjectCode)  s.btuSubjectCode  = s.subjectCode
+        if (!s.btuSubjectTitle && s.subjectTitle) s.btuSubjectTitle = s.subjectTitle
         return s
       })
       const evalDoc = await Evaluation.findOneAndUpdate(

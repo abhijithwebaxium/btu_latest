@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from '@tanstack/react-router'
 import {
   GraduationCap, LogOut, User, CheckCircle2, FileText,
   Building2, Calendar, Award, Mail, MapPin, Menu,
   ChevronRight, Phone, BadgeCheck, Clock, AlertCircle,
   BarChart3, Shield, TrendingUp, BookOpen, Sun, Moon,
-  ArrowUpRight, Layers, Activity,
+  ArrowUpRight, Layers, Activity, LifeBuoy, ExternalLink,
 } from 'lucide-react'
+import NotificationCenter from './NotificationCenter'
+import SupportTicketView from './SupportTicketView'
 
 export interface LoggedInStudent {
   _id: string
@@ -48,7 +51,7 @@ export interface LoggedInStudent {
   }
 }
 
-type Tab = 'overview' | 'evaluation' | 'transcripts' | 'profile'
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'profile' | 'support'
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -143,14 +146,46 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   const p  = student.personalDetails  || {}
   const a  = student.academicDetails  || {}
   const ev = student.evaluation        || {}
-  const pr = student.prevUniSubjects   || {}
-  const evalSubs = ev.subjects                 || []
-  const prevSubs = pr.prevUniSubDetails         || []
+  const pr       = student.prevUniSubjects || {}
+  const evalSubs = (ev.subjects || []) as Array<Record<string, unknown>>
+  const prevSubsRaw = (pr.prevUniSubDetails || []) as Array<{
+    subjectTitle?: string; subjectCode?: string; credits?: number
+    grade?: string; mark?: number | string; result?: string; semester?: number
+  }>
+  // Fall back to equalized evaluation subjects when prevUniSubDetails is absent
+  const prevSubs = prevSubsRaw.length > 0
+    ? prevSubsRaw
+    : evalSubs
+        .filter(s => s.equalized === 'equalized')
+        .map(s => ({
+          subjectCode:  (s.btuSubjectCode  || '') as string,
+          subjectTitle: (s.btuSubjectTitle || s.equalizedSubject || '') as string,
+          semester:     s.semester as number | undefined,
+          credits:      s.credits  as number | undefined,
+          grade:        s.grade    as string | undefined,
+          mark:         s.mark     as number | string | undefined,
+          result:       Number(s.mark) >= 40 ? 'Pass' : Number(s.mark) > 0 ? 'Fail' : undefined,
+        }))
   const name     = p.name || 'Student'
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
   const program  = a.nameOfPrograme || (student.course as { name?: string })?.name || 'Degree Program'
   const branch   = a.branch         || (student.branch  as { name?: string })?.name || ''
   const sid      = student.enrollmentID || student.applicationID || student._id
+  const reappearSubs = evalSubs
+    .filter(s => s.equalized === 'reappear' || s.equalized === 're-submission' || s.equalized === 'improvement')
+    .map(s => ({
+      subjectCode:  (s.btuSubjectCode  || s.subjectCode  || '') as string,
+      subjectTitle: (s.btuSubjectTitle || s.subjectTitle || '') as string,
+      semester:     s.semester as number | undefined,
+      credits:      s.credits  as number | undefined,
+      examBatch:    (s.examBatch || s.examBatchSr || '') as string,
+      examStatus:   (s.examStatus || '') as string,
+      examSession:  (s.examSession || s.examSessionSr || '') as string,
+      semesterSet:  (s.semesterSet || '') as string,
+      mark:         s.mark     as number | string | undefined,
+      grade:        s.grade    as string | undefined,
+      equalized:    s.equalized as string,
+    }))
   const prevCr   = prevSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
   const evalCr   = evalSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
 
@@ -166,6 +201,10 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
         { id: 'evaluation'  as Tab, label: 'BTU Evaluation',   icon: Award,    badge: evalSubs.length || null },
         { id: 'transcripts' as Tab, label: 'Credit Transfers', icon: FileText, badge: prevSubs.length || null },
       ],
+    },
+    {
+      label: 'Support',
+      items: [{ id: 'support' as Tab, label: 'Support Tickets', icon: LifeBuoy, badge: null }],
     },
     {
       label: 'Account',
@@ -313,7 +352,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               </div>
             )}
 
-            {/* Theme toggle — identical to staff */}
+            {/* Theme toggle */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -322,6 +361,12 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
+
+            {/* Notifications */}
+            <NotificationCenter
+              studentId={student._id}
+              recipientType="STUDENT"
+            />
 
             {/* Avatar */}
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ed143d] to-rose-700 flex items-center justify-center font-bold text-white text-xs shadow-md">
@@ -478,7 +523,18 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   <h2 className="text-2xl font-bold text-white">BTU Evaluation</h2>
                   <p className="text-slate-400 text-sm">Subject equalization and credit mapping at Bir Tikendrajit University.</p>
                 </div>
-                <StatusBadge status={ev.evaluationStatus} />
+                <div className="flex items-center gap-3">
+                  <StatusBadge status={ev.evaluationStatus} />
+                  <a
+                    href="/report"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#ed143d] hover:bg-rose-700 text-white text-xs font-semibold shadow-lg shadow-[#ed143d]/30 transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Credit Evaluation Report
+                  </a>
+                </div>
               </div>
 
               {/* Stats strip */}
@@ -605,10 +661,11 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
-                  { label: 'Total Subjects', value: prevSubs.length, icon: FileText, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Submitted for transfer' },
-                  { label: 'Total Credits', value: prevCr, icon: Award, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Credits submitted' },
+                  { label: 'Transfer Subjects', value: prevSubs.length, icon: FileText, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Submitted for transfer' },
+                  { label: 'Transfer Credits', value: prevCr, icon: Award, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Credits submitted' },
+                  { label: 'Reappear Subjects', value: reappearSubs.length, icon: Activity, color: 'text-orange-400', glow: 'bg-orange-500', note: 'Awaiting examination' },
                   { label: 'Semesters', value: a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Sem` : '—', icon: Layers, color: 'text-blue-400', glow: 'bg-blue-500', note: 'At parent university' },
                 ].map(({ label, value, icon: Icon, color, glow, note }) => (
                   <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
@@ -670,6 +727,84 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </table>
                 </div>
               </div>
+
+              {/* ── Reappear / Re-submission Subjects ── */}
+              <div className="overflow-hidden rounded-2xl border border-orange-500/20 bg-slate-900/80 shadow-xl backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-orange-500/20 p-6">
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <FileText className="w-5 h-5 text-orange-400" />
+                    <span>Reappear / Re-submission Subjects</span>
+                  </h3>
+                  <span className="text-xs text-slate-400">{reappearSubs.length} subject{reappearSubs.length !== 1 ? 's' : ''}</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px] border-collapse text-left">
+                    <thead>
+                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                        <th className="px-6 py-3.5">Subject Code</th>
+                        <th className="px-4 py-3.5">Subject Title</th>
+                        <th className="px-4 py-3.5">Sem</th>
+                        <th className="px-4 py-3.5">Credits</th>
+                        <th className="px-4 py-3.5">Exam Batch</th>
+                        <th className="px-4 py-3.5">Exam Status</th>
+                        <th className="px-6 py-3.5 text-right">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {reappearSubs.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-6 py-12 text-center">
+                            <FileText className="w-8 h-8 mx-auto mb-3 text-slate-700" />
+                            <p className="text-sm text-slate-500">No reappear subjects listed.</p>
+                          </td>
+                        </tr>
+                      ) : reappearSubs.map((sub, i) => (
+                        <tr key={i} className="group transition-colors hover:bg-slate-800/40">
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-orange-400 border border-slate-700">
+                              {sub.subjectCode || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="text-sm font-semibold text-white">{sub.subjectTitle || '—'}</span>
+                          </td>
+                          <td className="px-4 py-4 text-sm font-mono text-slate-300">{sub.semester ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm font-bold text-slate-200">{sub.credits ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300">{sub.examBatch || sub.semesterSet || '—'}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300">{sub.examStatus || '—'}</td>
+                          <td className="px-6 py-4 text-right">
+                            <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              sub.equalized === 'improvement'
+                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                : sub.equalized === 're-submission'
+                                  ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                                  : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                            }`}>
+                              {sub.equalized === 'improvement' ? 'Improvement' : sub.equalized === 're-submission' ? 'Re-submission' : 'Reappear'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ══ SUPPORT ══ */}
+          {tab === 'support' && (
+            <motion.div
+              key="support"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <SupportTicketView
+                studentId={student._id}
+                studentName={p.name || 'Student'}
+              />
             </motion.div>
           )}
 

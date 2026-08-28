@@ -35,6 +35,8 @@ import {
 import StudentDashboard, { LoggedInStudent } from './StudentDashboard';
 import AdminNavbar from './AdminNavbar';
 import AdminSidebar, { type AdminSection } from './AdminSidebar';
+import AdminTicketDesk from './AdminTicketDesk';
+import NotificationCenter from './NotificationCenter';
 
 export interface Student {
   id: string;
@@ -554,6 +556,7 @@ export default function Dashboard() {
             onToggleNavigation={() => setMobileNavOpen(prev => !prev)}
             onToggleTheme={toggleTheme}
             onNewTicket={() => { setModalType('ticket'); setIsModalOpen(true) }}
+            notificationControl={<NotificationCenter recipientType="ADMIN" />}
           />
 
           <div className="p-6 md:p-8 space-y-8 w-full">
@@ -1056,6 +1059,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
+            {false && <>
             {activeTab === 'tickets' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-[1500px] space-y-7">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -1135,6 +1139,8 @@ export default function Dashboard() {
                 </div>
               </motion.div>
             )}
+            </>}
+            {activeTab === 'tickets' && <AdminTicketDesk />}
 
           </div>
         </main>

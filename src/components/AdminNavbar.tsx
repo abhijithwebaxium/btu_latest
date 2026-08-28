@@ -1,4 +1,5 @@
 import { Bell, Menu, Moon, Plus, Search, Sun } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 type AdminNavbarProps = {
   theme: string
@@ -7,6 +8,7 @@ type AdminNavbarProps = {
   onToggleNavigation: () => void
   onToggleTheme: () => void
   onNewTicket: () => void
+  notificationControl?: ReactNode
 }
 
 export default function AdminNavbar({
@@ -16,6 +18,7 @@ export default function AdminNavbar({
   onToggleNavigation,
   onToggleTheme,
   onNewTicket,
+  notificationControl,
 }: AdminNavbarProps) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-6 py-4 backdrop-blur-xl">
@@ -60,10 +63,10 @@ export default function AdminNavbar({
           <span>New Ticket</span>
         </button>
 
-        <button type="button" aria-label="Notifications" className="relative rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white">
+        {notificationControl || <button type="button" aria-label="Notifications" className="relative rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#ed143d] ring-2 ring-slate-950" />
-        </button>
+        </button>}
       </div>
     </header>
   )
