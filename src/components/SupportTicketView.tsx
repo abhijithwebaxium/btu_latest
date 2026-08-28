@@ -76,38 +76,54 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
   const [newCategory, setNewCategory] = useState('general')
   const [newPriority, setNewPriority] = useState('normal')
   const [submitting, setSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
   const msgEndRef = useRef<HTMLDivElement>(null)
+  const prevMsgCount = useRef(0)
 
-  const fetchThreads = useCallback(async () => {
-    setLoadingThreads(true)
+  const fetchThreads = useCallback(async (silent = false) => {
+    if (!silent) setLoadingThreads(true)
     try {
       const r = await fetch(`/api/support?action=studentThreads&studentId=${encodeURIComponent(studentId)}`)
       const d = await r.json()
       if (d.success) setThreads(d.threads || [])
     } catch { /* silent */ } finally {
-      setLoadingThreads(false)
+      if (!silent) setLoadingThreads(false)
     }
   }, [studentId])
 
-  const fetchMessages = useCallback(async (threadId: string) => {
-    setLoadingMessages(true)
+  const fetchMessages = useCallback(async (threadId: string, silent = false) => {
+    if (!silent) setLoadingMessages(true)
     try {
       const r = await fetch(`/api/support?action=thread&threadId=${threadId}`)
       const d = await r.json()
       if (d.success) setMessages(d.messages || [])
     } catch { /* silent */ } finally {
-      setLoadingMessages(false)
+      if (!silent) setLoadingMessages(false)
     }
   }, [])
 
+  // Initial loads
   useEffect(() => { fetchThreads() }, [fetchThreads])
+  useEffect(() => { if (activeThread) { prevMsgCount.current = 0; fetchMessages(activeThread._id) } }, [activeThread, fetchMessages])
+
+  // Real-time polling
+  useEffect(() => {
+    const t = setInterval(() => fetchThreads(true), 10000)
+    return () => clearInterval(t)
+  }, [fetchThreads])
 
   useEffect(() => {
-    if (activeThread) fetchMessages(activeThread._id)
+    if (!activeThread) return
+    const t = setInterval(() => fetchMessages(activeThread._id, true), 4000)
+    return () => clearInterval(t)
   }, [activeThread, fetchMessages])
 
+  // Scroll to bottom only when new messages arrive
   useEffect(() => {
-    msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > prevMsgCount.current) {
+      msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    prevMsgCount.current = messages.length
   }, [messages])
 
   async function sendReply() {
@@ -140,6 +156,7 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
   async function submitNewTicket(e: React.FormEvent) {
     e.preventDefault()
     if (!newSubject.trim() || !newBody.trim()) return
+    setFormError('')
     setSubmitting(true)
     try {
       const r = await fetch('/api/support', {
@@ -162,9 +179,14 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
         setNewBody('')
         setNewCategory('general')
         setNewPriority('normal')
+        setFormError('')
         await fetchThreads()
         setActiveThread(d.thread)
+      } else {
+        setFormError(d.error || 'Failed to submit ticket. Please try again.')
       }
+    } catch (err) {
+      setFormError((err as Error).message || 'Network error. Please check your connection.')
     } finally {
       setSubmitting(false)
     }
@@ -174,7 +196,13 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
     <div className="student-support-center space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Support Center</h2>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            Support Center
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live
+            </span>
+          </h2>
           <p className="text-slate-400 text-sm">Submit and track your support requests.</p>
         </div>
         <button
@@ -198,7 +226,7 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <LifeBuoy className="w-4 h-4 text-[#ed143d]" /> Submit New Ticket
               </h3>
-              <button onClick={() => setShowNewForm(false)} className="p-1.5 text-slate-500 hover:text-white rounded-lg">
+              <button onClick={() => { setShowNewForm(false); setFormError('') }} className="p-1.5 text-slate-500 hover:text-white rounded-lg">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -256,8 +284,14 @@ export default function SupportTicketView({ studentId, studentName }: Props) {
                   className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:border-[#ed143d] focus:outline-none resize-none"
                 />
               </div>
+              {formError && (
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{formError}</span>
+                </div>
+              )}
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => setShowNewForm(false)} className="px-4 py-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-sm font-semibold">
+                <button type="button" onClick={() => { setShowNewForm(false); setFormError('') }} className="px-4 py-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-sm font-semibold">
                   Cancel
                 </button>
                 <button

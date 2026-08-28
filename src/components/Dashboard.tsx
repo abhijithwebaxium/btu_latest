@@ -348,7 +348,7 @@ export default function Dashboard() {
   const handleAdminSignOut = () => {
     localStorage.removeItem('staff-session');
     localStorage.removeItem('current-student');
-    sessionStorage.removeItem('admin-key');
+    localStorage.removeItem('admin-key');
     navigate({ to: '/login' });
   };
 
@@ -534,7 +534,7 @@ export default function Dashboard() {
                 if (typeof window !== 'undefined') {
                   localStorage.removeItem('staff-session');
                   localStorage.removeItem('current-student');
-                  sessionStorage.removeItem('admin-key');
+                  localStorage.removeItem('admin-key');
                 }
                 navigate({ to: '/login' });
               }}

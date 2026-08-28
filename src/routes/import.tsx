@@ -109,7 +109,7 @@ function JsonImportPage() {
     if (confirm('Are you sure you want to clear all Bir Tikendrajit University (BTU) student records from MongoDB?')) {
       setIsLoading(true)
       try {
-        const adminKey = typeof window !== 'undefined' ? sessionStorage.getItem('admin-key') || '' : ''
+        const adminKey = typeof window !== 'undefined' ? localStorage.getItem('admin-key') || '' : ''
         const res = await fetch('/api/students', {
           method: 'DELETE',
           headers: { 'X-Admin-Key': adminKey },

@@ -52,7 +52,7 @@ export default function LoginPage() {
           if (typeof window !== 'undefined') {
             localStorage.removeItem('current-student');
             localStorage.setItem('staff-session', '1');
-            sessionStorage.setItem('admin-key', password);
+            localStorage.setItem('admin-key', password);
           }
           navigate({ to: '/' });
         } else {

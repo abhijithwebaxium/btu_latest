@@ -63,7 +63,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function getAdminKey(): string {
   if (typeof window === 'undefined') return ''
-  return sessionStorage.getItem('admin-key') || ''
+  return localStorage.getItem('admin-key') || ''
 }
 
 export default function AdminTicketDesk() {
@@ -78,9 +78,12 @@ export default function AdminTicketDesk() {
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [total, setTotal] = useState(0)
   const msgEndRef = useRef<HTMLDivElement>(null)
+  const prevMsgCount = useRef(0)
+  const activeThreadRef = useRef<Thread | null>(null)
+  activeThreadRef.current = activeThread
 
-  const fetchThreads = useCallback(async () => {
-    setLoadingThreads(true)
+  const fetchThreads = useCallback(async (silent = false) => {
+    if (!silent) setLoadingThreads(true)
     try {
       const params = new URLSearchParams({ action: 'allThreads', status: statusFilter })
       const r = await fetch(`/api/support?${params}`, {
@@ -89,12 +92,12 @@ export default function AdminTicketDesk() {
       const d = await r.json()
       if (d.success) { setThreads(d.threads || []); setTotal(d.total || 0) }
     } catch { /* silent */ } finally {
-      setLoadingThreads(false)
+      if (!silent) setLoadingThreads(false)
     }
   }, [statusFilter])
 
-  const fetchMessages = useCallback(async (threadId: string) => {
-    setLoadingMessages(true)
+  const fetchMessages = useCallback(async (threadId: string, silent = false) => {
+    if (!silent) setLoadingMessages(true)
     try {
       const r = await fetch(`/api/support?action=thread&threadId=${threadId}`, {
         headers: { 'x-admin-key': getAdminKey() },
@@ -102,13 +105,33 @@ export default function AdminTicketDesk() {
       const d = await r.json()
       if (d.success) setMessages(d.messages || [])
     } catch { /* silent */ } finally {
-      setLoadingMessages(false)
+      if (!silent) setLoadingMessages(false)
     }
   }, [])
 
+  // Initial loads
   useEffect(() => { fetchThreads() }, [fetchThreads])
-  useEffect(() => { if (activeThread) fetchMessages(activeThread._id) }, [activeThread, fetchMessages])
-  useEffect(() => { msgEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { if (activeThread) { prevMsgCount.current = 0; fetchMessages(activeThread._id) } }, [activeThread, fetchMessages])
+
+  // Real-time polling
+  useEffect(() => {
+    const t = setInterval(() => fetchThreads(true), 8000)
+    return () => clearInterval(t)
+  }, [fetchThreads])
+
+  useEffect(() => {
+    if (!activeThread) return
+    const t = setInterval(() => fetchMessages(activeThread._id, true), 4000)
+    return () => clearInterval(t)
+  }, [activeThread, fetchMessages])
+
+  // Scroll to bottom only when new messages arrive
+  useEffect(() => {
+    if (messages.length > prevMsgCount.current) {
+      msgEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    prevMsgCount.current = messages.length
+  }, [messages])
 
   async function sendReply() {
     if (!reply.trim() || !activeThread) return
@@ -165,11 +188,17 @@ export default function AdminTicketDesk() {
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="admin-ticket-desk space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Campus Support Helpdesk</h2>
-          <p className="text-slate-400 text-sm">{total} total ticket{total !== 1 ? 's' : ''} · Real-time student support management</p>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            Campus Support Helpdesk
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live
+            </span>
+          </h2>
+          <p className="text-slate-400 text-sm">{total} total ticket{total !== 1 ? 's' : ''} · Auto-refreshes every 8s</p>
         </div>
         <button
-          onClick={fetchThreads}
+          onClick={() => fetchThreads()}
           className="self-start flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition-all border border-slate-700"
         >
           <RefreshCw className={`w-4 h-4 ${loadingThreads ? 'animate-spin' : ''}`} />

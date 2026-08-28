@@ -51,7 +51,7 @@ export interface LoggedInStudent {
   }
 }
 
-type Tab = 'overview' | 'evaluation' | 'transcripts' | 'profile' | 'support'
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'profile' | 'support'
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -198,8 +198,9 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
     {
       label: 'Academic Record',
       items: [
-        { id: 'evaluation'  as Tab, label: 'BTU Evaluation',   icon: Award,    badge: evalSubs.length || null },
-        { id: 'transcripts' as Tab, label: 'Credit Transfers', icon: FileText, badge: prevSubs.length || null },
+        { id: 'evaluation'  as Tab, label: 'BTU Evaluation',   icon: Award,     badge: evalSubs.length || null },
+        { id: 'transcripts' as Tab, label: 'Credit Transfers', icon: FileText,  badge: prevSubs.length || null },
+        { id: 'classes'     as Tab, label: 'My Classes',       icon: BookOpen,  badge: reappearSubs.length || null },
       ],
     },
     {
@@ -790,6 +791,123 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   </table>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* ══ CLASSES ══ */}
+          {tab === 'classes' && (
+            <motion.div
+              key="classes"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white">My Classes</h2>
+                <p className="text-slate-400 text-sm">
+                  BTU subjects you are currently enrolled in — grouped by semester.
+                </p>
+              </div>
+
+              {/* Summary cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Subjects',  value: reappearSubs.length,                                                   color: 'text-white' },
+                  { label: 'Total Credits',   value: reappearSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0),        color: 'text-[#ed143d]' },
+                  { label: 'Semesters',       value: [...new Set(reappearSubs.map(s => s.semester).filter(Boolean))].length, color: 'text-blue-400' },
+                ].map(c => (
+                  <div key={c.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${c.color}`}>{c.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{c.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {reappearSubs.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center">
+                  <BookOpen className="w-10 h-10 mx-auto mb-3 text-slate-700" />
+                  <p className="text-sm text-slate-500">No class subjects found. Your evaluation may still be pending.</p>
+                </div>
+              ) : (
+                /* Group by semester */
+                Object.entries(
+                  reappearSubs.reduce<Record<number, typeof reappearSubs>>((acc, s) => {
+                    const sem = s.semester ?? 0
+                    ;(acc[sem] = acc[sem] || []).push(s)
+                    return acc
+                  }, {})
+                )
+                  .sort(([a], [b]) => Number(a) - Number(b))
+                  .map(([sem, subs]) => (
+                    <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                      {/* Semester header */}
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
+                            {Number(sem) || '?'}
+                          </span>
+                          <h3 className="text-sm font-bold text-white">
+                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
+                          </h3>
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          {subs.length} subject{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
+                        </span>
+                      </div>
+
+                      {/* Subject cards grid */}
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {subs.map((sub, i) => (
+                          <div
+                            key={i}
+                            className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all"
+                          >
+                            {/* Code badge + credits */}
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20">
+                                {sub.subjectCode || 'N/A'}
+                              </span>
+                              {sub.credits && (
+                                <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
+                                  {sub.credits} CR
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title */}
+                            <p className="text-sm font-semibold text-white leading-snug mb-3">
+                              {sub.subjectTitle || '—'}
+                            </p>
+
+                            {/* Exam batch / session */}
+                            <div className="space-y-1">
+                              {sub.examBatch && (
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                  <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                  <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
+                                </div>
+                              )}
+                              {sub.examSession && (
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                  <Clock className="w-3 h-3 shrink-0 text-slate-600" />
+                                  <span className="truncate">{sub.examSession}</span>
+                                </div>
+                              )}
+                              {sub.examStatus && (
+                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1">
+                                  <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">
+                                    {sub.examStatus}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+              )}
             </motion.div>
           )}
 

@@ -51,7 +51,7 @@ export default function AdminPageShell({ activeItem, children }: Props) {
   const signOut = () => {
     localStorage.removeItem('staff-session')
     localStorage.removeItem('current-student')
-    sessionStorage.removeItem('admin-key')
+    localStorage.removeItem('admin-key')
     navigate({ to: '/login' })
   }
 
