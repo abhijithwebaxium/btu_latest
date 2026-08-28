@@ -9,7 +9,6 @@ import {
   Video,
   LifeBuoy,
   Search,
-  Bell,
   FileJson,
   Plus,
   ChevronRight,
@@ -38,6 +37,8 @@ import {
   Cell 
 } from 'recharts';
 import StudentDashboard, { LoggedInStudent } from './StudentDashboard';
+import AdminTicketDesk from './AdminTicketDesk';
+import NotificationCenter from './NotificationCenter';
 
 export interface Student {
   id: string;
@@ -554,10 +555,7 @@ export default function Dashboard() {
                 <span>New Ticket</span>
               </button>
 
-              <button className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ed143d] ring-2 ring-slate-950"></span>
-              </button>
+              <NotificationCenter recipientType="ADMIN" />
             </div>
           </header>
 
@@ -1061,64 +1059,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'tickets' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Campus Support Helpdesk</h2>
-                    <p className="text-slate-400 text-sm">Academic, infrastructure, and technical issue tickets.</p>
-                  </div>
-                  <button 
-                    onClick={() => { setModalType('ticket'); setIsModalOpen(true); }}
-                    className="px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Submit Ticket</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {filteredTickets.map((tck) => (
-                    <div key={tck.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-3 rounded-xl bg-slate-800 text-[#ed143d]">
-                          <LifeBuoy className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-mono font-bold text-[#ed143d]">{tck.id}</span>
-                            <span className="text-xs text-slate-500">• {tck.category}</span>
-                          </div>
-                          <h3 className="text-base font-bold text-white mt-1">{tck.subject}</h3>
-                          <p className="text-xs text-slate-400 mt-0.5">Submitted by {tck.user} • {tck.time}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                          tck.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-slate-800 text-slate-300'
-                        }`}>
-                          {tck.priority}
-                        </span>
-
-                        {tck.status !== 'Resolved' ? (
-                          <button
-                            onClick={() => handleResolveTicket(tck.id)}
-                            className="px-3.5 py-1.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-[#ed143d]/30 transition-all"
-                          >
-                            Mark Resolved
-                          </button>
-                        ) : (
-                          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold">
-                            Resolved
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            {activeTab === 'tickets' && <AdminTicketDesk />}
 
           </div>
         </main>
