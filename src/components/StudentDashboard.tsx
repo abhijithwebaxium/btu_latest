@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
 import SupportTicketView, { type Thread as SupportThread } from './SupportTicketView'
+import { APP_URL } from '../lib/config'
 
 export interface LoggedInStudent {
   _id: string
@@ -625,7 +626,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 <div className="flex items-center gap-3">
                   <StatusBadge status={ev.evaluationStatus} />
                   <a
-                    href="/report"
+                    href={`${APP_URL}/report`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#ed143d] hover:bg-rose-700 text-white text-xs font-semibold shadow-lg shadow-[#ed143d]/30 transition-all"

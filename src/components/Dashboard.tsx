@@ -104,65 +104,122 @@ export interface Ticket {
   time: string;
 }
 
-const initialStudents: Student[] = [
-  { id: 'STU-101', name: 'Sophia Chen', email: 'sophia.c@edu.io', department: 'Computer Science', gpa: 3.92, status: 'Active', batch: '2025', attendance: '96%' },
-  { id: 'STU-102', name: 'Marcus Vance', email: 'm.vance@edu.io', department: 'Data Science', gpa: 3.85, status: 'Active', batch: '2025', attendance: '92%' },
-  { id: 'STU-103', name: 'Elena Rostova', email: 'elena.r@edu.io', department: 'Software Eng', gpa: 3.78, status: 'On Leave', batch: '2026', attendance: '88%' },
-  { id: 'STU-104', name: 'Aarav Patel', email: 'a.patel@edu.io', department: 'AI & Robotics', gpa: 3.98, status: 'Active', batch: '2024', attendance: '99%' },
-  { id: 'STU-105', name: 'Liam O\'Connor', email: 'liam.oc@edu.io', department: 'Cybersecurity', gpa: 3.65, status: 'Active', batch: '2025', attendance: '91%' },
-  { id: 'STU-106', name: 'Maya Lin', email: 'maya.lin@edu.io', department: 'UX / Product Design', gpa: 3.90, status: 'Active', batch: '2026', attendance: '95%' }
-];
+interface ChartRow {
+  month: string
+  year: number
+  enrollments: number
+  assignments: number
+  tickets: number
+}
 
-const initialAssignments: Assignment[] = [
-  { id: 'ASN-301', title: 'Distributed Systems Raft Consensus Engine', course: 'CS-401', deadline: '2026-08-28', submitted: 42, total: 48, status: 'Grading In Progress', priority: 'High' },
-  { id: 'ASN-302', title: 'Deep Neural Net Transformer Architecture', course: 'AI-502', deadline: '2026-08-30', submitted: 35, total: 50, status: 'Active', priority: 'Urgent' },
-  { id: 'ASN-303', title: 'Microservices Design Patterns Case Study', course: 'SE-302', deadline: '2026-09-02', submitted: 18, total: 45, status: 'Active', priority: 'Medium' },
-  { id: 'ASN-304', title: 'Interactive Dashboard with TanStack & Framer', course: 'FED-204', deadline: '2026-08-25', submitted: 45, total: 45, status: 'Completed', priority: 'Low' }
-];
+interface PieEntry {
+  name: string
+  value: number
+  color: string
+}
 
-const initialInternships: Internship[] = [
-  { id: 'INT-801', company: 'Google Quantum AI', role: 'Full Stack Engineer Intern', location: 'Mountain View / Hybrid', stipend: '$9,200/mo', applicants: 124, status: 'Interviews Live', logo: '🌐' },
-  { id: 'INT-802', company: 'OpenAI Labs', role: 'AI Research Assistant', location: 'San Francisco, CA', stipend: '$10,500/mo', applicants: 210, status: 'Screening', logo: '⚡' },
-  { id: 'INT-803', company: 'Stripe Global', role: 'Infrastructure Security Intern', location: 'Remote', stipend: '$8,800/mo', applicants: 98, status: 'Selected (14)', logo: '💳' },
-  { id: 'INT-804', company: 'Tesla Autopilot Team', role: 'Computer Vision Engineer', location: 'Palo Alto, CA', stipend: '$9,000/mo', applicants: 156, status: 'Closed', logo: '🚗' }
-];
+const PRIORITY_LABEL: Record<string, string> = {
+  low: 'Low', normal: 'Medium', high: 'High', urgent: 'Urgent',
+}
+const STATUS_LABEL: Record<string, string> = {
+  open: 'Open', in_progress: 'In Progress', resolution_pending: 'Pending',
+  resolved: 'Resolved', closed: 'Closed',
+}
 
-const initialProjects: Project[] = [
-  { id: 'PRJ-501', title: 'Autonomous Drone Navigation System', lead: 'Aarav Patel', tech: ['Python', 'ROS', 'OpenCV'], progress: 85, status: 'Final Review', category: 'Robotics' },
-  { id: 'PRJ-502', title: 'Decentralized Healthcare Record Vault', lead: 'Sophia Chen', tech: ['Solidity', 'React', 'IPFS'], progress: 62, status: 'Development', category: 'Web3' },
-  { id: 'PRJ-503', title: 'Realtime Voice Translation Engine', lead: 'Marcus Vance', tech: ['PyTorch', 'Rust', 'WebAssembly'], progress: 94, status: 'Testing', category: 'AI/ML' },
-  { id: 'PRJ-504', title: 'Cloud Native Kubernetes Observability', lead: 'Liam O\'Connor', tech: ['Go', 'Prometheus', 'Grafana'], progress: 40, status: 'Development', category: 'DevOps' }
-];
+function mapStudentFromDB(s: Record<string, unknown>): Student {
+  const personal = (s.personalDetails || {}) as Record<string, unknown>
+  const academic = (s.academicDetails || {}) as Record<string, unknown>
+  const branch = (typeof s.branch === 'object' && s.branch ? s.branch : {}) as Record<string, unknown>
+  return {
+    id: String(s.enrollmentID || s.applicationID || s._id || ''),
+    name: String(personal.name || 'Unknown'),
+    email: String(personal.email || ''),
+    department: String(academic.nameOfPrograme || branch.name || 'General'),
+    gpa: 'N/A',
+    status: s.status === 'student' ? 'Active' : String(s.status || 'Active'),
+    batch: String(s.admissionBatch || 'N/A'),
+    attendance: 'N/A',
+  }
+}
 
-const initialClasses: ClassItem[] = [
-  { id: 'CLS-01', title: 'Advanced Algorithms & Complexity', code: 'CS-401', instructor: 'Dr. Alan Turing', time: '10:00 AM - 11:30 AM', room: 'Hall 302', status: 'Live Now', students: 48 },
-  { id: 'CLS-02', title: 'Neural Networks & Deep Learning', code: 'AI-502', instructor: 'Dr. Fei-Fei Li', time: '01:00 PM - 02:30 PM', room: 'Lab B-12', status: 'Upcoming', students: 50 },
-  { id: 'CLS-03', title: 'Modern Frontend Architecture', code: 'FED-204', instructor: 'Prof. Sarah Connor', time: '03:00 PM - 04:30 PM', room: 'Online Auditorium', status: 'Upcoming', students: 45 },
-  { id: 'CLS-04', title: 'Cybersecurity & Ethical Hacking', code: 'SEC-301', instructor: 'Dr. Elliot Alderson', time: '05:00 PM - 06:30 PM', room: 'Cyber Lab 04', status: 'Completed', students: 42 }
-];
+function mapAssignmentFromDB(a: Record<string, unknown>): Assignment {
+  return {
+    id: String(a._id || ''),
+    title: String(a.title || ''),
+    course: String(a.course || ''),
+    deadline: String(a.deadline || ''),
+    submitted: Number(a.submitted ?? 0),
+    total: Number(a.total ?? 50),
+    status: String(a.status || 'Active'),
+    priority: String(a.priority || 'Medium'),
+  }
+}
 
-const initialTickets: Ticket[] = [
-  { id: 'TCK-901', subject: 'GPU Cluster Memory Allocation Error', user: 'Marcus Vance', category: 'Tech Support', priority: 'Urgent', status: 'Open', time: '12 mins ago' },
-  { id: 'TCK-902', subject: 'Request for Internship Sponsor Letter', user: 'Sophia Chen', category: 'Administration', priority: 'High', status: 'In Progress', time: '1 hour ago' },
-  { id: 'TCK-903', subject: 'Lab Access Card Resync Issue', user: 'Liam O\'Connor', category: 'Facility', priority: 'Medium', status: 'Open', time: '3 hours ago' },
-  { id: 'TCK-904', subject: 'Assignment ASN-301 Resubmission Extension', user: 'Elena Rostova', category: 'Academic', priority: 'Low', status: 'Resolved', time: '1 day ago' }
-];
+function mapClassFromDB(c: Record<string, unknown>): ClassItem {
+  return {
+    id: String(c._id || ''),
+    title: String(c.title || ''),
+    code: String(c.code || ''),
+    instructor: String(c.instructor || ''),
+    time: String(c.time || 'TBD'),
+    room: String(c.room || 'TBD'),
+    status: String(c.status || 'Upcoming'),
+    students: Number(c.students ?? 0),
+  }
+}
 
-const chartData = [
-  { month: 'Jan', attendance: 92, assignments: 38, placements: 12, tickets: 45 },
-  { month: 'Feb', attendance: 94, assignments: 42, placements: 18, tickets: 38 },
-  { month: 'Mar', attendance: 91, assignments: 45, placements: 28, tickets: 30 },
-  { month: 'Apr', attendance: 96, assignments: 48, placements: 45, tickets: 22 },
-  { month: 'May', attendance: 95, assignments: 52, placements: 68, tickets: 19 },
-  { month: 'Jun', attendance: 98, assignments: 60, placements: 85, tickets: 14 }
-];
+function mapInternshipFromDB(i: Record<string, unknown>): Internship {
+  return {
+    id: String(i._id || ''),
+    company: String(i.company || ''),
+    role: String(i.role || ''),
+    location: String(i.location || 'Remote'),
+    stipend: String(i.stipend || 'N/A'),
+    applicants: Number(i.applicants ?? 0),
+    status: String(i.status || 'Open'),
+    logo: String(i.logo || '🏢'),
+  }
+}
 
-const categoryPieData = [
-  { name: 'Computer Science', value: 40, color: '#ed143d' },
-  { name: 'AI & Robotics', value: 25, color: '#f43f5e' },
-  { name: 'Data Science', value: 20, color: '#fb7185' },
-  { name: 'Cybersecurity', value: 15, color: '#fda4af' }
-];
+function mapProjectFromDB(p: Record<string, unknown>): Project {
+  return {
+    id: String(p._id || ''),
+    title: String(p.title || ''),
+    lead: String(p.lead || ''),
+    tech: Array.isArray(p.tech) ? p.tech.map(String) : [],
+    progress: Number(p.progress ?? 0),
+    status: String(p.status || 'Development'),
+    category: String(p.category || 'General'),
+  }
+}
+
+function mapTicketFromDB(t: Record<string, unknown>): Ticket {
+  const ref = t.lastMessageAt || t.createdAt
+  let timeAgo = 'Unknown'
+  if (ref) {
+    const diff = Date.now() - new Date(String(ref)).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) timeAgo = `${mins} min${mins === 1 ? '' : 's'} ago`
+    else {
+      const hrs = Math.floor(mins / 60)
+      if (hrs < 24) timeAgo = `${hrs} hour${hrs === 1 ? '' : 's'} ago`
+      else {
+        const days = Math.floor(hrs / 24)
+        timeAgo = `${days} day${days === 1 ? '' : 's'} ago`
+      }
+    }
+  }
+  const cat = String(t.category || 'general')
+  return {
+    id: String(t._id || ''),
+    subject: String(t.subject || ''),
+    user: String(t.studentName || 'Unknown'),
+    category: cat.charAt(0).toUpperCase() + cat.slice(1),
+    priority: PRIORITY_LABEL[String(t.priority || 'normal')] || 'Medium',
+    status: STATUS_LABEL[String(t.status || 'open')] || 'Open',
+    time: timeAgo,
+  }
+}
 
 interface ModernCardProps {
   title: string;
@@ -220,12 +277,18 @@ export default function Dashboard() {
     return requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'dashboard';
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [students, setStudents] = useState<Student[]>(initialStudents);
-  const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments);
-  const [internships] = useState<Internship[]>(initialInternships);
-  const [projects] = useState<Project[]>(initialProjects);
-  const [classes, setClasses] = useState<ClassItem[]>(initialClasses);
-  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [chartData, setChartData] = useState<ChartRow[]>([]);
+  const [categoryPieData, setCategoryPieData] = useState<PieEntry[]>([]);
+  const [pendingVerifications, setPendingVerifications] = useState(0);
+  const [feeIncomplete, setFeeIncomplete] = useState(0);
+  const [ticketStats, setTicketStats] = useState({ open: 0, inProgress: 0, urgent: 0 });
   const [currentStudent, setCurrentStudent] = useState<LoggedInStudent | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -249,6 +312,59 @@ export default function Dashboard() {
         }
       }
     }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const adminKey = localStorage.getItem('admin-key') || '';
+    const adminHeaders = { 'Content-Type': 'application/json', 'x-admin-key': adminKey };
+
+    async function fetchDashboardData() {
+      try {
+        const results = await Promise.allSettled([
+          fetch('/api/students').then(r => r.json()),
+          fetch('/api/assignments').then(r => r.json()),
+          fetch('/api/classes').then(r => r.json()),
+          fetch('/api/internships').then(r => r.json()),
+          fetch('/api/projects').then(r => r.json()),
+          fetch('/api/support?action=allThreads&limit=10', { headers: adminHeaders }).then(r => r.json()),
+          fetch('/api/dashboard-stats', { headers: adminHeaders }).then(r => r.json()),
+        ]);
+
+        const [studentsRes, assignmentsRes, classesRes, internshipsRes, projectsRes, ticketsRes, statsRes] = results;
+
+        if (studentsRes.status === 'fulfilled' && studentsRes.value?.success) {
+          setStudents((studentsRes.value.students as Record<string, unknown>[]).map(mapStudentFromDB));
+        }
+        if (assignmentsRes.status === 'fulfilled' && assignmentsRes.value?.success) {
+          setAssignments((assignmentsRes.value.assignments as Record<string, unknown>[]).map(mapAssignmentFromDB));
+        }
+        if (classesRes.status === 'fulfilled' && classesRes.value?.success) {
+          setClasses((classesRes.value.classes as Record<string, unknown>[]).map(mapClassFromDB));
+        }
+        if (internshipsRes.status === 'fulfilled' && internshipsRes.value?.success) {
+          setInternships((internshipsRes.value.internships as Record<string, unknown>[]).map(mapInternshipFromDB));
+        }
+        if (projectsRes.status === 'fulfilled' && projectsRes.value?.success) {
+          setProjects((projectsRes.value.projects as Record<string, unknown>[]).map(mapProjectFromDB));
+        }
+        if (ticketsRes.status === 'fulfilled' && ticketsRes.value?.success) {
+          setTickets((ticketsRes.value.threads as Record<string, unknown>[]).map(mapTicketFromDB));
+        }
+        if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
+          setChartData(statsRes.value.monthlyData as ChartRow[]);
+          setCategoryPieData(statsRes.value.departmentDistribution as PieEntry[]);
+          setPendingVerifications(statsRes.value.pendingVerifications as number ?? 0);
+          setFeeIncomplete(statsRes.value.feeIncomplete as number ?? 0);
+          const ts = statsRes.value.ticketSummary as { open: number; inProgress: number; urgent: number };
+          setTicketStats({ open: ts?.open ?? 0, inProgress: ts?.inProgress ?? 0, urgent: ts?.urgent ?? 0 });
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardData();
   }, []);
 
   const handleSignOutStudent = () => {
@@ -328,14 +444,37 @@ export default function Dashboard() {
     },
   ];
 
-  const handleResolveTicket = (id: string) => {
+  const handleResolveTicket = async (id: string) => {
+    if (typeof window !== 'undefined') {
+      const adminKey = localStorage.getItem('admin-key') || '';
+      try {
+        await fetch('/api/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ action: 'updateStatus', threadId: id, status: 'resolved', actorName: 'Admin' }),
+        });
+      } catch { /* optimistic update continues regardless */ }
+    }
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'Resolved' } : t));
-    showToast(`Ticket ${id} marked as resolved!`);
+    showToast('Ticket marked as resolved!');
   };
 
-  const handleToggleClass = (id: string) => {
-    setClasses(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'Live Now' ? 'Completed' : 'Live Now' } : c));
-    showToast(`Class status updated!`);
+  const handleToggleClass = async (id: string) => {
+    const cls = classes.find(c => c.id === id);
+    if (!cls) return;
+    const newStatus = cls.status === 'Live Now' ? 'Completed' : 'Live Now';
+    if (typeof window !== 'undefined') {
+      const adminKey = localStorage.getItem('admin-key') || '';
+      try {
+        await fetch('/api/classes', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ id, status: newStatus }),
+        });
+      } catch { /* optimistic update continues regardless */ }
+    }
+    setClasses(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    showToast('Class status updated!');
   };
 
   const handleAdminNavigation = (id: AdminSection) => {
@@ -355,48 +494,47 @@ export default function Dashboard() {
     navigate({ to: '/login' });
   };
 
-  const handleAddSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const adminKey = typeof window !== 'undefined' ? localStorage.getItem('admin-key') || '' : '';
 
     if (modalType === 'student') {
-      const newStu: Student = {
-        id: `STU-${100 + students.length + 1}`,
-        name: (formData.get('name') as string) || 'New Student',
-        email: (formData.get('email') as string) || 'student@edu.io',
-        department: (formData.get('department') as string) || 'Computer Science',
-        gpa: (formData.get('gpa') as string) || '3.80',
-        status: 'Active',
-        batch: '2026',
-        attendance: '100%'
-      };
-      setStudents([newStu, ...students]);
-      showToast(`Student ${newStu.name} added successfully!`);
+      // Student import requires the full JSON import flow
+      setIsModalOpen(false);
+      navigate({ to: '/import' });
+      return;
     } else if (modalType === 'ticket') {
-      const newTck: Ticket = {
-        id: `TCK-${900 + tickets.length + 1}`,
-        subject: (formData.get('subject') as string) || 'Support Request',
-        user: (formData.get('user') as string) || 'Current User',
-        category: (formData.get('category') as string) || 'Tech Support',
-        priority: (formData.get('priority') as string) || 'Medium',
-        status: 'Open',
-        time: 'Just now'
-      };
-      setTickets([newTck, ...tickets]);
-      showToast(`Ticket submitted successfully!`);
+      // Tickets are submitted by students; switch to ticket desk view
+      setIsModalOpen(false);
+      setActiveTab('tickets');
+      return;
     } else if (modalType === 'assignment') {
-      const newAsn: Assignment = {
-        id: `ASN-${300 + assignments.length + 1}`,
+      const payload = {
         title: (formData.get('title') as string) || 'New Assignment',
         course: (formData.get('course') as string) || 'CS-401',
-        deadline: (formData.get('deadline') as string) || '2026-09-10',
-        submitted: 0,
+        deadline: (formData.get('deadline') as string) || '',
+        priority: (formData.get('priority') as string) || 'Medium',
         total: 50,
+        submitted: 0,
         status: 'Active',
-        priority: (formData.get('priority') as string) || 'Medium'
       };
-      setAssignments([newAsn, ...assignments]);
-      showToast(`Assignment ${newAsn.title} created!`);
+      try {
+        const res = await fetch('/api/assignments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success && data.assignment) {
+          setAssignments(prev => [mapAssignmentFromDB(data.assignment as Record<string, unknown>), ...prev]);
+          showToast(`Assignment "${payload.title}" created!`);
+        } else {
+          showToast('Failed to save assignment');
+        }
+      } catch {
+        showToast('Network error — could not save assignment');
+      }
     }
 
     setIsModalOpen(false);
@@ -555,7 +693,7 @@ export default function Dashboard() {
             onSearchChange={setSearchQuery}
             onToggleNavigation={() => setMobileNavOpen(prev => !prev)}
             onToggleTheme={toggleTheme}
-            onNewTicket={() => { setModalType('ticket'); setIsModalOpen(true) }}
+            onNewTicket={() => { sessionStorage.setItem('admin-active-tab', 'tickets'); setActiveTab('tickets'); }}
             notificationControl={<NotificationCenter recipientType="ADMIN" />}
           />
 
@@ -601,40 +739,52 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                  <ModernCard
-                    title="TOTAL STUDENTS"
-                    value={students.length.toLocaleString()}
-                    change="+12.4%"
-                    icon={Users}
-                    subtitle="98% Active Enrolled"
-                    onClick={() => navigate({ to: '/students' })}
-                  />
-                  <ModernCard
-                    title="ACTIVE ASSIGNMENTS"
-                    value={assignments.filter(a => a.status === 'Active').length}
-                    change="4 Due Today"
-                    icon={BookOpen}
-                    subtitle="88% Average Submission"
-                    onClick={() => setActiveTab('assignments')}
-                  />
-                  <ModernCard
-                    title="INTERNSHIP PLACEMENTS"
-                    value={internships.length}
-                    change="94% Success Rate"
-                    icon={Briefcase}
-                    subtitle="Avg Stipend $9.3k/mo"
-                    onClick={() => setActiveTab('internships')}
-                  />
-                  <ModernCard
-                    title="CAPSTONE PROJECTS"
-                    value={projects.length}
-                    change="8 Ready for Demo"
-                    icon={Folder}
-                    subtitle="34 Ongoing Repos"
-                    onClick={() => setActiveTab('projects')}
-                  />
-                </div>
+                {(() => {
+                  const verifiedCount = students.length - pendingVerifications;
+                  const verifiedRate = students.length > 0 ? Math.round((verifiedCount / students.length) * 100) : 0;
+                  const feeCompleteCount = students.length - feeIncomplete;
+                  const feeRate = students.length > 0 ? Math.round((feeCompleteCount / students.length) * 100) : 0;
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                      <ModernCard
+                        title="TOTAL STUDENTS"
+                        value={loading ? '—' : students.length.toLocaleString()}
+                        change={students.length > 0 ? `${verifiedRate}% Verified` : undefined}
+                        icon={Users}
+                        subtitle={loading ? 'Loading…' : `${verifiedCount} profiles verified`}
+                        highlightColor="#ed143d"
+                        onClick={() => navigate({ to: '/students' })}
+                      />
+                      <ModernCard
+                        title="PENDING VERIFICATION"
+                        value={loading ? '—' : pendingVerifications}
+                        change={pendingVerifications > 0 ? 'Action Required' : undefined}
+                        icon={UserPlus}
+                        subtitle={loading ? 'Loading…' : pendingVerifications > 0 ? `${pendingVerifications} profiles awaiting review` : 'All profiles verified'}
+                        highlightColor="#f59e0b"
+                        onClick={() => navigate({ to: '/students' })}
+                      />
+                      <ModernCard
+                        title="FEE INCOMPLETE"
+                        value={loading ? '—' : feeIncomplete}
+                        change={students.length > 0 ? `${feeRate}% Cleared` : undefined}
+                        icon={Clock}
+                        subtitle={loading ? 'Loading…' : feeIncomplete > 0 ? `${feeIncomplete} students with pending fee` : 'All fees cleared'}
+                        highlightColor="#3b82f6"
+                        onClick={() => navigate({ to: '/students' })}
+                      />
+                      <ModernCard
+                        title="OPEN SUPPORT TICKETS"
+                        value={loading ? '—' : ticketStats.open}
+                        change={ticketStats.urgent > 0 ? `${ticketStats.urgent} Urgent` : ticketStats.inProgress > 0 ? `${ticketStats.inProgress} In Progress` : undefined}
+                        icon={LifeBuoy}
+                        subtitle={loading ? 'Loading…' : ticketStats.open > 0 ? `${ticketStats.inProgress} being handled` : 'No open tickets'}
+                        highlightColor="#ef4444"
+                        onClick={() => setActiveTab('tickets')}
+                      />
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
@@ -647,12 +797,8 @@ export default function Dashboard() {
                         <p className="mt-1 text-xs text-slate-400">Six-month academic health and engagement summary</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                          Sample data
-                        </span>
                         <span className="rounded-full border border-[#ed143d]/30 bg-[#ed143d]/10 px-3 py-1 text-xs font-semibold text-[#ed143d]">
-                          +6.5% growth
+                          Live data
                         </span>
                       </div>
                     </div>
@@ -662,33 +808,44 @@ export default function Dashboard() {
                         <thead>
                           <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
                             <th className="px-6 py-3.5">Period</th>
-                            <th className="px-4 py-3.5">Attendance</th>
+                            <th className="px-4 py-3.5">New Students</th>
                             <th className="px-4 py-3.5">Assignments</th>
-                            <th className="px-4 py-3.5">Placements</th>
                             <th className="px-4 py-3.5">Support load</th>
                             <th className="px-6 py-3.5 text-right">Health</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60">
-                          {chartData.map((row, index) => {
-                            const previous = chartData[index - 1];
-                            const attendanceChange = previous ? row.attendance - previous.attendance : 0;
-                            const health = row.attendance >= 96 ? 'Excellent' : row.attendance >= 93 ? 'Strong' : 'Watch';
+                          {loading ? (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                                Loading campus data…
+                              </td>
+                            </tr>
+                          ) : chartData.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">
+                                No monthly data yet — data appears as students and activity are recorded.
+                              </td>
+                            </tr>
+                          ) : chartData.map((row) => {
+                            const health = row.tickets === 0 ? 'Excellent' : row.tickets <= 5 ? 'Strong' : 'Watch';
                             const healthClasses = health === 'Excellent'
                               ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
                               : health === 'Strong'
                                 ? 'border-[#ed143d]/30 bg-[#ed143d]/10 text-[#ed143d]'
                                 : 'border-amber-500/20 bg-amber-500/10 text-amber-400';
+                            const maxEnrollments = Math.max(...chartData.map(r => r.enrollments), 1);
+                            const barWidth = Math.round((row.enrollments / maxEnrollments) * 100);
 
                             return (
-                              <tr key={row.month} className="group transition-colors hover:bg-slate-800/40">
+                              <tr key={`${row.month}-${row.year}`} className="group transition-colors hover:bg-slate-800/40">
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
                                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-800 text-xs font-extrabold text-white transition-colors group-hover:bg-[#ed143d]">
                                       {row.month}
                                     </span>
                                     <div>
-                                      <p className="text-sm font-semibold text-white">{row.month} 2026</p>
+                                      <p className="text-sm font-semibold text-white">{row.month} {row.year}</p>
                                       <p className="text-[11px] text-slate-500">Monthly cycle</p>
                                     </div>
                                   </div>
@@ -696,29 +853,20 @@ export default function Dashboard() {
                                 <td className="px-4 py-4">
                                   <div className="flex items-center gap-3">
                                     <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-800">
-                                      <div className="h-full rounded-full bg-[#ed143d]" style={{ width: `${row.attendance}%` }} />
+                                      <div className="h-full rounded-full bg-[#ed143d]" style={{ width: `${barWidth}%` }} />
                                     </div>
-                                    <span className="text-sm font-bold text-white">{row.attendance}%</span>
-                                    {previous && (
-                                      <span className={`text-[10px] font-bold ${attendanceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                        {attendanceChange >= 0 ? '+' : ''}{attendanceChange}%
-                                      </span>
-                                    )}
+                                    <span className="text-sm font-bold text-white">{row.enrollments}</span>
                                   </div>
                                 </td>
                                 <td className="px-4 py-4">
                                   <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">
                                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                                    {row.assignments} submitted
+                                    {row.assignments} created
                                   </span>
                                 </td>
                                 <td className="px-4 py-4">
-                                  <span className="text-sm font-bold text-white">{row.placements}</span>
-                                  <span className="ml-1 text-xs text-slate-500">offers</span>
-                                </td>
-                                <td className="px-4 py-4">
-                                  <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-semibold ${row.tickets <= 20 ? 'bg-emerald-500/10 text-emerald-400' : row.tickets <= 35 ? 'bg-amber-500/10 text-amber-400' : 'bg-rose-500/20 text-rose-400'}`}>
-                                    {row.tickets} tickets
+                                  <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-semibold ${row.tickets === 0 ? 'bg-emerald-500/10 text-emerald-400' : row.tickets <= 5 ? 'bg-amber-500/10 text-amber-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                                    {row.tickets} ticket{row.tickets === 1 ? '' : 's'}
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
@@ -744,27 +892,33 @@ export default function Dashboard() {
                       <p className="text-xs text-slate-400 mb-4">Enrollment by major specialization</p>
                       
                       <div className="h-48 w-full flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={categoryPieData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={55}
-                              outerRadius={80}
-                              paddingAngle={5}
-                              dataKey="value"
-                            >
-                              {categoryPieData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke={chartTheme.surface} strokeWidth={2} />
-                              ))}
-                            </Pie>
-                            <Tooltip 
-                              contentStyle={{ backgroundColor: chartTheme.surface, borderColor: chartTheme.border, borderRadius: '12px', color: chartTheme.text }}
-                              labelStyle={{ color: chartTheme.text }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
+                        {loading ? (
+                          <p className="text-xs text-slate-500">Loading…</p>
+                        ) : categoryPieData.length === 0 ? (
+                          <p className="text-xs text-slate-500">No enrollment data yet</p>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={categoryPieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={55}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                              >
+                                {categoryPieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} stroke={chartTheme.surface} strokeWidth={2} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{ backgroundColor: chartTheme.surface, borderColor: chartTheme.border, borderRadius: '12px', color: chartTheme.text }}
+                                labelStyle={{ color: chartTheme.text }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        )}
                       </div>
                     </div>
 
@@ -795,7 +949,11 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-3">
-                      {classes.slice(0, 3).map((cls) => (
+                      {loading ? (
+                        <p className="text-xs text-slate-500 py-4 text-center">Loading classes…</p>
+                      ) : classes.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-4 text-center">No classes scheduled. Add one in the Classes tab.</p>
+                      ) : classes.slice(0, 3).map((cls) => (
                         <div key={cls.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className={`p-2.5 rounded-lg ${cls.status === 'Live Now' ? 'bg-[#ed143d]/20 text-[#ed143d] animate-pulse' : 'bg-slate-800 text-slate-400'}`}>
@@ -806,11 +964,11 @@ export default function Dashboard() {
                               <p className="text-xs text-slate-400">{cls.instructor} • {cls.time}</p>
                             </div>
                           </div>
-                          <button 
+                          <button
                             onClick={() => handleToggleClass(cls.id)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                              cls.status === 'Live Now' 
-                                ? 'bg-[#ed143d] text-white shadow-md shadow-[#ed143d]/30' 
+                              cls.status === 'Live Now'
+                                ? 'bg-[#ed143d] text-white shadow-md shadow-[#ed143d]/30'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                             }`}
                           >
@@ -825,7 +983,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-base font-bold text-white flex items-center space-x-2">
                         <LifeBuoy className="w-5 h-5 text-[#ed143d]" />
-                        <span>Urgent Support Tickets</span>
+                        <span>Recent Support Tickets</span>
                       </h3>
                       <button onClick={() => setActiveTab('tickets')} className="text-xs text-[#ed143d] hover:underline flex items-center">
                         Desk <ChevronRight className="w-3 h-3 ml-1" />
@@ -833,7 +991,11 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-3">
-                      {tickets.slice(0, 3).map((tck) => (
+                      {loading ? (
+                        <p className="text-xs text-slate-500 py-4 text-center">Loading tickets…</p>
+                      ) : tickets.length === 0 ? (
+                        <p className="text-xs text-slate-500 py-4 text-center">No support tickets yet.</p>
+                      ) : tickets.slice(0, 3).map((tck) => (
                         <div key={tck.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between">
                           <div>
                             <div className="flex items-center space-x-2">
@@ -884,7 +1046,15 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredAssignments.map((asn) => {
+                  {loading ? (
+                    <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading assignments…</div>
+                  ) : filteredAssignments.length === 0 ? (
+                    <div className="col-span-2 py-16 text-center">
+                      <BookOpen className="mx-auto mb-3 h-9 w-9 text-slate-700" />
+                      <p className="font-semibold text-slate-400">No assignments found</p>
+                      <p className="mt-1 text-xs text-slate-600">Create your first assignment using the button above.</p>
+                    </div>
+                  ) : filteredAssignments.map((asn) => {
                     const percentage = Math.round((asn.submitted / asn.total) * 100);
                     return (
                       <div key={asn.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-[#ed143d]/50 transition-all">
@@ -937,7 +1107,15 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {filteredInternships.map((intern) => (
+                  {loading ? (
+                    <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading internships…</div>
+                  ) : filteredInternships.length === 0 ? (
+                    <div className="col-span-2 py-16 text-center">
+                      <Briefcase className="mx-auto mb-3 h-9 w-9 text-slate-700" />
+                      <p className="font-semibold text-slate-400">No internship listings yet</p>
+                      <p className="mt-1 text-xs text-slate-600">Listings added via the API will appear here.</p>
+                    </div>
+                  ) : filteredInternships.map((intern) => (
                     <div key={intern.id} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-[#ed143d]/40 transition-all">
                       <div>
                         <div className="flex items-center space-x-3 mb-4">
@@ -979,7 +1157,15 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredProjects.map((proj) => (
+                  {loading ? (
+                    <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading projects…</div>
+                  ) : filteredProjects.length === 0 ? (
+                    <div className="col-span-2 py-16 text-center">
+                      <Folder className="mx-auto mb-3 h-9 w-9 text-slate-700" />
+                      <p className="font-semibold text-slate-400">No capstone projects yet</p>
+                      <p className="mt-1 text-xs text-slate-600">Projects added via the API will appear here.</p>
+                    </div>
+                  ) : filteredProjects.map((proj) => (
                     <div key={proj.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                       <div className="flex items-start justify-between">
                         <div>
@@ -1024,7 +1210,15 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {filteredClasses.map((cls) => (
+                  {loading ? (
+                    <div className="py-16 text-center text-sm text-slate-500">Loading classes…</div>
+                  ) : filteredClasses.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <Video className="mx-auto mb-3 h-9 w-9 text-slate-700" />
+                      <p className="font-semibold text-slate-400">No classes scheduled</p>
+                      <p className="mt-1 text-xs text-slate-600">Classes added via the API will appear here.</p>
+                    </div>
+                  ) : filteredClasses.map((cls) => (
                     <div key={cls.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="flex items-center space-x-4">
                         <div className={`p-3.5 rounded-xl ${cls.status === 'Live Now' ? 'bg-[#ed143d] text-white shadow-lg shadow-[#ed143d]/40' : 'bg-slate-800 text-slate-400'}`}>

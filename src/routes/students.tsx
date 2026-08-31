@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2, Award } from 'lucide-react'
 import AdminPageShell from '../components/AdminPageShell'
+import { APP_URL } from '../lib/config'
 
 export const Route = createFileRoute('/students')({
   beforeLoad: () => {
@@ -70,7 +71,7 @@ function StudentDirectoryPage() {
 
   const openEvaluationReport = (student: DbStudent) => {
     localStorage.setItem('admin-preview-student', JSON.stringify(student))
-    window.open('/report?admin=1', '_blank')
+    window.open(`${APP_URL}/report?admin=1`, '_blank')
   }
 
   return (
