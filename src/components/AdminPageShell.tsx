@@ -52,7 +52,7 @@ export default function AdminPageShell({ activeItem, children }: Props) {
     localStorage.removeItem('staff-session')
     localStorage.removeItem('current-student')
     localStorage.removeItem('admin-key')
-    navigate({ to: '/login' })
+    navigate({ to: '/admin/login' })
   }
 
   return <div className="min-h-screen bg-slate-950 text-slate-100">

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/students')({
   beforeLoad: () => {
     if (typeof window === 'undefined') return
     const hasAuth = localStorage.getItem('staff-session') || localStorage.getItem('current-student')
-    if (!hasAuth) throw redirect({ to: '/login' })
+    if (!hasAuth) throw redirect({ to: '/admin/login' })
   },
   component: StudentDirectoryPage,
 })

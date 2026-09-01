@@ -4,9 +4,8 @@ import LoginPage from '../components/LoginPage'
 export const Route = createFileRoute('/login')({
   beforeLoad: () => {
     if (typeof window === 'undefined') return
-    const hasStaffSession = localStorage.getItem('staff-session')
-    const hasStudentSession = localStorage.getItem('current-student')
-    if (hasStaffSession || hasStudentSession) throw redirect({ to: '/' })
+    if (localStorage.getItem('current-student')) throw redirect({ to: '/' })
+    if (localStorage.getItem('staff-session')) throw redirect({ to: '/admin/login' })
   },
   component: LoginPage,
 })
