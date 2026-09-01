@@ -124,33 +124,33 @@ function JsonImportPage() {
 
   return (
     <AdminPageShell activeItem="import">
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-950 text-slate-100">
+    <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto space-y-6 sm:space-y-8 min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
           <div className="flex items-center gap-2 text-[#ed143d] text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-4 h-4" />
             <span>BTU Data Synchronization Hub</span>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">Import Evaluation (BTU)</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">Import Evaluation (BTU)</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Upload student evaluation JSON records exported from BTU ERP to populate your database.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           {totalDbCount > 0 && (
             <>
               <button
                 onClick={() => navigate({ to: '/students' })}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#ed143d] text-white font-bold text-sm shadow-lg shadow-[#ed143d]/30 hover:bg-rose-700 transition-all"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#ed143d] text-white font-bold text-xs sm:text-sm shadow-lg shadow-[#ed143d]/30 hover:bg-rose-700 transition-all"
               >
                 <span>View BTU DB ({totalDbCount})</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
               <button
                 onClick={handleClear}
-                className="p-2.5 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition-colors"
+                className="p-2.5 shrink-0 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition-colors"
                 title="Clear BTU Database Records"
               >
                 <Trash2 className="w-4 h-4" />
@@ -169,7 +169,7 @@ function JsonImportPage() {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 cursor-pointer overflow-hidden group ${
+        className={`relative border-2 border-dashed rounded-3xl p-5 sm:p-12 text-center transition-all duration-300 cursor-pointer overflow-hidden group ${
           isDragging
             ? 'border-[#ed143d] bg-[#ed143d]/10 scale-[1.01]'
             : 'border-slate-800 bg-slate-900/80 hover:border-[#ed143d]/50 hover:bg-slate-900'
@@ -188,20 +188,20 @@ function JsonImportPage() {
         />
 
         <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto relative z-10">
-          <div className="w-20 h-20 rounded-3xl bg-[#ed143d]/10 text-[#ed143d] flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
-            {isLoading ? <RefreshCw className="w-10 h-10 animate-spin text-[#ed143d]" /> : <FileJson className="w-10 h-10" />}
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[#ed143d]/10 text-[#ed143d] flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+            {isLoading ? <RefreshCw className="w-8 h-8 sm:w-10 sm:h-10 animate-spin text-[#ed143d]" /> : <FileJson className="w-8 h-8 sm:w-10 sm:h-10" />}
           </div>
 
           <div className="space-y-1">
-            <p className="text-lg font-bold text-white">
+            <p className="text-base sm:text-lg font-bold text-white">
               {isLoading ? 'Processing & Persisting to BTU Database...' : 'Drop your BTU ERP Student JSON file here'}
             </p>
             <p className="text-xs text-slate-400">
-              or click to browse your computer (e.g. <span className="font-mono text-[#ed143d] font-semibold">Student_Export_*.json</span>)
+              or click to browse your computer (e.g. <span className="font-mono text-[#ed143d] font-semibold break-all">Student_Export_*.json</span>)
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ed143d]/10 border border-[#ed143d]/30 text-xs font-semibold text-[#ed143d]">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#ed143d]/10 border border-[#ed143d]/30 text-xs font-semibold text-[#ed143d]">
             <Upload className="w-3.5 h-3.5" />
             <span>Select .json file for BTU</span>
           </div>
@@ -215,7 +215,7 @@ function JsonImportPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center gap-3 text-sm font-semibold"
+            className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center gap-3 text-xs sm:text-sm font-semibold"
           >
             <AlertTriangle className="w-5 h-5 shrink-0 text-rose-400" />
             <span>{errorMsg}</span>
@@ -227,15 +227,15 @@ function JsonImportPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-between text-sm font-semibold"
+            className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
-              <span>{successMsg}</span>
+              <span className="leading-snug">{successMsg}</span>
             </div>
             <button
               onClick={() => navigate({ to: '/students' })}
-              className="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+              className="shrink-0 text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors self-end sm:self-auto"
             >
               Go to Directory
             </button>
@@ -246,7 +246,7 @@ function JsonImportPage() {
       {/* Recently Imported Preview */}
       {lastImported && Array.isArray(lastImported) && (
         <div className="space-y-4 pt-4 border-t border-slate-800">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5 text-[#ed143d]" />
             <span>Recently Imported BTU Records</span>
           </h2>
@@ -255,7 +255,7 @@ function JsonImportPage() {
             {lastImported.map((stu, i) => (
               <div
                 key={i}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3"
+                className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#ed143d]/10 text-[#ed143d] flex items-center justify-center font-black text-sm shrink-0">
@@ -271,18 +271,18 @@ function JsonImportPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1 text-xs text-slate-400 border-t border-slate-800 pt-2">
-                  <div className="flex justify-between">
-                    <span className="flex items-center gap-1">
+                <div className="space-y-1.5 text-xs text-slate-400 border-t border-slate-800 pt-2.5">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="flex items-center gap-1 shrink-0">
                       <Building2 className="w-3 h-3 text-slate-500" /> University:
                     </span>
-                    <span className="font-semibold text-white">{stu.university || 'BTU'}</span>
+                    <span className="font-semibold text-white truncate">{stu.university || 'BTU'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="flex items-center gap-1">
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="flex items-center gap-1 shrink-0">
                       <GraduationCap className="w-3 h-3 text-slate-500" /> Program:
                     </span>
-                    <span className="font-semibold text-white truncate max-w-[140px]">
+                    <span className="font-semibold text-white truncate text-right">
                       {stu.academicDetails?.nameOfPrograme || 'N/A'}
                     </span>
                   </div>

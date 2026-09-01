@@ -697,7 +697,7 @@ export default function Dashboard() {
             notificationControl={<NotificationCenter recipientType="ADMIN" />}
           />
 
-          <div className="p-6 md:p-8 space-y-8 w-full">
+          <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 w-full">
 
             {activeTab === 'dashboard' && (
               <motion.div
@@ -708,7 +708,7 @@ export default function Dashboard() {
               >
                 <div className="flex flex-col gap-5 py-2 md:flex-row md:items-end md:justify-between">
                   <div className="max-w-2xl">
-                    <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                    <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl md:text-4xl">
                       Welcome back, Academic Portal <span aria-hidden="true">👋</span>
                     </h2>
                     <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 md:text-base">
@@ -954,19 +954,19 @@ export default function Dashboard() {
                       ) : classes.length === 0 ? (
                         <p className="text-xs text-slate-500 py-4 text-center">No classes scheduled. Add one in the Classes tab.</p>
                       ) : classes.slice(0, 3).map((cls) => (
-                        <div key={cls.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className={`p-2.5 rounded-lg ${cls.status === 'Live Now' ? 'bg-[#ed143d]/20 text-[#ed143d] animate-pulse' : 'bg-slate-800 text-slate-400'}`}>
+                        <div key={cls.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex flex-col xs:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-center space-x-3 min-w-0">
+                            <div className={`p-2.5 rounded-lg shrink-0 ${cls.status === 'Live Now' ? 'bg-[#ed143d]/20 text-[#ed143d] animate-pulse' : 'bg-slate-800 text-slate-400'}`}>
                               <Video className="w-4 h-4" />
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold text-white">{cls.title}</p>
-                              <p className="text-xs text-slate-400">{cls.instructor} • {cls.time}</p>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-white truncate">{cls.title}</p>
+                              <p className="text-xs text-slate-400 truncate">{cls.instructor} • {cls.time}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => handleToggleClass(cls.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all self-end xs:self-auto ${
                               cls.status === 'Live Now'
                                 ? 'bg-[#ed143d] text-white shadow-md shadow-[#ed143d]/30'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
@@ -996,27 +996,27 @@ export default function Dashboard() {
                       ) : tickets.length === 0 ? (
                         <p className="text-xs text-slate-500 py-4 text-center">No support tickets yet.</p>
                       ) : tickets.slice(0, 3).map((tck) => (
-                        <div key={tck.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        <div key={tck.id} className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-xl flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${
                                 tck.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-slate-800 text-slate-400'
                               }`}>
                                 {tck.priority}
                               </span>
-                              <p className="text-sm font-semibold text-white truncate max-w-xs">{tck.subject}</p>
+                              <p className="text-sm font-semibold text-white truncate">{tck.subject}</p>
                             </div>
-                            <p className="text-xs text-slate-400 mt-1">Requested by {tck.user} • {tck.time}</p>
+                            <p className="text-xs text-slate-400 mt-1 truncate">By {tck.user} • {tck.time}</p>
                           </div>
                           {tck.status !== 'Resolved' ? (
                             <button
                               onClick={() => handleResolveTicket(tck.id)}
-                              className="px-3 py-1 bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 rounded-lg text-xs font-medium transition-all"
+                              className="shrink-0 px-3 py-1 bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 rounded-lg text-xs font-medium transition-all self-end xs:self-auto"
                             >
                               Resolve
                             </button>
                           ) : (
-                            <span className="text-xs font-bold text-emerald-400 flex items-center">
+                            <span className="shrink-0 text-xs font-bold text-emerald-400 flex items-center self-end xs:self-auto">
                               <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Resolved
                             </span>
                           )}
@@ -1031,21 +1031,21 @@ export default function Dashboard() {
 
             {activeTab === 'assignments' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Course Assignments</h2>
-                    <p className="text-slate-400 text-sm">Track active submissions, grading timelines, and deadlines.</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Course Assignments</h2>
+                    <p className="text-slate-400 text-xs sm:text-sm mt-0.5">Track active submissions, grading timelines, and deadlines.</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => { setModalType('assignment'); setIsModalOpen(true); }}
-                    className="px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
+                    className="w-full sm:w-auto justify-center shrink-0 px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Create Assignment</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {loading ? (
                     <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading assignments…</div>
                   ) : filteredAssignments.length === 0 ? (
@@ -1057,37 +1057,39 @@ export default function Dashboard() {
                   ) : filteredAssignments.map((asn) => {
                     const percentage = Math.round((asn.submitted / asn.total) * 100);
                     return (
-                      <div key={asn.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-[#ed143d]/50 transition-all">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700">
-                              {asn.course}
+                      <div key={asn.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden group hover:border-[#ed143d]/50 transition-all flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700 inline-block">
+                                {asn.course}
+                              </span>
+                              <h3 className="text-base sm:text-lg font-bold text-white mt-2 group-hover:text-[#ed143d] transition-colors leading-snug">{asn.title}</h3>
+                            </div>
+                            <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-bold ${
+                              asn.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-300'
+                            }`}>
+                              {asn.priority}
                             </span>
-                            <h3 className="text-lg font-bold text-white mt-2 group-hover:text-[#ed143d] transition-colors">{asn.title}</h3>
                           </div>
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                            asn.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-300'
-                          }`}>
-                            {asn.priority}
-                          </span>
-                        </div>
 
-                        <div className="mt-6 space-y-2">
-                          <div className="flex justify-between text-xs font-medium text-slate-400">
-                            <span>Submissions ({asn.submitted}/{asn.total})</span>
-                            <span className="text-white font-bold">{percentage}%</span>
-                          </div>
-                          <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-gradient-to-r from-[#ed143d] to-rose-500 h-full transition-all duration-500" 
-                              style={{ width: `${percentage}%` }}
-                            />
+                          <div className="mt-5 space-y-2">
+                            <div className="flex justify-between text-xs font-medium text-slate-400">
+                              <span>Submissions ({asn.submitted}/{asn.total})</span>
+                              <span className="text-white font-bold">{percentage}%</span>
+                            </div>
+                            <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                              <div 
+                                className="bg-gradient-to-r from-[#ed143d] to-rose-500 h-full transition-all duration-500" 
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                        <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                           <span className="flex items-center">
-                            <Clock className="w-3.5 h-3.5 mr-1 text-[#ed143d]" />
+                            <Clock className="w-3.5 h-3.5 mr-1 text-[#ed143d] shrink-0" />
                             Due {asn.deadline}
                           </span>
                           <span className="font-semibold text-slate-300">{asn.status}</span>
@@ -1205,8 +1207,8 @@ export default function Dashboard() {
             {activeTab === 'classes' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Live Classes & Timetable</h2>
-                  <p className="text-slate-400 text-sm">Interactive schedules and direct virtual classroom launchers.</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">Live Classes & Timetable</h2>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-0.5">Interactive schedules and direct virtual classroom launchers.</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -1219,22 +1221,22 @@ export default function Dashboard() {
                       <p className="mt-1 text-xs text-slate-600">Classes added via the API will appear here.</p>
                     </div>
                   ) : filteredClasses.map((cls) => (
-                    <div key={cls.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                      <div className="flex items-center space-x-4">
-                        <div className={`p-3.5 rounded-xl ${cls.status === 'Live Now' ? 'bg-[#ed143d] text-white shadow-lg shadow-[#ed143d]/40' : 'bg-slate-800 text-slate-400'}`}>
-                          <Video className="w-6 h-6" />
+                    <div key={cls.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 min-w-0">
+                        <div className={`p-3 rounded-xl shrink-0 ${cls.status === 'Live Now' ? 'bg-[#ed143d] text-white shadow-lg shadow-[#ed143d]/40' : 'bg-slate-800 text-slate-400'}`}>
+                          <Video className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex items-center space-x-2">
                             <span className="text-xs font-mono text-[#ed143d] font-bold">{cls.code}</span>
                             <span className="text-xs text-slate-500">• {cls.room}</span>
                           </div>
-                          <h3 className="text-base font-bold text-white mt-0.5">{cls.title}</h3>
-                          <p className="text-xs text-slate-400 mt-1">Instructor: {cls.instructor} | Enrolled: {cls.students} Students</p>
+                          <h3 className="text-sm sm:text-base font-bold text-white mt-0.5 leading-snug">{cls.title}</h3>
+                          <p className="text-xs text-slate-400 mt-1 truncate">Instructor: {cls.instructor} • Enrolled: {cls.students} Students</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
+                      <div className="flex items-center justify-between sm:justify-end space-x-4 w-full sm:w-auto border-t border-slate-800/80 pt-3 sm:border-0 sm:pt-0">
                         <span className="text-xs font-mono text-slate-300">{cls.time}</span>
                         <button
                           onClick={() => handleToggleClass(cls.id)}
@@ -1356,7 +1358,7 @@ export default function Dashboard() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-[#ed143d]/20 z-10"
+              className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl shadow-[#ed143d]/20 z-10 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <h3 className="text-xl font-bold text-white capitalize">
@@ -1380,7 +1382,7 @@ export default function Dashboard() {
                       <label className="text-xs font-semibold text-slate-300">Email Address</label>
                       <input name="email" type="email" required placeholder="e.g. elena@edu.io" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-semibold text-slate-300">Department</label>
                         <input name="department" defaultValue="Computer Science" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
@@ -1399,7 +1401,7 @@ export default function Dashboard() {
                       <label className="text-xs font-semibold text-slate-300">Assignment Title</label>
                       <input name="title" required placeholder="e.g. Distributed Systems Lab 04" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-semibold text-slate-300">Course Code</label>
                         <input name="course" defaultValue="CS-401" className="w-full mt-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-[#ed143d] focus:outline-none" />

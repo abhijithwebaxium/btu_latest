@@ -386,8 +386,8 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
       <main className="h-screen overflow-y-auto bg-slate-950 lg:ml-[260px]">
 
         {/* Navbar — same structure as staff */}
-        <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <header className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
             <button
               type="button"
               onClick={() => setMobileOpen(prev => !prev)}
@@ -408,10 +408,10 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex shrink-0 items-center space-x-2 sm:space-x-3">
             {/* Batch badge */}
             {student.admissionBatch && (
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+              <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
                 <Calendar className="w-3.5 h-3.5 text-[#ed143d]" />
                 <span>Batch <strong className="text-white">{student.admissionBatch}</strong></span>
               </div>
@@ -422,7 +422,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               type="button"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+              className="hidden sm:flex p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition-all"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -434,14 +434,14 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             />
 
             {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ed143d] to-rose-700 flex items-center justify-center font-bold text-white text-xs shadow-md">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#ed143d] to-rose-700 flex items-center justify-center font-bold text-white text-xs shadow-md shrink-0">
               {initials}
             </div>
           </div>
         </header>
 
         {/* ─── Page content ─── */}
-        <div className="p-6 md:p-8 space-y-8 w-full">
+        <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 w-full">
 
           {/* ══ OVERVIEW ══ */}
           {tab === 'overview' && (
@@ -455,7 +455,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               {/* Page header */}
               <div className="flex flex-col gap-5 py-2 md:flex-row md:items-end md:justify-between">
                 <div className="max-w-2xl">
-                  <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+                  <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl md:text-4xl">
                     Welcome back, {name.split(' ')[0]} 👋
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -618,12 +618,12 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-white">BTU Evaluation</h2>
                   <p className="text-slate-400 text-sm">Subject equalization and credit mapping at Bir Tikendrajit University.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <StatusBadge status={ev.evaluationStatus} />
                   <a
                     href={`${APP_URL}/report`}

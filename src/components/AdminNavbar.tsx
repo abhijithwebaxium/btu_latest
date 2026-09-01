@@ -21,35 +21,35 @@ export default function AdminNavbar({
   notificationControl,
 }: AdminNavbarProps) {
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-6 py-4 backdrop-blur-xl">
-      <div className="flex max-w-md flex-1 items-center space-x-4">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-3 sm:px-6 py-3 sm:py-4 backdrop-blur-xl gap-2">
+      <div className="flex min-w-0 flex-1 items-center space-x-2 sm:space-x-4 max-w-md">
         <button
           type="button"
           onClick={onToggleNavigation}
           aria-label="Toggle navigation"
-          className="shrink-0 rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-400 transition-colors hover:text-white lg:hidden"
+          className="shrink-0 rounded-xl border border-slate-800 bg-slate-900 p-2 sm:p-2.5 text-slate-400 transition-colors hover:text-white lg:hidden"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="relative w-full">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <div className="relative min-w-0 flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Search students, courses, tickets, assignments..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={event => onSearchChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-900 py-2 pl-10 pr-4 text-sm text-slate-200 placeholder-slate-500 transition-all focus:border-[#ed143d] focus:outline-none focus:ring-1 focus:ring-[#ed143d]"
+            className="w-full rounded-xl border border-slate-800 bg-slate-900 py-1.5 sm:py-2 pl-9 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 transition-all focus:border-[#ed143d] focus:outline-none focus:ring-1 focus:ring-[#ed143d]"
           />
         </div>
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex shrink-0 items-center space-x-1.5 sm:space-x-3">
         <button
           type="button"
           onClick={onToggleTheme}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          className="rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white"
+          className="rounded-xl border border-slate-800 bg-slate-900 p-2 sm:p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white"
         >
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
@@ -63,7 +63,7 @@ export default function AdminNavbar({
           <span>New Ticket</span>
         </button>
 
-        {notificationControl || <button type="button" aria-label="Notifications" className="relative rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white">
+        {notificationControl || <button type="button" aria-label="Notifications" className="relative rounded-xl border border-slate-800 bg-slate-900 p-2 sm:p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white">
           <Bell className="h-5 w-5" />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#ed143d] ring-2 ring-slate-950" />
         </button>}

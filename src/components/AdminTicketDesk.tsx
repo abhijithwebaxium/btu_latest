@@ -207,15 +207,15 @@ export default function AdminTicketDesk() {
       </div>
 
       {/* Status filter */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <Filter className="w-4 h-4 text-slate-600 mr-1" />
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+        <Filter className="w-4 h-4 text-slate-600 mr-1 shrink-0" />
         {STATUS_OPTIONS.map(s => (
           <button
             key={s}
             onClick={() => { setStatusFilter(s); setActiveThread(null) }}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all capitalize ${
+            className={`shrink-0 px-3 py-1 rounded-lg text-xs font-semibold transition-all capitalize ${
               statusFilter === s
-                ? 'bg-[#ed143d] text-white'
+                ? 'bg-[#ed143d] text-white shadow-md shadow-[#ed143d]/20'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -226,7 +226,7 @@ export default function AdminTicketDesk() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Thread list */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className={`lg:col-span-1 space-y-2 ${activeThread ? 'hidden lg:block' : 'block'}`}>
           {loadingThreads && threads.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 text-slate-600 animate-spin" />
