@@ -567,9 +567,6 @@ export default function Dashboard() {
           onClose={() => setMobileNavOpen(false)}
           onSignOut={handleAdminSignOut}
           badges={{
-            assignments: assignments.length,
-            internships: internships.length,
-            projects: projects.length,
             tickets: tickets.filter(ticket => ticket.status === 'Open').length,
           }}
         />
@@ -693,7 +690,6 @@ export default function Dashboard() {
             onSearchChange={setSearchQuery}
             onToggleNavigation={() => setMobileNavOpen(prev => !prev)}
             onToggleTheme={toggleTheme}
-            onNewTicket={() => { sessionStorage.setItem('admin-active-tab', 'tickets'); setActiveTab('tickets'); }}
             notificationControl={<NotificationCenter recipientType="ADMIN" />}
           />
 
@@ -714,28 +710,6 @@ export default function Dashboard() {
                     <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 md:text-base">
                       A clear view of today’s students, coursework, placements, and campus activity.
                     </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button 
-                      onClick={() => {
-                        setModalType('student');
-                        setIsModalOpen(true);
-                      }}
-                      className="flex items-center space-x-2 rounded-xl border border-slate-700 bg-transparent px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-[#ed143d]/50 hover:text-[#ed143d]"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      <span>Add Student</span>
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setModalType('assignment');
-                        setIsModalOpen(true);
-                      }}
-                      className="flex items-center space-x-2 rounded-xl bg-[#ed143d] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#ed143d]/20 transition-[background-color,transform] hover:bg-rose-700 active:translate-y-px"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>New Assignment</span>
-                    </button>
                   </div>
                 </div>
 
@@ -1029,7 +1003,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'assignments' && (
+            {false && activeTab === 'assignments' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -1151,7 +1125,7 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {activeTab === 'projects' && (
+            {false && activeTab === 'projects' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Capstone Projects Hub</h2>
@@ -1336,7 +1310,12 @@ export default function Dashboard() {
               </motion.div>
             )}
             </>}
-            {activeTab === 'tickets'       && <AdminTicketDesk />}
+            {(activeTab === 'tickets' || activeTab === 'assignments' || activeTab === 'projects') && (
+              <AdminTicketDesk
+                key={activeTab}
+                initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : 'all'}
+              />
+            )}
             {activeTab === 'announcements' && <AdminAnnouncementDesk />}
 
           </div>

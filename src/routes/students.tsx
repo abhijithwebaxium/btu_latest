@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
-import { Search, Database, UserPlus, RefreshCw, GraduationCap, CheckCircle2, AlertCircle, Building2, Award, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Search, UserPlus, RefreshCw, GraduationCap, CheckCircle2,
+  AlertCircle, Building2, Award, ChevronLeft, ChevronRight,
+  ClipboardList, Folder, Briefcase, X, BookOpen,
+} from 'lucide-react'
 import AdminPageShell from '../components/AdminPageShell'
 import { APP_URL } from '../lib/config'
 
@@ -12,6 +16,22 @@ export const Route = createFileRoute('/students')({
   },
   component: StudentDirectoryPage,
 })
+
+interface EvalSubject {
+  btuSubjectCode?: string
+  btuSubjectTitle?: string
+  subjectCode?: string
+  semester?: number
+  credits?: number
+  examBatch?: string
+  examBatchSr?: string
+  examStatus?: string
+  examSession?: string
+  examSessionSr?: string
+  mark?: number | string
+  grade?: string
+  equalized?: string
+}
 
 interface DbStudent {
   _id: string
@@ -27,18 +47,205 @@ interface DbStudent {
     email?: string
     mobileNumber?: string | number
     category?: string
+    dateOfBirth?: string
   }
   academicDetails?: {
     nameOfPrograme?: string
     branch?: string
     academicSession?: string
   }
-  evaluation?: Record<string, unknown>
+  evaluation?: {
+    approvalStage?: number
+    evaluationStatus?: string
+    subjects?: EvalSubject[]
+  }
   createdAt?: string
+}
+
+type ModalTab = 'assignments' | 'projects' | 'internships'
+
+const PROJECT_LABELS: Record<string, string> = {
+  'M.I.P.R.S': 'Mini Project',
+  'M.A.P.R.S.I': 'Major Project I',
+  'M.A.P.R.S.II': 'Major Project II',
+  'I.R.S': 'Internship',
+}
+
+const ASSIGNMENT_DATES: Record<string, string> = {
+  'Dec-2024': '30th October 2024', 'June-2025': '30th April 2025',
+  'Dec-2025': '30th October 2025', 'June-2026': '30th April 2026',
+  'Dec-2026': '30th October 2026', 'June-2027': '30th April 2027',
+}
+
+function getStudentSubs(student: DbStudent) {
+  const subjects = student.evaluation?.subjects || []
+  const reappear = subjects.filter(
+    s => s.equalized === 'reappear' || s.equalized === 're-submission' || s.equalized === 'improvement'
+  )
+  return {
+    assignments: reappear.filter(s => s.examStatus === 'A.E.B.T.U.C'),
+    projects: reappear.filter(s => ['M.I.P.R.S', 'M.A.P.R.S.I', 'M.A.P.R.S.II'].includes(s.examStatus || '')),
+    internships: reappear.filter(s => s.examStatus === 'I.R.S'),
+  }
 }
 
 const PAGE_SIZE = 20
 
+/* ── Modal ─────────────────────────────────────────────────────────── */
+function StudentAcademicModal({
+  student,
+  defaultTab,
+  onClose,
+}: {
+  student: DbStudent
+  defaultTab: ModalTab
+  onClose: () => void
+}) {
+  const [tab, setTab] = useState<ModalTab>(defaultTab)
+  const { assignments, projects, internships } = getStudentSubs(student)
+  const name = student.personalDetails?.name || 'Student'
+
+  const tabs: { id: ModalTab; label: string; icon: React.ElementType; subs: EvalSubject[]; color: string }[] = [
+    { id: 'assignments', label: 'Assignments', icon: ClipboardList, subs: assignments, color: 'text-blue-400 border-blue-500 bg-blue-500/10' },
+    { id: 'projects',    label: 'Projects',    icon: Folder,        subs: projects,    color: 'text-violet-400 border-violet-500 bg-violet-500/10' },
+    { id: 'internships', label: 'Internships', icon: Briefcase,     subs: internships, color: 'text-emerald-400 border-emerald-500 bg-emerald-500/10' },
+  ]
+  const activeTab = tabs.find(t => t.id === tab)!
+  const subs = activeTab.subs
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-2xl max-h-[85vh] flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-slate-800 shrink-0">
+          <div>
+            <h3 className="font-bold text-white text-base">{name}</h3>
+            <p className="text-xs text-slate-400 mt-0.5 font-mono">
+              {student.enrollmentID || student.applicationID || student._id}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1.5 px-6 py-3 border-b border-slate-800 shrink-0">
+          {tabs.map(t => {
+            const Icon = t.icon
+            const isActive = tab === t.id
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  isActive
+                    ? t.color
+                    : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {t.label}
+                <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  isActive ? 'bg-white/20' : 'bg-slate-800'
+                }`}>
+                  {t.subs.length}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {subs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+              <BookOpen className="w-8 h-8 mb-3 opacity-40" />
+              <p className="text-sm font-medium">No {activeTab.label.toLowerCase()} found</p>
+              <p className="text-xs mt-1 text-slate-600">
+                {tab === 'assignments'
+                  ? 'No assignment subjects in this student\'s evaluation.'
+                  : tab === 'projects'
+                  ? 'No project subjects in this student\'s evaluation.'
+                  : 'No internship subjects in this student\'s evaluation.'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Summary row */}
+              <div className="flex gap-4 text-xs text-slate-400 pb-3 border-b border-slate-800">
+                <span><span className="font-bold text-white">{subs.length}</span> subject{subs.length !== 1 ? 's' : ''}</span>
+                <span><span className="font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</span> total credits</span>
+                <span><span className="font-bold text-white">{[...new Set(subs.map(s => s.semester).filter(Boolean))].length}</span> semester{[...new Set(subs.map(s => s.semester).filter(Boolean))].length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {/* Subject cards */}
+              {subs.map((sub, i) => {
+                const code  = sub.btuSubjectCode || sub.subjectCode || '—'
+                const title = sub.btuSubjectTitle || '—'
+                const batch = sub.examBatch || sub.examBatchSr || ''
+                const deadline = tab === 'assignments' ? ASSIGNMENT_DATES[batch] : undefined
+                const typeLabel = tab !== 'assignments' ? (PROJECT_LABELS[sub.examStatus || ''] || sub.examStatus) : undefined
+
+                return (
+                  <div
+                    key={i}
+                    className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 space-y-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white text-sm leading-snug">{title}</p>
+                        <p className="text-xs font-mono text-slate-400 mt-0.5">{code}</p>
+                      </div>
+                      {typeLabel && (
+                        <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${activeTab.color}`}>
+                          {typeLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-400">
+                      {sub.semester != null && (
+                        <span>Semester <span className="font-semibold text-slate-200">{sub.semester}</span></span>
+                      )}
+                      {sub.credits != null && (
+                        <span><span className="font-semibold text-slate-200">{sub.credits}</span> credits</span>
+                      )}
+                      {batch && (
+                        <span>Batch <span className="font-semibold text-slate-200">{batch}</span></span>
+                      )}
+                      {(sub.examSession || sub.examSessionSr) && (
+                        <span>Session <span className="font-semibold text-slate-200">{sub.examSession || sub.examSessionSr}</span></span>
+                      )}
+                    </div>
+
+                    {deadline && (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-400">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Submission deadline: <strong>{deadline}</strong></span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Page ───────────────────────────────────────────────────────────── */
 function StudentDirectoryPage() {
   const navigate = useNavigate()
   const [students, setStudents] = useState<DbStudent[]>([])
@@ -46,6 +253,8 @@ function StudentDirectoryPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [modalStudent, setModalStudent] = useState<DbStudent | null>(null)
+  const [modalTab, setModalTab] = useState<ModalTab>('assignments')
 
   const loadStudents = async (query: string = '') => {
     setIsLoading(true)
@@ -95,16 +304,17 @@ function StudentDirectoryPage() {
     window.open(`${APP_URL}/report?admin=1`, '_blank')
   }
 
+  const openModal = (student: DbStudent, tab: ModalTab) => {
+    setModalStudent(student)
+    setModalTab(tab)
+  }
+
   return (
     <AdminPageShell activeItem="students">
     <div className="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto space-y-6 sm:space-y-8 min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-[#ed143d] text-xs font-bold uppercase tracking-wider mb-1">
-            <Database className="w-4 h-4" />
-            <span>MongoDB Database Directory — BTU</span>
-          </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">BTU Student Directory</h1>
           <p className="text-sm text-slate-400 mt-1">
             Real-time student records persisted in MongoDB for Bir Tikendrajit University (BTU).
@@ -194,55 +404,82 @@ function StudentDirectoryPage() {
 
           {/* Mobile card list */}
           <div className="flex flex-col gap-3 md:hidden">
-            {pagedStudents.map((student) => (
-              <div key={student._id} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-white truncate">{student.personalDetails?.name || 'Unnamed Student'}</p>
-                    <p className="text-xs font-mono font-bold text-[#ed143d] mt-0.5">
-                      {student.enrollmentID || student.applicationID || student._id}
-                    </p>
+            {pagedStudents.map((student) => {
+              const { assignments, projects, internships } = getStudentSubs(student)
+              return (
+                <div key={student._id} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white truncate">{student.personalDetails?.name || 'Unnamed Student'}</p>
+                      <p className="text-xs font-mono font-bold text-[#ed143d] mt-0.5">
+                        {student.enrollmentID || student.applicationID || student._id}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      student.isProfileVerified
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    }`}>
+                      <CheckCircle2 className="w-3 h-3" />
+                      {student.isProfileVerified ? 'Verified' : 'Pending'}
+                    </span>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    student.isProfileVerified
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                  }`}>
-                    <CheckCircle2 className="w-3 h-3" />
-                    {student.isProfileVerified ? 'Verified' : 'Pending'}
-                  </span>
-                </div>
 
-                <div className="space-y-1 text-xs text-slate-400">
-                  {student.personalDetails?.email && (
-                    <p className="truncate">{student.personalDetails.email}</p>
-                  )}
-                  {student.personalDetails?.mobileNumber && (
-                    <p className="font-mono text-slate-500">{student.personalDetails.mobileNumber}</p>
-                  )}
-                </div>
+                  <div className="space-y-1 text-xs text-slate-400">
+                    {student.personalDetails?.email && (
+                      <p className="truncate">{student.personalDetails.email}</p>
+                    )}
+                    {student.personalDetails?.mobileNumber && (
+                      <p className="font-mono text-slate-500">{student.personalDetails.mobileNumber}</p>
+                    )}
+                  </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                  <span className="flex items-center gap-1 text-slate-300">
-                    <GraduationCap className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="truncate max-w-45">{student.academicDetails?.nameOfPrograme || 'General Program'}</span>
-                  </span>
-                  <span className="flex items-center gap-1 text-slate-300">
-                    <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    {student.university || 'BTU'}
-                  </span>
-                  <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span>
-                </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                    <span className="flex items-center gap-1 text-slate-300">
+                      <GraduationCap className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span className="truncate max-w-45">{student.academicDetails?.nameOfPrograme || 'General Program'}</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-slate-300">
+                      <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      {student.university || 'BTU'}
+                    </span>
+                    <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span>
+                  </div>
 
-                <button
-                  onClick={() => openEvaluationReport(student)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#ed143d]/10 border border-[#ed143d]/30 text-[#ed143d] text-xs font-semibold hover:bg-[#ed143d]/20 transition-colors"
-                >
-                  <Award className="w-3.5 h-3.5" />
-                  View Evaluation Report
-                </button>
-              </div>
-            ))}
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => openEvaluationReport(student)}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#ed143d]/10 border border-[#ed143d]/30 text-[#ed143d] text-xs font-semibold hover:bg-[#ed143d]/20 transition-colors"
+                    >
+                      <Award className="w-3.5 h-3.5" />
+                      Eval Report
+                    </button>
+                    <button
+                      onClick={() => openModal(student, 'assignments')}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold hover:bg-blue-500/20 transition-colors"
+                    >
+                      <ClipboardList className="w-3.5 h-3.5" />
+                      Assignments {assignments.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({assignments.length})</span>}
+                    </button>
+                    <button
+                      onClick={() => openModal(student, 'projects')}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-semibold hover:bg-violet-500/20 transition-colors"
+                    >
+                      <Folder className="w-3.5 h-3.5" />
+                      Projects {projects.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({projects.length})</span>}
+                    </button>
+                    <button
+                      onClick={() => openModal(student, 'internships')}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <Briefcase className="w-3.5 h-3.5" />
+                      Internships {internships.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({internships.length})</span>}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
           {/* Desktop table */}
@@ -251,70 +488,74 @@ function StudentDirectoryPage() {
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
-                    <th className="p-4 font-semibold">Student ID</th>
                     <th className="p-4 font-semibold">Name & Contact</th>
                     <th className="p-4 font-semibold">Program / Branch</th>
-                    <th className="p-4 font-semibold">University</th>
-                    <th className="p-4 font-semibold">Mode</th>
-                    <th className="p-4 font-semibold">Verification</th>
-                    <th className="p-4 font-semibold">Report</th>
+                    <th className="p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {pagedStudents.map((student) => (
-                    <tr key={student._id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="p-4 font-mono font-bold text-[#ed143d]">
-                        {student.enrollmentID || student.applicationID || student._id}
-                      </td>
-                      <td className="p-4">
-                        <p className="font-semibold text-white">{student.personalDetails?.name || 'Unnamed Student'}</p>
-                        <p className="text-xs text-slate-400">{student.personalDetails?.email || 'N/A'}</p>
-                        {student.personalDetails?.mobileNumber && (
-                          <p className="text-xs text-slate-500 font-mono">{student.personalDetails.mobileNumber}</p>
-                        )}
-                      </td>
-                      <td className="p-4 text-slate-300">
-                        <div className="flex items-center gap-1.5">
-                          <GraduationCap className="w-4 h-4 text-slate-500 shrink-0" />
-                          <span className="truncate max-w-50">
-                            {student.academicDetails?.nameOfPrograme || 'General Program'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4 font-semibold text-slate-300">
-                        <div className="flex items-center gap-1">
-                          <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                          <span>{student.university || 'BTU'}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-xs font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</td>
-                      <td className="p-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          student.isProfileVerified
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                        }`}>
-                          <CheckCircle2 className="w-3 h-3" />
-                          {student.isProfileVerified ? 'Verified' : 'Pending'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <button
-                          onClick={() => openEvaluationReport(student)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ed143d]/10 border border-[#ed143d]/30 text-[#ed143d] text-xs font-semibold hover:bg-[#ed143d]/20 transition-colors"
-                        >
-                          <Award className="w-3.5 h-3.5" />
-                          Evaluation Report
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {pagedStudents.map((student) => {
+                    const { assignments, projects, internships } = getStudentSubs(student)
+                    return (
+                      <tr key={student._id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="p-4">
+                          <p className="font-semibold text-white">{student.personalDetails?.name || 'Unnamed Student'}</p>
+                          <p className="text-xs text-slate-400">{student.personalDetails?.email || 'N/A'}</p>
+                          {student.personalDetails?.mobileNumber && (
+                            <p className="text-xs text-slate-500 font-mono">{student.personalDetails.mobileNumber}</p>
+                          )}
+                          {student.personalDetails?.dateOfBirth && (
+                            <p className="text-xs text-slate-500 mt-0.5">{(() => { const d = new Date(student.personalDetails.dateOfBirth!); return isNaN(d.getTime()) ? student.personalDetails.dateOfBirth : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` })()}</p>
+                          )}
+                        </td>
+                        <td className="p-4 text-slate-300">
+                          <div className="flex items-center gap-1.5">
+                            <GraduationCap className="w-4 h-4 text-slate-500 shrink-0" />
+                            <span className="truncate max-w-50">
+                              {student.academicDetails?.nameOfPrograme || 'General Program'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => openEvaluationReport(student)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
+                            >
+                              <Award className="w-3.5 h-3.5" /> Report
+                            </button>
+                            <button
+                              onClick={() => openModal(student, 'assignments')}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
+                            >
+                              <ClipboardList className="w-3.5 h-3.5" /> Assignments
+                              {assignments.length > 0 && <span className="ml-0.5 text-slate-400">({assignments.length})</span>}
+                            </button>
+                            <button
+                              onClick={() => openModal(student, 'projects')}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
+                            >
+                              <Folder className="w-3.5 h-3.5" /> Projects
+                              {projects.length > 0 && <span className="ml-0.5 text-slate-400">({projects.length})</span>}
+                            </button>
+                            <button
+                              onClick={() => openModal(student, 'internships')}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
+                            >
+                              <Briefcase className="w-3.5 h-3.5" /> Internships
+                              {internships.length > 0 && <span className="ml-0.5 text-slate-400">({internships.length})</span>}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Bottom pagination (desktop always, mobile only when multiple pages) */}
+          {/* Bottom pagination */}
           <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 ${totalPages <= 1 ? 'md:flex hidden' : ''}`}>
             <p className="text-xs text-slate-500 order-2 sm:order-1">
               {totalPages > 1
@@ -360,6 +601,16 @@ function StudentDirectoryPage() {
         </>
       )}
     </div>
+
+    {/* Academic detail modal */}
+    {modalStudent && (
+      <StudentAcademicModal
+        student={modalStudent}
+        defaultTab={modalTab}
+        onClose={() => setModalStudent(null)}
+      />
+    )}
+
     </AdminPageShell>
   )
 }

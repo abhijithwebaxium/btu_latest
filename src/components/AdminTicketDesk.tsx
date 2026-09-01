@@ -42,6 +42,21 @@ const PRIORITY_COLORS: Record<string, string> = {
   low:    'bg-slate-800/50 text-slate-500 border-slate-800',
 }
 
+const CATEGORY_SOURCE: Record<string, { label: string; color: string } | undefined> = {
+  assignment: { label: 'Assignment', color: 'bg-violet-500/15 text-violet-400 border-violet-500/30' },
+  project:    { label: 'Project',    color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' },
+}
+
+function SourceBadge({ category }: { category: string }) {
+  const s = CATEGORY_SOURCE[category]
+  if (!s) return null
+  return (
+    <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.color}`}>
+      {s.label}
+    </span>
+  )
+}
+
 function timeAgo(d: string) {
   const diff = Date.now() - new Date(d).getTime()
   const m = Math.floor(diff / 60000)
@@ -66,7 +81,7 @@ function getAdminKey(): string {
   return localStorage.getItem('admin-key') || ''
 }
 
-export default function AdminTicketDesk() {
+export default function AdminTicketDesk({ initialCategoryFilter }: { initialCategoryFilter?: string }) {
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -81,6 +96,12 @@ export default function AdminTicketDesk() {
   const prevMsgCount = useRef(0)
   const activeThreadRef = useRef<Thread | null>(null)
   activeThreadRef.current = activeThread
+
+  const visibleThreads = !initialCategoryFilter || initialCategoryFilter === 'all'
+    ? threads
+    : initialCategoryFilter === 'support'
+      ? threads.filter(t => t.category !== 'assignment' && t.category !== 'project')
+      : threads.filter(t => t.category === initialCategoryFilter)
 
   const fetchThreads = useCallback(async (silent = false) => {
     if (!silent) setLoadingThreads(true)
@@ -184,18 +205,30 @@ export default function AdminTicketDesk() {
     }
   }
 
+  const pageTitle = initialCategoryFilter === 'assignment'
+    ? 'Assignment Chats'
+    : initialCategoryFilter === 'project'
+      ? 'Project Chats'
+      : 'Support Tickets'
+
+  const pageDesc = initialCategoryFilter === 'assignment'
+    ? 'Student queries raised from assignment cards'
+    : initialCategoryFilter === 'project'
+      ? 'Student queries raised from project cards'
+      : 'All student support requests'
+
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="admin-ticket-desk space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            Campus Support Helpdesk
+            {pageTitle}
             <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Live
             </span>
           </h2>
-          <p className="text-slate-400 text-sm">{total} total ticket{total !== 1 ? 's' : ''} · Auto-refreshes every 8s</p>
+          <p className="text-slate-400 text-sm">{pageDesc} · {total} ticket{total !== 1 ? 's' : ''}</p>
         </div>
         <button
           onClick={() => fetchThreads()}
@@ -224,6 +257,7 @@ export default function AdminTicketDesk() {
         ))}
       </div>
 
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Thread list */}
         <div className={`lg:col-span-1 space-y-2 ${activeThread ? 'hidden lg:block' : 'block'}`}>
@@ -231,43 +265,54 @@ export default function AdminTicketDesk() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 text-slate-600 animate-spin" />
             </div>
-          ) : threads.length === 0 ? (
+          ) : visibleThreads.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center">
               <LifeBuoy className="w-8 h-8 mx-auto mb-3 text-slate-700" />
               <p className="text-sm text-slate-500">No tickets found</p>
             </div>
           ) : (
-            threads.map(t => (
-              <button
-                key={t._id}
-                onClick={() => setActiveThread(t)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${
-                  activeThread?._id === t._id
-                    ? 'border-[#ed143d]/50 bg-[#ed143d]/5'
-                    : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-800/40'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <p className="text-sm font-semibold text-white leading-snug line-clamp-2">{t.subject}</p>
-                  <StatusBadge status={t.status} />
-                </div>
-                <p className="text-[11px] text-slate-400 mb-1.5">{t.studentName || t.studentId}</p>
-                <div className="flex items-center gap-2 text-[10px] text-slate-500">
-                  <span className={`px-1.5 py-0.5 rounded border font-bold capitalize ${PRIORITY_COLORS[t.priority] || ''}`}>
-                    {t.priority}
-                  </span>
-                  <span className="capitalize">{t.category}</span>
-                  <span className="ml-auto">{timeAgo(t.lastMessageAt)}</span>
-                </div>
-              </button>
-            ))
+            visibleThreads.map(t => {
+              const stripe = t.category === 'assignment'
+                ? 'bg-violet-500'
+                : t.category === 'project'
+                  ? 'bg-cyan-500'
+                  : null
+              return (
+                <button
+                  key={t._id}
+                  onClick={() => setActiveThread(t)}
+                  className={`relative w-full text-left p-4 rounded-xl border transition-all overflow-hidden ${
+                    activeThread?._id === t._id
+                      ? 'border-[#ed143d]/50 bg-[#ed143d]/5'
+                      : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-800/40'
+                  }`}
+                >
+                  {stripe && <span className={`absolute left-0 top-0 bottom-0 w-1 ${stripe}`} />}
+                  <div className={`${stripe ? 'pl-2' : ''}`}>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <p className="text-sm font-semibold text-white leading-snug line-clamp-2">{t.subject}</p>
+                      <StatusBadge status={t.status} />
+                    </div>
+                    <p className="text-[11px] text-slate-400 mb-1.5">{t.studentName || t.studentId}</p>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                      <span className={`px-1.5 py-0.5 rounded border font-bold capitalize ${PRIORITY_COLORS[t.priority] || ''}`}>
+                        {t.priority}
+                      </span>
+                      <SourceBadge category={t.category} />
+                      {!CATEGORY_SOURCE[t.category] && <span className="capitalize">{t.category}</span>}
+                      <span className="ml-auto">{timeAgo(t.lastMessageAt)}</span>
+                    </div>
+                  </div>
+                </button>
+              )
+            })
           )}
         </div>
 
         {/* Thread view */}
         <div className="lg:col-span-2">
           {!activeThread ? (
-            <div className="h-full min-h-[350px] rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-center p-8">
+            <div className="h-full min-h-87.5 rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-center p-8">
               <div>
                 <MessageSquare className="w-10 h-10 mx-auto mb-3 text-slate-700" />
                 <p className="text-sm text-slate-500">Select a ticket to view messages</p>
@@ -285,10 +330,13 @@ export default function AdminTicketDesk() {
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white">{activeThread.subject}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-bold text-white">{activeThread.subject}</p>
+                      <SourceBadge category={activeThread.category} />
+                    </div>
                     <p className="text-xs text-slate-500 mt-0.5">
                       From: <span className="text-slate-300">{activeThread.studentName || activeThread.studentId}</span>
-                      {' · '}<span className="capitalize">{activeThread.category}</span>
+                      {!CATEGORY_SOURCE[activeThread.category] && <>{' · '}<span className="capitalize">{activeThread.category}</span></>}
                     </p>
                   </div>
                 </div>

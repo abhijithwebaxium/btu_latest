@@ -4,7 +4,7 @@ import AdminNavbar from './AdminNavbar'
 import AdminSidebar, { type AdminSection } from './AdminSidebar'
 
 type AppTheme = 'dark' | 'light'
-type Props = { activeItem: 'students' | 'import' | 'announcements'; children: ReactNode }
+type Props = { activeItem: 'students' | 'import' | 'announcements' | 'tickets' | 'assignments' | 'projects'; children: ReactNode }
 
 function getActiveTheme(): AppTheme {
   if (typeof document !== 'undefined') {
@@ -58,7 +58,7 @@ export default function AdminPageShell({ activeItem, children }: Props) {
   return <div className="min-h-screen bg-slate-950 text-slate-100">
     <AdminSidebar activeItem={activeItem} mobileOpen={mobileNavOpen} onNavigate={navigateTo} onClose={() => setMobileNavOpen(false)} onSignOut={signOut} badges={{  }} />
     <main className="min-h-screen lg:ml-[260px]">
-      <AdminNavbar theme={theme} searchQuery={searchQuery} onSearchChange={setSearchQuery} onToggleNavigation={() => setMobileNavOpen(prev => !prev)} onToggleTheme={toggleTheme} onNewTicket={() => navigateTo('tickets')} />
+      <AdminNavbar theme={theme} searchQuery={searchQuery} onSearchChange={setSearchQuery} onToggleNavigation={() => setMobileNavOpen(prev => !prev)} onToggleTheme={toggleTheme} />
       {children}
     </main>
   </div>

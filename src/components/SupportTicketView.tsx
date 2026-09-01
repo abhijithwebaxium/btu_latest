@@ -27,6 +27,7 @@ interface Props {
   studentId: string
   studentName: string
   initialThread?: Thread | null
+  categoryFilter?: 'assignment' | 'project'
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -63,7 +64,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-export default function SupportTicketView({ studentId, studentName, initialThread }: Props) {
+export default function SupportTicketView({ studentId, studentName, initialThread, categoryFilter }: Props) {
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -194,25 +195,43 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
     }
   }
 
+  const pageTitle = categoryFilter === 'assignment'
+    ? 'Assignment Chats'
+    : categoryFilter === 'project'
+      ? 'Project Chats'
+      : 'Support Tickets'
+
+  const pageDesc = categoryFilter === 'assignment'
+    ? 'Chats you opened from your assignment cards.'
+    : categoryFilter === 'project'
+      ? 'Chats you opened from your project cards.'
+      : 'Submit and track your support requests.'
+
+  const visibleThreads = categoryFilter
+    ? threads.filter(t => t.category === categoryFilter)
+    : threads.filter(t => t.category !== 'assignment' && t.category !== 'project')
+
   return (
     <div className="student-support-center space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            Support Center
+            {pageTitle}
             <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Live
             </span>
           </h2>
-          <p className="text-slate-400 text-sm">Submit and track your support requests.</p>
+          <p className="text-slate-400 text-sm">{pageDesc}</p>
         </div>
-        <button
-          onClick={() => { setShowNewForm(true); setActiveThread(null) }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 transition-all"
-        >
-          <Plus className="w-4 h-4" /> New Ticket
-        </button>
+        {!categoryFilter && (
+          <button
+            onClick={() => { setShowNewForm(true); setActiveThread(null) }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 transition-all"
+          >
+            <Plus className="w-4 h-4" /> New Ticket
+          </button>
+        )}
       </div>
 
       {/* New ticket form */}
@@ -324,14 +343,16 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
             <div className="flex items-center justify-center py-10">
               <Loader2 className="w-5 h-5 text-slate-600 animate-spin" />
             </div>
-          ) : threads.length === 0 ? (
+          ) : visibleThreads.length === 0 ? (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 text-center">
               <LifeBuoy className="w-8 h-8 mx-auto mb-3 text-slate-700" />
-              <p className="text-sm text-slate-500">No tickets yet.</p>
-              <p className="text-xs text-slate-600 mt-1">Click "New Ticket" to get help.</p>
+              <p className="text-sm text-slate-500">No chats yet.</p>
+              <p className="text-xs text-slate-600 mt-1">
+                {categoryFilter ? 'Use the Chat button on your subject cards.' : 'Click "New Ticket" to get help.'}
+              </p>
             </div>
           ) : (
-            threads.map(t => (
+            visibleThreads.map(t => (
               <button
                 key={t._id}
                 onClick={() => { setActiveThread(t); setShowNewForm(false) }}
@@ -360,7 +381,7 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
         {/* Thread view */}
         <div className="lg:col-span-2">
           {!activeThread ? (
-            <div className="h-full min-h-[300px] rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-center p-8">
+            <div className="h-full min-h-75 rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center justify-center text-center p-8">
               <div>
                 <MessageSquare className="w-10 h-10 mx-auto mb-3 text-slate-700" />
                 <p className="text-sm text-slate-500">Select a ticket to view messages</p>

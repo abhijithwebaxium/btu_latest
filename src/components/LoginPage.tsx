@@ -65,7 +65,6 @@ export default function LoginPage() {
           <div className="relative mt-6 space-y-3 hidden sm:block">
             {[
               { icon: BookOpen, text: 'Academic evaluations' },
-              { icon: Award,    text: 'Credit transfer records' },
               { icon: Users,    text: 'Campus resources' },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2.5 text-rose-100">

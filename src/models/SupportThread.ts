@@ -5,6 +5,8 @@ export type ThreadPriority = 'low' | 'normal' | 'high' | 'urgent'
 export type ThreadCategory =
   | 'general'
   | 'academic'
+  | 'assignment'
+  | 'project'
   | 'documents'
   | 'fee'
   | 'technical'
@@ -45,7 +47,7 @@ const SupportThreadSchema = new Schema<ISupportThread>(
     },
     category: {
       type: String,
-      enum: ['general', 'academic', 'documents', 'fee', 'technical', 'administration', 'facility', 'other'],
+      enum: ['general', 'academic', 'assignment', 'project', 'documents', 'fee', 'technical', 'administration', 'facility', 'other'],
       default: 'general',
     },
     assignedTo: { type: String },
@@ -58,6 +60,9 @@ const SupportThreadSchema = new Schema<ISupportThread>(
 SupportThreadSchema.index({ studentId: 1, status: 1, createdAt: -1 })
 SupportThreadSchema.index({ status: 1, priority: 1, lastMessageAt: -1 })
 
-export const SupportThread =
-  mongoose.models.SupportThread ||
-  mongoose.model<ISupportThread>('SupportThread', SupportThreadSchema)
+// Force-recreate the model when the schema changes (avoids cached enum in dev)
+if (mongoose.models.SupportThread) {
+  delete (mongoose.models as Record<string, unknown>).SupportThread
+}
+
+export const SupportThread = mongoose.model<ISupportThread>('SupportThread', SupportThreadSchema)

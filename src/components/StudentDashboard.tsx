@@ -53,7 +53,7 @@ export interface LoggedInStudent {
   }
 }
 
-type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'profile' | 'support'
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'profile' | 'support' | 'chat-assignments' | 'chat-projects'
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -242,7 +242,11 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
     },
     {
       label: 'Support',
-      items: [{ id: 'support' as Tab, label: 'Support Tickets', icon: LifeBuoy, badge: null }],
+      items: [
+        { id: 'support'           as Tab, label: 'Support Tickets',  icon: LifeBuoy,    badge: null },
+        { id: 'chat-assignments'  as Tab, label: 'Assignment Chats', icon: ClipboardList, badge: assignmentSubs.length || null },
+        { id: 'chat-projects'     as Tab, label: 'Project Chats',    icon: Folder,       badge: projectSubs.length    || null },
+      ],
     },
     {
       label: 'Account',
@@ -252,7 +256,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
 
   function navigate(id: Tab) { setTab(id); setMobileOpen(false) }
 
-  async function openChat(cardKey: string, subject: string, body: string) {
+  async function openChat(cardKey: string, subject: string, body: string, category: string = 'academic') {
     setChatLoading(cardKey)
     try {
       const r = await fetch('/api/support', {
@@ -264,14 +268,14 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
           studentName: p.name || 'Student',
           subject,
           body,
-          category: 'academic',
+          category,
           priority: 'normal',
         }),
       })
       const d = await r.json()
       if (d.success) {
         setPendingThread(d.thread)
-        setTab('support')
+        setTab(category === 'assignment' ? 'chat-assignments' : category === 'project' ? 'chat-projects' : 'support')
         setMobileOpen(false)
       }
     } catch { /* silent */ } finally {
@@ -328,16 +332,16 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                         {active && (
                           <motion.div
                             layoutId="studentActiveTab"
-                            className="absolute inset-0 bg-gradient-to-r from-[#ed143d] to-rose-600 rounded-xl shadow-lg shadow-[#ed143d]/30"
+                            className="absolute inset-0 bg-linear-to-r from-[#ed143d] to-rose-600 rounded-xl shadow-lg shadow-[#ed143d]/30"
                             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                           />
                         )}
-                        <div className="relative z-10 flex items-center space-x-3">
-                          <Icon className={`w-[18px] h-[18px] ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                          <span className="sidebar-nav-label">{label}</span>
+                        <div className="relative z-10 flex min-w-0 flex-1 items-center space-x-3">
+                          <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                          <span className="sidebar-nav-label truncate">{label}</span>
                         </div>
                         {badge !== null && badge !== undefined && (
-                          <span className={`relative z-10 text-xs px-2 py-0.5 rounded-full font-bold ${
+                          <span className={`relative z-10 ml-2 shrink-0 text-xs px-2 py-0.5 rounded-full font-bold ${
                             active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
                           }`}>
                             {badge}
@@ -1125,6 +1129,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                                   cardKey,
                                   `Assignment Query: ${sub.subjectTitle || sub.subjectCode || 'Subject'}`,
                                   `I need assistance with my reappear assignment for:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}${deadline ? `\nSubmission Deadline: ${deadline}` : ''}\n\nPlease guide me on the next steps.`,
+                                  'assignment',
                                 )}
                                 disabled={isCreating}
                                 className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
@@ -1272,6 +1277,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                                   cardKey,
                                   `${typeLabel} Query: ${sub.subjectTitle || sub.subjectCode || 'Project'}`,
                                   `I need assistance with my ${typeLabel.toLowerCase()} re-submission:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nType: ${typeLabel}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}\n\nPlease guide me on the next steps.`,
+                                  'project',
                                 )}
                                 disabled={isCreating}
                                 className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
@@ -1293,17 +1299,20 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
 
           {/* ══ SUPPORT ══ */}
           {tab === 'support' && (
-            <motion.div
-              key="support"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <SupportTicketView
-                studentId={student._id}
-                studentName={p.name || 'Student'}
-                initialThread={pendingThread}
-              />
+            <motion.div key="support" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} />
+            </motion.div>
+          )}
+
+          {tab === 'chat-assignments' && (
+            <motion.div key="chat-assignments" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} categoryFilter="assignment" />
+            </motion.div>
+          )}
+
+          {tab === 'chat-projects' && (
+            <motion.div key="chat-projects" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} categoryFilter="project" />
             </motion.div>
           )}
 

@@ -246,7 +246,7 @@ function CreditEvaluationReport() {
                 </tr>
                 <tr>
                   <th className="border p-2 col color">DATE OF BIRTH</th>
-                  <td className="border p-2 col">{p.dateOfBirth}</td>
+                  <td className="border p-2 col">{p.dateOfBirth ? (() => { const d = new Date(p.dateOfBirth); return isNaN(d.getTime()) ? p.dateOfBirth : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` })() : ''}</td>
                 </tr>
                 <tr>
                   <th className="border p-2 col color">MOBILE NUMBER</th>

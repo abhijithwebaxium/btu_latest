@@ -1,4 +1,4 @@
-import { Bell, Menu, Moon, Plus, Search, Sun } from 'lucide-react'
+import { Bell, Menu, Moon, Search, Sun } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 type AdminNavbarProps = {
@@ -7,7 +7,6 @@ type AdminNavbarProps = {
   onSearchChange: (value: string) => void
   onToggleNavigation: () => void
   onToggleTheme: () => void
-  onNewTicket: () => void
   notificationControl?: ReactNode
 }
 
@@ -17,7 +16,6 @@ export default function AdminNavbar({
   onSearchChange,
   onToggleNavigation,
   onToggleTheme,
-  onNewTicket,
   notificationControl,
 }: AdminNavbarProps) {
   return (
@@ -52,15 +50,6 @@ export default function AdminNavbar({
           className="rounded-xl border border-slate-800 bg-slate-900 p-2 sm:p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white"
         >
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
-
-        <button
-          type="button"
-          onClick={onNewTicket}
-          className="hidden items-center space-x-2 rounded-xl bg-[#ed143d] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#ed143d]/30 transition-all hover:scale-105 hover:bg-rose-700 active:scale-95 sm:flex"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Ticket</span>
         </button>
 
         {notificationControl || <button type="button" aria-label="Notifications" className="relative rounded-xl border border-slate-800 bg-slate-900 p-2 sm:p-2.5 text-slate-400 transition-all hover:border-slate-700 hover:text-white">
