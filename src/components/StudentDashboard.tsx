@@ -1301,19 +1301,19 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
           {/* ══ SUPPORT ══ */}
           {tab === 'support' && (
             <motion.div key="support" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} />
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread && pendingThread.category !== 'assignment' && pendingThread.category !== 'project' ? pendingThread : null} />
             </motion.div>
           )}
 
           {tab === 'chat-assignments' && (
             <motion.div key="chat-assignments" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} categoryFilter="assignment" />
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread?.category === 'assignment' ? pendingThread : null} categoryFilter="assignment" />
             </motion.div>
           )}
 
           {tab === 'chat-projects' && (
             <motion.div key="chat-projects" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread} categoryFilter="project" />
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread?.category === 'project' ? pendingThread : null} categoryFilter="project" />
             </motion.div>
           )}
 

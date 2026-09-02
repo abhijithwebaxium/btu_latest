@@ -59,6 +59,7 @@ interface DbStudent {
     evaluationStatus?: string
     subjects?: EvalSubject[]
   }
+  branch?: string | { name?: string; shortCode?: string; [key: string]: unknown }
   createdAt?: string
 }
 
@@ -440,7 +441,7 @@ function StudentDirectoryPage() {
                       <span className="truncate max-w-45">{student.academicDetails?.nameOfPrograme || 'General Program'}</span>
                     </span>
                     {student.branch && (
-                      <span className="text-slate-400">{(student.branch as any)?.name ?? student.branch}</span>
+                      <span className="text-slate-400">{typeof student.branch === 'object' ? student.branch?.name : student.branch}</span>
                     )}
                     <span className="flex items-center gap-1 text-slate-300">
                       <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -525,7 +526,7 @@ function StudentDirectoryPage() {
                             </span>
                           </div>
                           {student.branch && (
-                            <p className="text-xs text-slate-500 mt-1 ml-5.5">{(student.branch as any)?.name ?? student.branch}</p>
+                            <p className="text-xs text-slate-500 mt-1 ml-5.5">{typeof student.branch === 'object' ? student.branch?.name : student.branch}</p>
                           )}
                         </td>
                         <td className="p-4 text-slate-400">
