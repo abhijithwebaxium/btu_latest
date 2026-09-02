@@ -272,6 +272,7 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
                   >
                     <option value="general">General</option>
                     <option value="academic">Academic</option>
+                    <option value="exams">Exams</option>
                     <option value="documents">Documents</option>
                     <option value="fee">Fee / Payment</option>
                     <option value="technical">Technical</option>

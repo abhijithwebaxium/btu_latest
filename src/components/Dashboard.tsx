@@ -784,12 +784,12 @@ export default function Dashboard() {
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[680px] border-collapse text-left">
                         <thead>
-                          <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                            <th className="px-6 py-3.5">Period</th>
-                            <th className="px-4 py-3.5">New Students</th>
-                            <th className="px-4 py-3.5">Assignments</th>
-                            <th className="px-4 py-3.5">Support load</th>
-                            <th className="px-6 py-3.5 text-right">Health</th>
+                          <tr className="bg-slate-900 border-b-2 border-slate-700 text-sm font-bold uppercase tracking-[0.14em] text-slate-100">
+                            <th className="px-6 py-4">Period</th>
+                            <th className="px-4 py-4">New Students</th>
+                            <th className="px-4 py-4">Assignments</th>
+                            <th className="px-4 py-4">Support load</th>
+                            <th className="px-6 py-4 text-right">Health</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60">

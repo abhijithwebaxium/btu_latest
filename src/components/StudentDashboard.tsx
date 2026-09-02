@@ -516,9 +516,9 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
 
               {/* KPI cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <KpiCard title="EQUALIZED CREDITS" value={equalizedCr} sub={`${evalSubs.filter(s => s.equalized === 'equalized').length} subjects equalized`} icon={Award}      change={equalizedCr > 0 ? 'Credited' : undefined} />
-                <KpiCard title="REAPPEAR CREDITS"  value={reappearCr}  sub={`${reappearSubs.length} subjects pending`}                                         icon={BarChart3}  change={reappearCr > 0 ? 'Action Required' : undefined} />
-                <KpiCard title="TOTAL CREDITS"     value={evalCr}      sub="All BTU credit mappings"                                                            icon={TrendingUp} change={evalCr > 0 ? 'Mapped' : undefined} />
+                <KpiCard title="EQUALIZED CREDITS" value={equalizedCr} sub="Credits recognized by BTU from subjects you passed at your previous university" icon={Award} />
+                <KpiCard title="REAPPEAR CREDITS"  value={reappearCr}  sub="Credits for subjects not equalized that you must appear and pass at BTU" icon={BarChart3} />
+                <KpiCard title="TOTAL CREDITS"     value={evalCr}      sub="Total credits across all subjects mapped from your previous university to BTU" icon={TrendingUp} />
               </div>
 
               {/* Info grid */}
@@ -663,7 +663,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               {/* Table */}
               <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-slate-800 p-6">
-                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                  <h3 className="text-xl font-bold text-white flex items-center space-x-2">
                     <Award className="w-5 h-5 text-[#ed143d]" />
                     <span>Subject Mapping & Equalization</span>
                   </h3>
@@ -681,7 +681,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                       <col className="w-[20%]" />
                     </colgroup>
                     <thead>
-                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      <tr className="bg-slate-900 border-b-2 border-slate-700 text-sm font-bold uppercase tracking-[0.14em] text-slate-100">
                         <th className="px-6 py-3.5">Subject Code</th>
                         <th className="px-4 py-3.5">BTU Subject Title</th>
                         <th className="px-4 py-3.5">Sem</th>
@@ -711,24 +711,16 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                         return (
                           <tr key={i} className="group transition-colors hover:bg-slate-800/40">
                             <td className="px-6 py-4">
-                              {code ? (
-                                <span className="block truncate text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700" title={code}>
-                                  {code}
-                                </span>
-                              ) : isReappear && examBatch ? (
-                                <span className="block truncate text-xs font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20" title={examBatch}>
-                                  {examBatch}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-600">—</span>
-                              )}
+                              <span className="text-sm text-slate-300" title={code || examBatch}>
+                                {code || (isReappear && examBatch ? examBatch : '—')}
+                              </span>
                             </td>
                             <td className="px-4 py-4">
                               {title ? (
-                                <span className="block truncate text-sm font-semibold text-white" title={title}>{title}</span>
+                                <span className="block truncate text-sm text-white" title={title}>{title}</span>
                               ) : isReappear ? (
                                 <div>
-                                  <span className="text-sm font-semibold text-amber-400">Reappear Exam</span>
+                                  <span className="text-sm text-amber-400">Reappear Exam</span>
                                   {examStatus && <p className="text-xs text-slate-500 mt-0.5 truncate">{examStatus}</p>}
                                 </div>
                               ) : (
@@ -736,8 +728,8 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                               )}
                             </td>
                             <td className="px-4 py-4 text-sm font-mono text-slate-300">{(s.semester as number) ?? '—'}</td>
-                            <td className="px-4 py-4 text-sm font-bold text-slate-200">{(s.credits as number) ?? '—'}</td>
-                            <td className="px-4 py-4 text-sm font-bold text-emerald-400">{(s.grade || s.mark || '—') as string}</td>
+                            <td className="px-4 py-4 text-sm text-slate-300">{(s.credits as number) ?? '—'}</td>
+                            <td className="px-4 py-4 text-sm text-slate-300">{(s.grade || s.mark || '—') as string}</td>
                             <td className="px-6 py-4 text-right">
                               <StatusBadge status={(s.equalized || s.examStatus) as string | undefined} />
                             </td>
@@ -786,7 +778,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
 
               <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-slate-800 p-6">
-                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                  <h3 className="text-xl font-bold text-white flex items-center space-x-2">
                     <FileText className="w-5 h-5 text-[#ed143d]" />
                     <span>Transfer Subjects — {a.parentUniversity || 'Parent University'}</span>
                   </h3>
@@ -796,7 +788,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[640px] border-collapse text-left">
                     <thead>
-                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      <tr className="bg-slate-900 border-b-2 border-slate-700 text-sm font-bold uppercase tracking-[0.14em] text-slate-100">
                         <th className="px-6 py-3.5">Subject Code</th>
                         <th className="px-4 py-3.5">Subject Title</th>
                         <th className="px-4 py-3.5">Sem</th>
@@ -816,16 +808,14 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                       ) : prevSubs.map((sub, i) => (
                         <tr key={i} className="group transition-colors hover:bg-slate-800/40">
                           <td className="px-6 py-4">
-                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">
-                              {sub.subjectCode || 'N/A'}
-                            </span>
+                            <span className="text-sm text-slate-300">{sub.subjectCode || 'N/A'}</span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm font-semibold text-white">{sub.subjectTitle || '—'}</span>
+                            <span className="text-sm text-white">{sub.subjectTitle || '—'}</span>
                           </td>
                           <td className="px-4 py-4 text-sm font-mono text-slate-300">{sub.semester ?? '—'}</td>
-                          <td className="px-4 py-4 text-sm font-bold text-slate-200">{sub.credits ?? '—'}</td>
-                          <td className="px-4 py-4 text-sm font-bold text-emerald-400">{sub.grade || sub.mark || '—'}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300">{sub.credits ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300">{sub.grade || sub.mark || '—'}</td>
                           <td className="px-6 py-4 text-right"><StatusBadge status={sub.result} /></td>
                         </tr>
                       ))}
@@ -837,7 +827,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               {/* ── Reappear / Re-submission Subjects ── */}
               <div className="overflow-hidden rounded-2xl border border-orange-500/20 bg-slate-900/80 shadow-xl backdrop-blur-xl">
                 <div className="flex items-center justify-between border-b border-orange-500/20 p-6">
-                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                  <h3 className="text-xl font-bold text-white flex items-center space-x-2">
                     <FileText className="w-5 h-5 text-orange-400" />
                     <span>Reappear / Re-submission Subjects</span>
                   </h3>
@@ -847,7 +837,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[700px] border-collapse text-left">
                     <thead>
-                      <tr className="bg-slate-950/50 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      <tr className="bg-slate-900 border-b-2 border-slate-700 text-sm font-bold uppercase tracking-[0.14em] text-slate-100">
                         <th className="px-6 py-3.5">Subject Code</th>
                         <th className="px-4 py-3.5">Subject Title</th>
                         <th className="px-4 py-3.5">Sem</th>
@@ -868,15 +858,13 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                       ) : reappearSubs.map((sub, i) => (
                         <tr key={i} className="group transition-colors hover:bg-slate-800/40">
                           <td className="px-6 py-4">
-                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-orange-400 border border-slate-700">
-                              {sub.subjectCode || 'N/A'}
-                            </span>
+                            <span className="text-sm text-slate-300">{sub.subjectCode || 'N/A'}</span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm font-semibold text-white">{sub.subjectTitle || '—'}</span>
+                            <span className="text-sm text-white">{sub.subjectTitle || '—'}</span>
                           </td>
                           <td className="px-4 py-4 text-sm font-mono text-slate-300">{sub.semester ?? '—'}</td>
-                          <td className="px-4 py-4 text-sm font-bold text-slate-200">{sub.credits ?? '—'}</td>
+                          <td className="px-4 py-4 text-sm text-slate-300">{sub.credits ?? '—'}</td>
                           <td className="px-4 py-4 text-sm text-slate-300">{sub.examBatch || sub.semesterSet || '—'}</td>
                           <td className="px-4 py-4 text-sm text-slate-300">{sub.examStatus || '—'}</td>
                           <td className="px-6 py-4 text-right">
@@ -980,10 +968,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           const type = typeMap[sub.equalized] ?? { badge: 'bg-slate-800 text-slate-400 border-slate-700', bar: 'bg-slate-600' }
                           const dueDate = sub.examBatch ? ASSIGNMENT_DATES[sub.examBatch] : null
                           return (
-                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all">
-                              {/* Color accent bar */}
-                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${type.bar}`} />
-
+                            <div key={i} className="relative rounded-xl border-2 border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all">
                               <div className="p-4 pt-4.5">
                                 {/* Top row: code + type badge */}
                                 <div className="flex items-start justify-between gap-2 mb-2.5">
@@ -1108,8 +1093,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           }
                           const type = typeMap[sub.equalized] ?? { badge: 'bg-slate-800 text-slate-400 border-slate-700', bar: 'bg-slate-600' }
                           return (
-                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
-                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${type.bar}`} />
+                            <div key={i} className="relative rounded-xl border-2 border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
                               <div className="p-4 pt-4.5 flex flex-col flex-1">
                                 <div className="flex items-start justify-between gap-2 mb-2.5">
                                   <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20 shrink-0">
@@ -1240,8 +1224,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           const cardKey = `p-${sub.subjectCode}-${i}`
                           const isCreating = chatLoading === cardKey
                           return (
-                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
-                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${barColor}`} />
+                            <div key={i} className="relative rounded-xl border-2 border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
                               <div className="p-4 pt-4.5 flex flex-col flex-1">
                                 <div className="flex items-start justify-between gap-2 mb-2.5">
                                   {sub.subjectCode && (

@@ -496,11 +496,11 @@ function StudentDirectoryPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
-                    <th className="p-4 font-semibold">Name & Contact</th>
-                    <th className="p-4 font-semibold">Program / Branch</th>
-                    <th className="p-4 font-semibold">Imported On</th>
-                    <th className="p-4 font-semibold">Actions</th>
+                  <tr className="bg-slate-900 border-b-2 border-slate-700 text-slate-100 uppercase text-sm tracking-[0.12em]">
+                    <th className="p-4 font-bold">Name & Contact</th>
+                    <th className="p-4 font-bold">Program / Branch</th>
+                    <th className="p-4 font-bold">Imported On</th>
+                    <th className="p-4 font-bold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
