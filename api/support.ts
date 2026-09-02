@@ -41,6 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!isAdmin(req)) return res.status(403).json({ success: false, error: 'Forbidden' })
         const result = await getAllThreads({
           status: q.status,
+          category: q.category,
           page: q.page ? parseInt(q.page) : 1,
           limit: q.limit ? parseInt(q.limit) : 30,
         })

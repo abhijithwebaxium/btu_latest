@@ -244,7 +244,7 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
               }
               if (action === 'allThreads') {
                 if (!isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }
-                const result = await getAllThreads({ status: p.get('status') || undefined, page: p.get('page') ? parseInt(p.get('page')!) : 1, limit: 30 })
+                const result = await getAllThreads({ status: p.get('status') || undefined, category: p.get('category') || undefined, page: p.get('page') ? parseInt(p.get('page')!) : 1, limit: 30 })
                 res.end(JSON.stringify({ success: true, ...result })); return
               }
               res.statusCode = 400; res.end(JSON.stringify({ success: false, error: 'Unknown action' })); return

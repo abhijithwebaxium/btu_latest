@@ -166,11 +166,18 @@ export async function updateThreadStatus(data: {
   }
 }
 
-export async function getAllThreads(opts: { status?: string; page?: number; limit?: number }) {
+export async function getAllThreads(opts: { status?: string; category?: string; page?: number; limit?: number }) {
   await connectToDatabase()
-  const { status, page = 1, limit = 30 } = opts
+  const { status, category, page = 1, limit = 30 } = opts
   const query: Record<string, unknown> = {}
   if (status && status !== 'all') query.status = status
+  if (category && category !== 'all') {
+    if (category === 'support') {
+      query.category = { $nin: ['assignment', 'project'] }
+    } else {
+      query.category = category
+    }
+  }
 
   const total = await SupportThread.countDocuments(query)
   const threads = await SupportThread.find(query)

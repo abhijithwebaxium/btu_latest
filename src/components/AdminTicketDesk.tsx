@@ -107,6 +107,9 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
     if (!silent) setLoadingThreads(true)
     try {
       const params = new URLSearchParams({ action: 'allThreads', status: statusFilter })
+      if (initialCategoryFilter && initialCategoryFilter !== 'all') {
+        params.append('category', initialCategoryFilter)
+      }
       const r = await fetch(`/api/support?${params}`, {
         headers: { 'x-admin-key': getAdminKey() },
       })
