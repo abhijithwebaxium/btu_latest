@@ -1318,7 +1318,7 @@ export default function Dashboard() {
               <AdminTicketDesk
                 key={activeTab}
                 initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : 'support'}
-                initialStatusFilter={activeTab === 'tickets' ? 'open' : 'all'}
+                initialStatusFilter="open"
               />
             )}
             {activeTab === 'announcements' && <AdminAnnouncementDesk />}
