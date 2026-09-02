@@ -81,13 +81,13 @@ function getAdminKey(): string {
   return localStorage.getItem('admin-key') || ''
 }
 
-export default function AdminTicketDesk({ initialCategoryFilter }: { initialCategoryFilter?: string }) {
+export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFilter = 'all' }: { initialCategoryFilter?: string; initialStatusFilter?: string }) {
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [loadingThreads, setLoadingThreads] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState(initialStatusFilter)
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)

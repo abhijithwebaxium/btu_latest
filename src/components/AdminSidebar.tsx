@@ -54,11 +54,11 @@ export default function AdminSidebar({ activeItem, mobileOpen, onNavigate, onClo
                     const Icon = item.icon
                     const badge = badges[item.id]
                     return (
-                      <button key={item.id} type="button" onClick={() => onNavigate(item.id)} className={`sidebar-nav-item group relative flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-medium transition-all duration-200 ${active ? 'font-semibold text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
+                      <button key={item.id} type="button" onClick={() => onNavigate(item.id)} className={`sidebar-nav-item group relative flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-medium transition-all duration-200 ${active ? 'sidebar-nav-active font-semibold text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}>
                         {active && <motion.div layoutId="admin-sidebar-active" className="absolute inset-0 rounded-xl bg-linear-to-r from-[#ed143d] to-rose-600 shadow-lg shadow-[#ed143d]/30" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />}
                         <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3">
                           <Icon className={`h-4.5 w-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                          <span className="sidebar-nav-label truncate">{item.label}</span>
+                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{item.label}</span>
                         </div>
                         {badge != null && <span className={`relative z-10 ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'}`}>{badge}</span>}
                       </button>

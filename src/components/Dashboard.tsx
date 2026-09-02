@@ -289,6 +289,7 @@ export default function Dashboard() {
   const [pendingVerifications, setPendingVerifications] = useState(0);
   const [feeIncomplete, setFeeIncomplete] = useState(0);
   const [ticketStats, setTicketStats] = useState({ open: 0, inProgress: 0, urgent: 0 });
+  const [openCounts, setOpenCounts] = useState({ support: 0, academic: 0 });
   const [currentStudent, setCurrentStudent] = useState<LoggedInStudent | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -327,7 +328,7 @@ export default function Dashboard() {
           fetch('/api/classes').then(r => r.json()),
           fetch('/api/internships').then(r => r.json()),
           fetch('/api/projects').then(r => r.json()),
-          fetch('/api/support?action=allThreads&limit=10', { headers: adminHeaders }).then(r => r.json()),
+          fetch('/api/support?action=allThreads&status=open', { headers: adminHeaders }).then(r => r.json()),
           fetch('/api/dashboard-stats', { headers: adminHeaders }).then(r => r.json()),
         ]);
 
@@ -349,7 +350,12 @@ export default function Dashboard() {
           setProjects((projectsRes.value.projects as Record<string, unknown>[]).map(mapProjectFromDB));
         }
         if (ticketsRes.status === 'fulfilled' && ticketsRes.value?.success) {
-          setTickets((ticketsRes.value.threads as Record<string, unknown>[]).map(mapTicketFromDB));
+          const openThreads = ticketsRes.value.threads as Record<string, unknown>[]
+          setTickets(openThreads.map(mapTicketFromDB));
+          setOpenCounts({
+            support: openThreads.filter(t => t.category !== 'assignment' && t.category !== 'project').length,
+            academic: openThreads.filter(t => t.category === 'assignment' || t.category === 'project').length,
+          })
         }
         if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
           setChartData(statsRes.value.monthlyData as ChartRow[]);
@@ -618,7 +624,7 @@ export default function Dashboard() {
                           }}
                           className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
                             isActive
-                              ? 'text-white font-semibold'
+                              ? 'sidebar-nav-active text-white font-semibold'
                               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                           }`}
                         >
@@ -632,7 +638,7 @@ export default function Dashboard() {
 
                           <div className="relative z-10 flex items-center space-x-3">
                             <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                            <span className="sidebar-nav-label">{item.label}</span>
+                            <span className={`sidebar-nav-label ${isActive ? 'text-white' : ''}`}>{item.label}</span>
                           </div>
 
                           {item.badge !== null && (
@@ -716,8 +722,6 @@ export default function Dashboard() {
                 {(() => {
                   const verifiedCount = students.length - pendingVerifications;
                   const verifiedRate = students.length > 0 ? Math.round((verifiedCount / students.length) * 100) : 0;
-                  const feeCompleteCount = students.length - feeIncomplete;
-                  const feeRate = students.length > 0 ? Math.round((feeCompleteCount / students.length) * 100) : 0;
                   return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                       <ModernCard
@@ -739,20 +743,20 @@ export default function Dashboard() {
                         onClick={() => navigate({ to: '/students' })}
                       />
                       <ModernCard
-                        title="FEE INCOMPLETE"
-                        value={loading ? '—' : feeIncomplete}
-                        change={students.length > 0 ? `${feeRate}% Cleared` : undefined}
-                        icon={Clock}
-                        subtitle={loading ? 'Loading…' : feeIncomplete > 0 ? `${feeIncomplete} students with pending fee` : 'All fees cleared'}
-                        highlightColor="#3b82f6"
-                        onClick={() => navigate({ to: '/students' })}
+                        title="ACADEMIC CHATS"
+                        value={loading ? '—' : openCounts.academic}
+                        change={openCounts.academic > 0 ? 'Needs Attention' : undefined}
+                        icon={BookOpen}
+                        subtitle={loading ? 'Loading…' : openCounts.academic > 0 ? `${openCounts.academic} assignment & project queries` : 'No pending academic chats'}
+                        highlightColor="#8b5cf6"
+                        onClick={() => setActiveTab('assignments')}
                       />
                       <ModernCard
                         title="OPEN SUPPORT TICKETS"
-                        value={loading ? '—' : ticketStats.open}
+                        value={loading ? '—' : openCounts.support}
                         change={ticketStats.urgent > 0 ? `${ticketStats.urgent} Urgent` : ticketStats.inProgress > 0 ? `${ticketStats.inProgress} In Progress` : undefined}
                         icon={LifeBuoy}
-                        subtitle={loading ? 'Loading…' : ticketStats.open > 0 ? `${ticketStats.inProgress} being handled` : 'No open tickets'}
+                        subtitle={loading ? 'Loading…' : openCounts.support > 0 ? `${openCounts.support} awaiting response` : 'No open tickets'}
                         highlightColor="#ef4444"
                         onClick={() => setActiveTab('tickets')}
                       />
@@ -1313,7 +1317,8 @@ export default function Dashboard() {
             {(activeTab === 'tickets' || activeTab === 'assignments' || activeTab === 'projects') && (
               <AdminTicketDesk
                 key={activeTab}
-                initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : 'all'}
+                initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : 'support'}
+                initialStatusFilter={activeTab === 'tickets' ? 'open' : 'all'}
               />
             )}
             {activeTab === 'announcements' && <AdminAnnouncementDesk />}

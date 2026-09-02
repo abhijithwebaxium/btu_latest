@@ -439,11 +439,19 @@ function StudentDirectoryPage() {
                       <GraduationCap className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <span className="truncate max-w-45">{student.academicDetails?.nameOfPrograme || 'General Program'}</span>
                     </span>
+                    {student.branch && (
+                      <span className="text-slate-400">{(student.branch as any)?.name ?? student.branch}</span>
+                    )}
                     <span className="flex items-center gap-1 text-slate-300">
                       <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       {student.university || 'BTU'}
                     </span>
                     <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span>
+                    {student.createdAt && (
+                      <span className="text-slate-500 font-mono">
+                        Imported: {(() => { const d = new Date(student.createdAt!); return isNaN(d.getTime()) ? '—' : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` })()}
+                      </span>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -490,6 +498,7 @@ function StudentDirectoryPage() {
                   <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase text-xs">
                     <th className="p-4 font-semibold">Name & Contact</th>
                     <th className="p-4 font-semibold">Program / Branch</th>
+                    <th className="p-4 font-semibold">Imported On</th>
                     <th className="p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
@@ -515,6 +524,16 @@ function StudentDirectoryPage() {
                               {student.academicDetails?.nameOfPrograme || 'General Program'}
                             </span>
                           </div>
+                          {student.branch && (
+                            <p className="text-xs text-slate-500 mt-1 ml-5.5">{(student.branch as any)?.name ?? student.branch}</p>
+                          )}
+                        </td>
+                        <td className="p-4 text-slate-400">
+                          {student.createdAt ? (
+                            <span className="text-xs font-mono">
+                              {(() => { const d = new Date(student.createdAt!); return isNaN(d.getTime()) ? '—' : `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}` })()}
+                            </span>
+                          ) : <span className="text-xs text-slate-600">—</span>}
                         </td>
                         <td className="p-4">
                           <div className="flex flex-wrap gap-2">

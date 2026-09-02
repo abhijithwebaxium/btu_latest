@@ -58,14 +58,14 @@ type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments'
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
   const s = (status || '').toLowerCase()
-  if (!status) return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">—</span>
+  if (!status) return <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-400">—</span>
   if (s.includes('approv') || s.includes('complet') || s.includes('pass') || s.includes('equalized'))
-    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle2 className="w-2.5 h-2.5" />{status}</span>
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle2 className="w-3 h-3" />{status}</span>
   if (s.includes('pending') || s.includes('process') || s.includes('review'))
-    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20"><Clock className="w-2.5 h-2.5" />{status}</span>
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20"><Clock className="w-3 h-3" />{status}</span>
   if (s.includes('reject') || s.includes('fail'))
-    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><AlertCircle className="w-2.5 h-2.5" />{status}</span>
-  return <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">{status}</span>
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30"><AlertCircle className="w-3 h-3" />{status}</span>
+  return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700">{status}</span>
 }
 
 /* ── KPI card — mirrors staff ModernCard with kpi-card CSS class ── */
@@ -209,8 +209,10 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
       grade:        s.grade    as string | undefined,
       equalized:    s.equalized as string,
     }))
-  const prevCr   = prevSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
-  const evalCr   = evalSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const prevCr      = prevSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const evalCr      = evalSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const equalizedCr = evalSubs.filter(s => s.equalized === 'equalized').reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const reappearCr  = reappearSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
 
   const ASSIGNMENT_DATES: Record<string, string> = {
     'Dec-2024': '30th October 2024', 'June-2025': '30th April 2025',
@@ -233,19 +235,19 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
     {
       label: 'Academic Record',
       items: [
-        { id: 'evaluation'   as Tab, label: 'Evaluation',  icon: Award,         badge: evalSubs.length || null },
-        { id: 'transcripts'  as Tab, label: 'Assessment',  icon: FileText,      badge: prevSubs.length || null },
-        { id: 'classes'      as Tab, label: 'Classes',     icon: BookOpen,      badge: reappearSubs.length || null },
-        { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: assignmentSubs.length || null },
-        { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: projectSubs.length || null },
+        { id: 'evaluation'   as Tab, label: 'Evaluation',  icon: Award,         badge: null },
+        { id: 'transcripts'  as Tab, label: 'Assessment',  icon: FileText,      badge: null },
+        { id: 'classes'      as Tab, label: 'Classes',     icon: BookOpen,      badge: null },
+        { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: null },
+        { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: null },
       ],
     },
     {
       label: 'Support',
       items: [
         { id: 'support'           as Tab, label: 'Support Tickets',  icon: LifeBuoy,    badge: null },
-        { id: 'chat-assignments'  as Tab, label: 'Assignment Chats', icon: ClipboardList, badge: assignmentSubs.length || null },
-        { id: 'chat-projects'     as Tab, label: 'Project Chats',    icon: Folder,       badge: projectSubs.length    || null },
+        { id: 'chat-assignments'  as Tab, label: 'Assignment Chats', icon: ClipboardList, badge: null },
+        { id: 'chat-projects'     as Tab, label: 'Project Chats',    icon: Folder,       badge: null },
       ],
     },
     {
@@ -326,7 +328,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                         key={id}
                         onClick={() => navigate(id)}
                         className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
-                          active ? 'text-white font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          active ? 'sidebar-nav-active text-white font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
                       >
                         {active && (
@@ -338,7 +340,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                         )}
                         <div className="relative z-10 flex min-w-0 flex-1 items-center space-x-3">
                           <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                          <span className="sidebar-nav-label truncate">{label}</span>
+                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{label}</span>
                         </div>
                         {badge !== null && badge !== undefined && (
                           <span className={`relative z-10 ml-2 shrink-0 text-xs px-2 py-0.5 rounded-full font-bold ${
@@ -513,11 +515,10 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               )}
 
               {/* KPI cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                <KpiCard title="EVALUATION STATUS" value={ev.evaluationStatus || 'Pending'} sub={`Stage ${ev.approvalStage ?? 0} Approval`} icon={Activity} />
-                <KpiCard title="BTU SUBJECTS"      value={evalSubs.length}                  sub="Equalized Courses"                          icon={Award}    change={evalSubs.length > 0 ? 'Mapped' : undefined} />
-                <KpiCard title="TRANSFER CREDITS"  value={prevCr}                           sub={`${prevSubs.length} Subjects Submitted`}    icon={BarChart3} />
-                <KpiCard title="EVAL CREDITS"      value={evalCr}                           sub="BTU Credit Mapping"                         icon={TrendingUp} change={evalCr > 0 ? 'Credited' : undefined} />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <KpiCard title="EQUALIZED CREDITS" value={equalizedCr} sub={`${evalSubs.filter(s => s.equalized === 'equalized').length} subjects equalized`} icon={Award}      change={equalizedCr > 0 ? 'Credited' : undefined} />
+                <KpiCard title="REAPPEAR CREDITS"  value={reappearCr}  sub={`${reappearSubs.length} subjects pending`}                                         icon={BarChart3}  change={reappearCr > 0 ? 'Action Required' : undefined} />
+                <KpiCard title="TOTAL CREDITS"     value={evalCr}      sub="All BTU credit mappings"                                                            icon={TrendingUp} change={evalCr > 0 ? 'Mapped' : undefined} />
               </div>
 
               {/* Info grid */}
@@ -588,7 +589,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                               style={{ width: `${Math.min((item.count / item.total) * 100, 100)}%`, backgroundColor: item.color }}
                             />
                           </div>
-                          <p className="text-[10px] text-slate-600 mt-1">{item.sub}</p>
+                          <p className="text-xs text-slate-500 mt-1">{item.sub}</p>
                         </div>
                       ))}
                     </div>
@@ -642,18 +643,19 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               </div>
 
               {/* Stats strip */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {[
-                  { label: 'Total Subjects', value: evalSubs.length, icon: BookOpen, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Subjects evaluated' },
-                  { label: 'Total Credits', value: evalCr, icon: Award, color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits mapped at BTU' },
-                  { label: 'Approval Stage', value: `Stage ${ev.approvalStage ?? 0}`, icon: Shield, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Current review progress' },
+                  { label: 'Total Subjects',      value: evalSubs.length,                                              icon: BookOpen,  color: 'text-[#ed143d]',    glow: 'bg-[#ed143d]',    note: 'Subjects evaluated' },
+                  { label: 'Total Credits',        value: evalCr,                                                       icon: Award,     color: 'text-emerald-400',  glow: 'bg-emerald-500',  note: 'Credits mapped at BTU' },
+                  { label: 'Equalized Credits',    value: equalizedCr,                                                  icon: TrendingUp, color: 'text-blue-400',    glow: 'bg-blue-500',     note: 'Credits fully equalized' },
+                  { label: 'Equalized Subjects',   value: evalSubs.filter(s => s.equalized === 'equalized').length,     icon: CheckCircle2, color: 'text-violet-400', glow: 'bg-violet-500',  note: 'Subjects fully equalized' },
                 ].map(({ label, value, icon: Icon, color, glow, note }) => (
                   <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
                     <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${glow} opacity-[0.08] blur-2xl group-hover:opacity-[0.14]`} />
                     <div className="relative mb-3 flex items-start justify-between"><div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-800/80"><Icon className={`h-4 w-4 ${color}`} /></div><ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400" /></div>
                     <p className={`relative text-2xl font-extrabold tracking-tight ${color}`}>{value}</p>
                     <p className="relative mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
-                    <p className="relative mt-1 text-[10px] text-slate-600">{note}</p>
+                    <p className="relative mt-1 text-xs text-slate-500">{note}</p>
                   </div>
                 ))}
               </div>
@@ -727,7 +729,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                               ) : isReappear ? (
                                 <div>
                                   <span className="text-sm font-semibold text-amber-400">Reappear Exam</span>
-                                  {examStatus && <p className="text-[10px] text-slate-500 mt-0.5 truncate">{examStatus}</p>}
+                                  {examStatus && <p className="text-xs text-slate-500 mt-0.5 truncate">{examStatus}</p>}
                                 </div>
                               ) : (
                                 <span className="text-sm text-slate-600">—</span>
@@ -765,19 +767,19 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {[
-                  { label: 'Transfer Subjects', value: prevSubs.length, icon: FileText, color: 'text-[#ed143d]', glow: 'bg-[#ed143d]', note: 'Submitted for transfer' },
-                  { label: 'Transfer Credits', value: prevCr, icon: Award, color: 'text-amber-400', glow: 'bg-amber-500', note: 'Credits submitted' },
-                  { label: 'Reappear Subjects', value: reappearSubs.length, icon: Activity, color: 'text-orange-400', glow: 'bg-orange-500', note: 'Awaiting examination' },
-                  { label: 'Semesters', value: a.semesterCompletedAtParentUniversity ? `${a.semesterCompletedAtParentUniversity} Sem` : '—', icon: Layers, color: 'text-blue-400', glow: 'bg-blue-500', note: 'At parent university' },
+                  { label: 'Total Subjects',    value: evalSubs.length,    icon: BookOpen,  color: 'text-[#ed143d]',  glow: 'bg-[#ed143d]',   note: 'Subjects evaluated' },
+                  { label: 'Total Credits',     value: evalCr,             icon: Award,     color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits mapped at BTU' },
+                  { label: 'Reappear Subjects', value: reappearSubs.length, icon: Activity,  color: 'text-orange-400', glow: 'bg-orange-500',  note: 'Awaiting examination' },
+                  { label: 'Reappear Credits',  value: reappearCr,          icon: BarChart3, color: 'text-amber-400',  glow: 'bg-amber-500',   note: 'Credits pending reappear' },
                 ].map(({ label, value, icon: Icon, color, glow, note }) => (
                   <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
                     <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${glow} opacity-[0.08] blur-2xl group-hover:opacity-[0.14]`} />
                     <div className="relative mb-3 flex items-start justify-between"><div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-800/80"><Icon className={`h-4 w-4 ${color}`} /></div><ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400" /></div>
                     <p className={`relative text-2xl font-extrabold tracking-tight ${color}`}>{value}</p>
                     <p className="relative mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
-                    <p className="relative mt-1 text-[10px] text-slate-600">{note}</p>
+                    <p className="relative mt-1 text-xs text-slate-500">{note}</p>
                   </div>
                 ))}
               </div>
@@ -908,21 +910,27 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             >
               <div>
                 <h2 className="text-2xl font-bold text-white">My Classes</h2>
-                <p className="text-slate-400 text-sm">
-                  BTU subjects you are currently enrolled in — grouped by semester.
-                </p>
+                <p className="text-slate-400 text-sm">BTU subjects you are currently enrolled in — grouped by semester.</p>
               </div>
 
-              {/* Summary cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {/* Stats strip */}
+              <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: 'Total Subjects',  value: reappearSubs.length,                                                   color: 'text-white' },
-                  { label: 'Total Credits',   value: reappearSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0),        color: 'text-[#ed143d]' },
-                  { label: 'Semesters',       value: [...new Set(reappearSubs.map(s => s.semester).filter(Boolean))].length, color: 'text-blue-400' },
-                ].map(c => (
-                  <div key={c.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
-                    <p className={`text-2xl font-extrabold ${c.color}`}>{c.value}</p>
-                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{c.label}</p>
+                  { label: 'Total Subjects', value: reappearSubs.length,                                                    icon: BookOpen,  color: 'text-[#ed143d]',   glow: 'bg-[#ed143d]',   note: 'Currently enrolled' },
+                  { label: 'Total Credits',  value: reappearCr,                                                             icon: Award,     color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits enrolled' },
+                  { label: 'Semesters',      value: [...new Set(reappearSubs.map(s => s.semester).filter(Boolean))].length, icon: Layers,    color: 'text-blue-400',    glow: 'bg-blue-500',    note: 'Across semesters' },
+                ].map(({ label, value, icon: Icon, color, glow, note }) => (
+                  <div key={label} className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl transition-all hover:-translate-y-0.5 hover:border-slate-700">
+                    <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full ${glow} opacity-[0.08] blur-2xl`} />
+                    <div className="relative mb-3 flex items-start justify-between">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-800/80">
+                        <Icon className={`h-4 w-4 ${color}`} />
+                      </div>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400" />
+                    </div>
+                    <p className={`relative text-2xl font-extrabold tracking-tight ${color}`}>{value}</p>
+                    <p className="relative mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
+                    <p className="relative mt-1 text-xs text-slate-500">{note}</p>
                   </div>
                 ))}
               </div>
@@ -930,10 +938,10 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               {reappearSubs.length === 0 ? (
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center">
                   <BookOpen className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-                  <p className="text-sm text-slate-500">No class subjects found. Your evaluation may still be pending.</p>
+                  <p className="text-sm font-semibold text-slate-500">No class subjects found.</p>
+                  <p className="text-xs text-slate-600 mt-1">Your evaluation may still be pending.</p>
                 </div>
               ) : (
-                /* Group by semester */
                 Object.entries(
                   reappearSubs.reduce<Record<number, typeof reappearSubs>>((acc, s) => {
                     const sem = s.semester ?? 0
@@ -945,68 +953,81 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   .map(([sem, subs]) => (
                     <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
                       {/* Semester header */}
-                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
-                            {Number(sem) || '?'}
-                          </span>
-                          <h3 className="text-sm font-bold text-white">
-                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
-                          </h3>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ed143d]/10 border border-[#ed143d]/20">
+                            <span className="text-sm font-black text-[#ed143d]">{Number(sem) || '?'}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">{Number(sem) ? `Semester ${sem}` : 'Unassigned'}</h3>
+                            <p className="text-[11px] text-slate-500">{subs.length} subject{subs.length !== 1 ? 's' : ''}</p>
+                          </div>
                         </div>
-                        <span className="text-xs text-slate-400">
-                          {subs.length} subject{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
-                        </span>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</p>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider">credits</p>
+                        </div>
                       </div>
 
-                      {/* Subject cards grid */}
+                      {/* Subject cards */}
                       <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                        {subs.map((sub, i) => (
-                          <div
-                            key={i}
-                            className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all"
-                          >
-                            {/* Code badge + credits */}
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20">
-                                {sub.subjectCode || 'N/A'}
-                              </span>
-                              {sub.credits && (
-                                <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
-                                  {sub.credits} CR
-                                </span>
-                              )}
-                            </div>
+                        {subs.map((sub, i) => {
+                          const typeMap: Record<string, { badge: string; bar: string }> = {
+                            'reappear':      { badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30', bar: 'bg-orange-500' },
+                            're-submission': { badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',       bar: 'bg-blue-500'   },
+                            'improvement':   { badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30', bar: 'bg-emerald-500' },
+                          }
+                          const type = typeMap[sub.equalized] ?? { badge: 'bg-slate-800 text-slate-400 border-slate-700', bar: 'bg-slate-600' }
+                          const dueDate = sub.examBatch ? ASSIGNMENT_DATES[sub.examBatch] : null
+                          return (
+                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all">
+                              {/* Color accent bar */}
+                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${type.bar}`} />
 
-                            {/* Title */}
-                            <p className="text-sm font-semibold text-white leading-snug mb-3">
-                              {sub.subjectTitle || '—'}
-                            </p>
-
-                            {/* Exam batch / session */}
-                            <div className="space-y-1">
-                              {sub.examBatch && (
-                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                  <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
-                                  <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
-                                </div>
-                              )}
-                              {sub.examSession && (
-                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                  <Clock className="w-3 h-3 shrink-0 text-slate-600" />
-                                  <span className="truncate">{sub.examSession}</span>
-                                </div>
-                              )}
-                              {sub.examStatus && (
-                                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1">
-                                  <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px]">
-                                    {sub.examStatus}
+                              <div className="p-4 pt-4.5">
+                                {/* Top row: code + type badge */}
+                                <div className="flex items-start justify-between gap-2 mb-2.5">
+                                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20 shrink-0">
+                                    {sub.subjectCode || 'N/A'}
+                                  </span>
+                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize shrink-0 ${type.badge}`}>
+                                    {sub.equalized?.replace('-', ' ') || 'Reappear'}
                                   </span>
                                 </div>
-                              )}
+
+                                {/* Title */}
+                                <p className="text-sm font-semibold text-white leading-snug mb-3">{sub.subjectTitle || '—'}</p>
+
+                                {/* Credits */}
+                                {sub.credits && (
+                                  <div className="inline-flex items-center gap-1 mb-3 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                    <Award className="w-3 h-3 text-emerald-400" />
+                                    <span className="text-[11px] font-bold text-emerald-400">{sub.credits} CR</span>
+                                  </div>
+                                )}
+
+                                {/* Exam info */}
+                                <div className="space-y-1.5 pt-2.5 border-t border-slate-800/60">
+                                  {sub.examBatch && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                      <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                      <span>Batch: <span className="text-slate-300 font-semibold">{sub.examBatch}</span></span>
+                                    </div>
+                                  )}
+                                  {dueDate && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-amber-400">
+                                      <Clock className="w-3 h-3 shrink-0" />
+                                      <span>Due: <span className="font-semibold">{dueDate}</span></span>
+                                    </div>
+                                  )}
+                                  {sub.examSession && (
+                                    <p className="text-xs text-slate-500 truncate leading-snug">{sub.examSession}</p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   ))
@@ -1059,18 +1080,20 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   .sort(([a], [b]) => Number(a) - Number(b))
                   .map(([sem, subs]) => (
                     <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
-                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
-                            {Number(sem) || '?'}
-                          </span>
-                          <h3 className="text-sm font-bold text-white">
-                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
-                          </h3>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ed143d]/10 border border-[#ed143d]/20">
+                            <span className="text-sm font-black text-[#ed143d]">{Number(sem) || '?'}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">{Number(sem) ? `Semester ${sem}` : 'Unassigned'}</h3>
+                            <p className="text-[11px] text-slate-500">{subs.length} subject{subs.length !== 1 ? 's' : ''}</p>
+                          </div>
                         </div>
-                        <span className="text-xs text-slate-400">
-                          {subs.length} subject{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
-                        </span>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</p>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider">credits</p>
+                        </div>
                       </div>
 
                       <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -1078,67 +1101,62 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           const deadline = ASSIGNMENT_DATES[sub.examBatch] || ASSIGNMENT_DATES[sub.examSession] || null
                           const cardKey = `a-${sub.subjectCode}-${i}`
                           const isCreating = chatLoading === cardKey
+                          const typeMap: Record<string, { badge: string; bar: string }> = {
+                            'reappear':      { badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30', bar: 'bg-orange-500' },
+                            're-submission': { badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',       bar: 'bg-blue-500'   },
+                            'improvement':   { badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30', bar: 'bg-emerald-500' },
+                          }
+                          const type = typeMap[sub.equalized] ?? { badge: 'bg-slate-800 text-slate-400 border-slate-700', bar: 'bg-slate-600' }
                           return (
-                            <div
-                              key={i}
-                              className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all flex flex-col"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20">
-                                  {sub.subjectCode || 'N/A'}
-                                </span>
-                                {sub.credits && (
-                                  <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
-                                    {sub.credits} CR
+                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
+                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${type.bar}`} />
+                              <div className="p-4 pt-4.5 flex flex-col flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2.5">
+                                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20 shrink-0">
+                                    {sub.subjectCode || 'N/A'}
                                   </span>
-                                )}
-                              </div>
-
-                              <p className="text-sm font-semibold text-white leading-snug mb-3">
-                                {sub.subjectTitle || '—'}
-                              </p>
-
-                              <div className="space-y-1 flex-1">
-                                {sub.examBatch && (
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                    <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
-                                    <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
-                                  </div>
-                                )}
-                                {deadline && (
-                                  <div className="flex items-center gap-1.5 text-[11px] text-amber-400 mt-1">
-                                    <Clock className="w-3 h-3 shrink-0" />
-                                    <span>Submit by: <span className="font-semibold">{deadline}</span></span>
-                                  </div>
-                                )}
-                                <div className="mt-1.5">
-                                  <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                    sub.equalized === 'improvement'
-                                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                      : sub.equalized === 're-submission'
-                                        ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                                        : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                                  }`}>
-                                    {sub.equalized === 'improvement' ? 'Improvement' : sub.equalized === 're-submission' ? 'Re-submission' : 'Reappear'}
+                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize shrink-0 ${type.badge}`}>
+                                    {sub.equalized?.replace('-', ' ') || 'Reappear'}
                                   </span>
                                 </div>
-                              </div>
 
-                              <button
-                                onClick={() => openChat(
-                                  cardKey,
-                                  `Assignment Query: ${sub.subjectTitle || sub.subjectCode || 'Subject'}`,
-                                  `I need assistance with my reappear assignment for:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}${deadline ? `\nSubmission Deadline: ${deadline}` : ''}\n\nPlease guide me on the next steps.`,
-                                  'assignment',
+                                <p className="text-sm font-semibold text-white leading-snug mb-3">{sub.subjectTitle || '—'}</p>
+
+                                {sub.credits && (
+                                  <div className="inline-flex items-center gap-1 mb-3 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 self-start">
+                                    <Award className="w-3 h-3 text-emerald-400" />
+                                    <span className="text-[11px] font-bold text-emerald-400">{sub.credits} CR</span>
+                                  </div>
                                 )}
-                                disabled={isCreating}
-                                className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                              >
-                                {isCreating
-                                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</>
-                                  : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>
-                                }
-                              </button>
+
+                                <div className="space-y-1.5 pt-2.5 border-t border-slate-800/60 flex-1">
+                                  {sub.examBatch && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                      <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                      <span>Batch: <span className="text-slate-300 font-semibold">{sub.examBatch}</span></span>
+                                    </div>
+                                  )}
+                                  {deadline && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-amber-400">
+                                      <Clock className="w-3 h-3 shrink-0" />
+                                      <span>Due: <span className="font-semibold">{deadline}</span></span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => openChat(
+                                    cardKey,
+                                    `Assignment Query: ${sub.subjectTitle || sub.subjectCode || 'Subject'}`,
+                                    `I need assistance with my reappear assignment for:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}${deadline ? `\nSubmission Deadline: ${deadline}` : ''}\n\nPlease guide me on the next steps.`,
+                                    'assignment',
+                                  )}
+                                  disabled={isCreating}
+                                  className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  {isCreating ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</> : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>}
+                                </button>
+                              </div>
                             </div>
                           )
                         })}
@@ -1194,99 +1212,82 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   .sort(([a], [b]) => Number(a) - Number(b))
                   .map(([sem, subs]) => (
                     <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
-                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/40">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-lg bg-[#ed143d]/10 text-[#ed143d] font-black text-sm flex items-center justify-center border border-[#ed143d]/20">
-                            {Number(sem) || '?'}
-                          </span>
-                          <h3 className="text-sm font-bold text-white">
-                            {Number(sem) ? `Semester ${sem}` : 'Unassigned'}
-                          </h3>
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#ed143d]/10 border border-[#ed143d]/20">
+                            <span className="text-sm font-black text-[#ed143d]">{Number(sem) || '?'}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">{Number(sem) ? `Semester ${sem}` : 'Unassigned'}</h3>
+                            <p className="text-[11px] text-slate-500">{subs.length} project{subs.length !== 1 ? 's' : ''}</p>
+                          </div>
                         </div>
-                        <span className="text-xs text-slate-400">
-                          {subs.length} project{subs.length !== 1 ? 's' : ''} · {subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)} credits
-                        </span>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</p>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider">credits</p>
+                        </div>
                       </div>
 
                       <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                         {subs.map((sub, i) => {
                           const typeLabel = projectTypeLabel[sub.examStatus] || sub.examStatus
+                          const barColor = sub.examStatus === 'I.R.S' ? 'bg-blue-500' : sub.examStatus === 'M.I.P.R.S' ? 'bg-violet-500' : 'bg-amber-500'
                           const typeColor = sub.examStatus === 'I.R.S'
-                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
                             : sub.examStatus === 'M.I.P.R.S'
-                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              ? 'bg-violet-500/10 text-violet-400 border-violet-500/30'
+                              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                           const cardKey = `p-${sub.subjectCode}-${i}`
                           const isCreating = chatLoading === cardKey
                           return (
-                            <div
-                              key={i}
-                              className="rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-700 hover:bg-slate-800/60 transition-all flex flex-col"
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${typeColor}`}>
-                                  {typeLabel}
-                                </span>
+                            <div key={i} className="relative rounded-xl border border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
+                              <div className={`absolute top-0 left-0 right-0 h-0.5 ${barColor}`} />
+                              <div className="p-4 pt-4.5 flex flex-col flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2.5">
+                                  {sub.subjectCode && (
+                                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20 shrink-0">
+                                      {sub.subjectCode}
+                                    </span>
+                                  )}
+                                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${typeColor}`}>
+                                    {typeLabel}
+                                  </span>
+                                </div>
+
+                                <p className="text-sm font-semibold text-white leading-snug mb-3">{sub.subjectTitle || '—'}</p>
+
                                 {sub.credits && (
-                                  <span className="text-[10px] font-bold text-slate-400 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 shrink-0">
-                                    {sub.credits} CR
-                                  </span>
-                                )}
-                              </div>
-
-                              <p className="text-sm font-semibold text-white leading-snug mb-3">
-                                {sub.subjectTitle || '—'}
-                              </p>
-
-                              {sub.subjectCode && (
-                                <div className="mb-2">
-                                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                                    {sub.subjectCode}
-                                  </span>
-                                </div>
-                              )}
-
-                              <div className="space-y-1 flex-1">
-                                {sub.examBatch && (
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                    <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
-                                    <span>Exam: <span className="text-slate-300 font-medium">{sub.examBatch}</span></span>
+                                  <div className="inline-flex items-center gap-1 mb-3 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 self-start">
+                                    <Award className="w-3 h-3 text-emerald-400" />
+                                    <span className="text-[11px] font-bold text-emerald-400">{sub.credits} CR</span>
                                   </div>
                                 )}
-                                {sub.examSession && (
-                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                    <Clock className="w-3 h-3 shrink-0 text-slate-600" />
-                                    <span className="truncate">{sub.examSession}</span>
-                                  </div>
-                                )}
-                                <div className="mt-1.5">
-                                  <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                    sub.equalized === 'improvement'
-                                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                      : sub.equalized === 're-submission'
-                                        ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                                        : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                                  }`}>
-                                    {sub.equalized === 'improvement' ? 'Improvement' : sub.equalized === 're-submission' ? 'Re-submission' : 'Reappear'}
-                                  </span>
-                                </div>
-                              </div>
 
-                              <button
-                                onClick={() => openChat(
-                                  cardKey,
-                                  `${typeLabel} Query: ${sub.subjectTitle || sub.subjectCode || 'Project'}`,
-                                  `I need assistance with my ${typeLabel.toLowerCase()} re-submission:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nType: ${typeLabel}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}\n\nPlease guide me on the next steps.`,
-                                  'project',
-                                )}
-                                disabled={isCreating}
-                                className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                              >
-                                {isCreating
-                                  ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</>
-                                  : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>
-                                }
-                              </button>
+                                <div className="space-y-1.5 pt-2.5 border-t border-slate-800/60 flex-1">
+                                  {sub.examBatch && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                      <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                      <span>Batch: <span className="text-slate-300 font-semibold">{sub.examBatch}</span></span>
+                                    </div>
+                                  )}
+                                  {sub.examSession && (
+                                    <p className="text-xs text-slate-500 truncate leading-snug">{sub.examSession}</p>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => openChat(
+                                    cardKey,
+                                    `${typeLabel} Query: ${sub.subjectTitle || sub.subjectCode || 'Project'}`,
+                                    `I need assistance with my ${typeLabel.toLowerCase()} re-submission:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nType: ${typeLabel}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}\n\nPlease guide me on the next steps.`,
+                                    'project',
+                                  )}
+                                  disabled={isCreating}
+                                  className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-[#ed143d]/10 hover:border-[#ed143d]/30 border border-slate-700 text-slate-300 hover:text-[#ed143d] text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  {isCreating ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</> : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>}
+                                </button>
+                              </div>
                             </div>
                           )
                         })}
