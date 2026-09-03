@@ -55,6 +55,9 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
   const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const [toast, setToast] = useState<string | null>(null)
+  const prevUnread = useRef<number | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   const buildParams = useCallback((extra: Record<string, string> = {}) => {
@@ -67,9 +70,18 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
     try {
       const r = await fetch(`/api/notifications?${buildParams({ action: 'unreadCount' })}`)
       const d = await r.json()
-      if (d.success) setUnread(d.count)
+      if (d.success) {
+        const newCount: number = d.count
+        if (recipientType === 'ADMIN' && prevUnread.current !== null && newCount > prevUnread.current) {
+          setToast('A new ticket has been created')
+          if (toastTimer.current) clearTimeout(toastTimer.current)
+          toastTimer.current = setTimeout(() => setToast(null), 10000)
+        }
+        prevUnread.current = newCount
+        setUnread(newCount)
+      }
     } catch { /* silent */ }
-  }, [buildParams])
+  }, [buildParams, recipientType])
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true)
@@ -134,6 +146,23 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
 
   return (
     <div ref={ref} className="notification-center relative">
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-6 right-6 z-9999 flex items-center gap-3 rounded-2xl border border-[#ed143d]/30 bg-slate-900 px-5 py-3.5 shadow-2xl shadow-slate-950/60"
+          >
+            <LifeBuoy className="w-5 h-5 text-[#ed143d] shrink-0" />
+            <span className="text-sm font-semibold text-white">{toast}</span>
+            <button onClick={() => setToast(null)} className="ml-2 text-slate-500 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <button
         onClick={() => setOpen(v => !v)}
         className={`relative rounded-xl border p-2.5 transition-all ${open ? 'border-[#ed143d]/40 bg-[#ed143d]/10 text-[#ed143d]' : 'border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-white'}`}

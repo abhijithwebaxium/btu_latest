@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LifeBuoy, Plus, X, Send, ChevronLeft, Clock, CheckCircle2,
-  AlertCircle, RefreshCw, MessageSquare, Loader2,
+  AlertCircle, RefreshCw, MessageSquare, Loader2, RotateCcw, Filter,
 } from 'lucide-react'
 
 export interface Thread {
@@ -22,6 +22,18 @@ interface Message {
   body: string
   createdAt: string
 }
+
+interface Event {
+  _id: string
+  eventType: string
+  actorName: string
+  actorType: string
+  oldValue?: string
+  newValue?: string
+  createdAt: string
+}
+
+type TimelineItem = { kind: 'message'; data: Message } | { kind: 'event'; data: Event }
 
 interface Props {
   studentId: string
@@ -68,6 +80,9 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
+  const [events, setEvents] = useState<Event[]>([])
+  const [reopening, setReopening] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('open')
   const [loadingThreads, setLoadingThreads] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [reply, setReply] = useState('')
@@ -98,7 +113,13 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
     try {
       const r = await fetch(`/api/support?action=thread&threadId=${threadId}`)
       const d = await r.json()
-      if (d.success) setMessages(d.messages || [])
+      if (d.success) {
+        setMessages(d.messages || [])
+        if (Array.isArray(d.events)) {
+          setEvents(d.events.filter((e: Event) => e.eventType === 'status_changed'))
+        }
+        if (d.thread) setActiveThread(prev => prev && prev.status !== d.thread.status ? { ...prev, status: d.thread.status } : prev)
+      }
     } catch { /* silent */ } finally {
       if (!silent) setLoadingMessages(false)
     }
@@ -148,11 +169,30 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
       const d = await r.json()
       if (d.success) {
         setReply('')
-        await fetchMessages(activeThread._id)
-        await fetchThreads()
+        await fetchMessages(activeThread._id, true)
+        await fetchThreads(true)
       }
     } finally {
       setSending(false)
+    }
+  }
+
+  async function reopenTicket() {
+    if (!activeThread) return
+    setReopening(true)
+    try {
+      const r = await fetch('/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reopenThread', threadId: activeThread._id, studentId, studentName }),
+      })
+      const d = await r.json()
+      if (d.success) {
+        await fetchMessages(activeThread._id, true)
+        await fetchThreads(true)
+      }
+    } finally {
+      setReopening(false)
     }
   }
 
@@ -207,9 +247,13 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
       ? 'Chats you opened from your project cards.'
       : 'Submit and track your support requests.'
 
-  const visibleThreads = categoryFilter
+  const categoryThreads = categoryFilter
     ? threads.filter(t => t.category === categoryFilter)
     : threads.filter(t => t.category !== 'assignment' && t.category !== 'project')
+
+  const visibleThreads = statusFilter === 'all'
+    ? categoryThreads
+    : categoryThreads.filter(t => t.status === statusFilter)
 
   return (
     <div className="student-support-center space-y-6">
@@ -339,6 +383,22 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
               <RefreshCw className={`w-3.5 h-3.5 ${loadingThreads ? 'animate-spin' : ''}`} />
             </button>
           </div>
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0 mr-0.5" />
+            {(['all', 'open', 'in_progress', 'resolution_pending', 'resolved'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => { setStatusFilter(s); setActiveThread(null) }}
+                className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all capitalize ${
+                  statusFilter === s
+                    ? 'bg-[#ed143d] text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                {s === 'all' ? 'All' : s === 'in_progress' ? 'In Progress' : s === 'resolution_pending' ? 'Pending' : s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
 
           {loadingThreads && threads.length === 0 ? (
             <div className="flex items-center justify-center py-10">
@@ -415,33 +475,55 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
                 </button>
               </div>
 
-              {/* Messages */}
+              {/* Messages + Events timeline */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center py-10">
                     <Loader2 className="w-5 h-5 text-slate-600 animate-spin" />
                   </div>
-                ) : messages.map(msg => {
-                  const isStudent = msg.senderType === 'student'
-                  return (
-                    <div key={msg._id} className={`flex ${isStudent ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[78%] ${isStudent ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                        <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                          isStudent
-                            ? 'bg-[#ed143d] text-white rounded-br-sm'
-                            : 'bg-slate-800 text-slate-200 rounded-bl-sm'
-                        }`}>
-                          {msg.body}
+                ) : (() => {
+                  const timeline: TimelineItem[] = [
+                    ...messages.map(m => ({ kind: 'message' as const, data: m })),
+                    ...events.map(e => ({ kind: 'event' as const, data: e })),
+                  ].sort((a, b) => new Date(a.data.createdAt).getTime() - new Date(b.data.createdAt).getTime())
+
+                  return timeline.map(item => {
+                    if (item.kind === 'event') {
+                      const ev = item.data
+                      const statusLabel = (s: string) => STATUS_LABELS[s]?.label ?? s
+                      return (
+                        <div key={ev._id} className="flex items-center gap-3 py-1">
+                          <div className="flex-1 h-px bg-slate-800" />
+                          <span className="text-[11px] text-slate-500 shrink-0 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            Status changed to{' '}
+                            <span className="font-semibold text-slate-300">{statusLabel(ev.newValue || '')}</span>
+                            {' '}· {ev.actorName} · {timeAgo(ev.createdAt)}
+                          </span>
+                          <div className="flex-1 h-px bg-slate-800" />
                         </div>
-                        <div className={`flex items-center gap-1.5 text-[10px] text-slate-600 ${isStudent ? 'flex-row-reverse' : ''}`}>
-                          <span className="font-medium">{isStudent ? 'You' : msg.senderName}</span>
-                          <span>·</span>
-                          <span>{timeAgo(msg.createdAt)}</span>
+                      )
+                    }
+                    const msg = item.data as Message
+                    const isStudent = msg.senderType === 'student'
+                    return (
+                      <div key={msg._id} className={`flex ${isStudent ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[78%] ${isStudent ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                          <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                            isStudent ? 'bg-[#ed143d] text-white rounded-br-sm' : 'bg-slate-800 text-slate-200 rounded-bl-sm'
+                          }`}>
+                            {msg.body}
+                          </div>
+                          <div className={`flex items-center gap-1.5 text-[10px] text-slate-600 ${isStudent ? 'flex-row-reverse' : ''}`}>
+                            <span className="font-medium">{isStudent ? 'You' : msg.senderName}</span>
+                            <span>·</span>
+                            <span>{timeAgo(msg.createdAt)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+                })()}
                 <div ref={msgEndRef} />
               </div>
 
@@ -469,9 +551,19 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
                   </div>
                 </div>
               ) : (
-                <div className="p-4 border-t border-slate-800 flex items-center gap-2 text-xs text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>This ticket is {activeThread.status}. Open a new ticket if you need further assistance.</span>
+                <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>This ticket is <span className="font-semibold capitalize">{activeThread.status}</span>.</span>
+                  </div>
+                  <button
+                    onClick={reopenTicket}
+                    disabled={reopening}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-all disabled:opacity-50 shrink-0"
+                  >
+                    {reopening ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                    Reopen
+                  </button>
                 </div>
               )}
             </div>

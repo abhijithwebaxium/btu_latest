@@ -727,7 +727,7 @@ export default function Dashboard() {
                       <ModernCard
                         title="TOTAL STUDENTS"
                         value={loading ? '—' : students.length.toLocaleString()}
-                        change={students.length > 0 ? `${verifiedRate}% Verified` : undefined}
+                        change={undefined}
                         icon={Users}
                         subtitle={loading ? 'Loading…' : `${verifiedCount} profiles verified`}
                         highlightColor="#ed143d"
@@ -736,7 +736,7 @@ export default function Dashboard() {
                       <ModernCard
                         title="PENDING VERIFICATION"
                         value={loading ? '—' : pendingVerifications}
-                        change={pendingVerifications > 0 ? 'Action Required' : undefined}
+                        change={undefined}
                         icon={UserPlus}
                         subtitle={loading ? 'Loading…' : pendingVerifications > 0 ? `${pendingVerifications} profiles awaiting review` : 'All profiles verified'}
                         highlightColor="#f59e0b"
@@ -745,7 +745,7 @@ export default function Dashboard() {
                       <ModernCard
                         title="ACADEMIC CHATS"
                         value={loading ? '—' : openCounts.academic}
-                        change={openCounts.academic > 0 ? 'Needs Attention' : undefined}
+                        change={undefined}
                         icon={BookOpen}
                         subtitle={loading ? 'Loading…' : openCounts.academic > 0 ? `${openCounts.academic} assignment & project queries` : 'No pending academic chats'}
                         highlightColor="#8b5cf6"

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   LifeBuoy, RefreshCw, ChevronLeft, Send, Loader2,
-  CheckCircle2, MessageSquare, Filter,
+  CheckCircle2, MessageSquare, Filter, Clock,
 } from 'lucide-react'
 
 interface Thread {
@@ -25,7 +25,19 @@ interface Message {
   createdAt: string
 }
 
-const STATUS_OPTIONS = ['all', 'open', 'in_progress', 'resolution_pending', 'resolved', 'closed']
+interface Event {
+  _id: string
+  eventType: string
+  actorName: string
+  actorType: string
+  oldValue?: string
+  newValue?: string
+  createdAt: string
+}
+
+type TimelineItem = { kind: 'message'; data: Message } | { kind: 'event'; data: Event }
+
+const STATUS_OPTIONS = ['all', 'open', 'in_progress', 'resolution_pending', 'resolved']
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   open:               { label: 'Open',           color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
@@ -85,6 +97,7 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
   const [threads, setThreads] = useState<Thread[]>([])
   const [activeThread, setActiveThread] = useState<Thread | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [loadingThreads, setLoadingThreads] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [statusFilter, setStatusFilter] = useState(initialStatusFilter)
@@ -127,7 +140,11 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
         headers: { 'x-admin-key': getAdminKey() },
       })
       const d = await r.json()
-      if (d.success) setMessages(d.messages || [])
+      if (d.success) {
+        setMessages(d.messages || [])
+        if (Array.isArray(d.events)) setEvents(d.events.filter((e: Event) => e.eventType === 'status_changed'))
+        if (d.thread) setActiveThread(prev => prev && prev.status !== d.thread.status ? { ...prev, status: d.thread.status } : prev)
+      }
     } catch { /* silent */ } finally {
       if (!silent) setLoadingMessages(false)
     }
@@ -176,8 +193,8 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
       const d = await r.json()
       if (d.success) {
         setReply('')
-        await fetchMessages(activeThread._id)
-        await fetchThreads()
+        await fetchMessages(activeThread._id, true)
+        await fetchThreads(true)
       }
     } finally {
       setSending(false)
@@ -201,7 +218,8 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
       const d = await r.json()
       if (d.success) {
         setActiveThread(prev => prev ? { ...prev, status } : null)
-        await fetchThreads()
+        await fetchMessages(activeThread._id, true)
+        await fetchThreads(true)
       }
     } finally {
       setUpdatingStatus(false)
@@ -347,7 +365,7 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
                 {/* Status controls */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] text-slate-600 font-semibold uppercase tracking-wider">Set status:</span>
-                  {['open', 'in_progress', 'resolved', 'closed'].map(s => (
+                  {['open', 'in_progress', 'resolved'].map(s => (
                     <button
                       key={s}
                       onClick={() => changeStatus(s)}
@@ -368,33 +386,55 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
                 </div>
               </div>
 
-              {/* Messages */}
+              {/* Messages + Events timeline */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center py-10">
                     <Loader2 className="w-5 h-5 text-slate-600 animate-spin" />
                   </div>
-                ) : messages.map(msg => {
-                  const isAdmin = msg.senderType === 'admin'
-                  return (
-                    <div key={msg._id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[78%] flex flex-col gap-1 ${isAdmin ? 'items-end' : 'items-start'}`}>
-                        <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                          isAdmin
-                            ? 'bg-[#ed143d] text-white rounded-br-sm'
-                            : 'bg-slate-800 text-slate-200 rounded-bl-sm'
-                        }`}>
-                          {msg.body}
+                ) : (() => {
+                  const timeline: TimelineItem[] = [
+                    ...messages.map(m => ({ kind: 'message' as const, data: m })),
+                    ...events.map(e => ({ kind: 'event' as const, data: e })),
+                  ].sort((a, b) => new Date(a.data.createdAt).getTime() - new Date(b.data.createdAt).getTime())
+
+                  return timeline.map(item => {
+                    if (item.kind === 'event') {
+                      const ev = item.data
+                      const statusLabel = (s: string) => STATUS_LABELS[s]?.label ?? s
+                      return (
+                        <div key={ev._id} className="flex items-center gap-3 py-1">
+                          <div className="flex-1 h-px bg-slate-800" />
+                          <span className="text-[11px] text-slate-500 shrink-0 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            Status changed to{' '}
+                            <span className="font-semibold text-slate-300">{statusLabel(ev.newValue || '')}</span>
+                            {' '}· {ev.actorName} · {timeAgo(ev.createdAt)}
+                          </span>
+                          <div className="flex-1 h-px bg-slate-800" />
                         </div>
-                        <div className={`flex items-center gap-1.5 text-[10px] text-slate-600 ${isAdmin ? 'flex-row-reverse' : ''}`}>
-                          <span className="font-medium">{isAdmin ? 'You (Admin)' : msg.senderName}</span>
-                          <span>·</span>
-                          <span>{timeAgo(msg.createdAt)}</span>
+                      )
+                    }
+                    const msg = item.data as Message
+                    const isAdmin = msg.senderType === 'admin'
+                    return (
+                      <div key={msg._id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[78%] flex flex-col gap-1 ${isAdmin ? 'items-end' : 'items-start'}`}>
+                          <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                            isAdmin ? 'bg-[#ed143d] text-white rounded-br-sm' : 'bg-slate-800 text-slate-200 rounded-bl-sm'
+                          }`}>
+                            {msg.body}
+                          </div>
+                          <div className={`flex items-center gap-1.5 text-[10px] text-slate-600 ${isAdmin ? 'flex-row-reverse' : ''}`}>
+                            <span className="font-medium">{isAdmin ? 'You (Admin)' : msg.senderName}</span>
+                            <span>·</span>
+                            <span>{timeAgo(msg.createdAt)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+                })()}
                 <div ref={msgEndRef} />
               </div>
 

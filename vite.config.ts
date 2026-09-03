@@ -224,7 +224,7 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
 
           // ── Support tickets ────────────────────────────────────────────────
           if (pathname === '/api/support') {
-            const { getStudentThreads, getThread, createThread, sendMessage, updateThreadStatus, getAllThreads } =
+            const { getStudentThreads, getThread, createThread, sendMessage, updateThreadStatus, reopenThread, getAllThreads } =
               await import('./src/server/supportService.js')
 
             const isAdmin = req.headers['x-admin-key'] === env.ADMIN_PASSWORD
@@ -264,6 +264,11 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
                     if (b.senderType === 'admin' && !isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }
                     const msg = await sendMessage({ threadId: b.threadId, senderType: b.senderType, senderId: b.senderId, senderName: b.senderName || b.senderType, body: b.body })
                     res.end(JSON.stringify({ success: true, message: msg })); return
+                  }
+                  if (b.action === 'reopenThread') {
+                    if (!b.threadId || !b.studentId) { res.statusCode = 400; res.end(JSON.stringify({ success: false, error: 'threadId and studentId required' })); return }
+                    await reopenThread({ threadId: b.threadId, studentId: b.studentId, studentName: b.studentName || 'Student' })
+                    res.end(JSON.stringify({ success: true })); return
                   }
                   if (b.action === 'updateStatus') {
                     if (!isAdmin) { res.statusCode = 403; res.end(JSON.stringify({ success: false, error: 'Forbidden' })); return }

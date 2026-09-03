@@ -5,6 +5,7 @@ import {
   createThread,
   sendMessage,
   updateThreadStatus,
+  reopenThread,
   getAllThreads,
 } from '../src/server/supportService.js'
 
@@ -74,6 +75,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const msg = await sendMessage({ threadId, senderType, senderId, senderName: senderName || senderType, body: msgBody })
         return res.status(200).json({ success: true, message: msg })
+      }
+
+      if (action === 'reopenThread') {
+        const { threadId, studentId, studentName } = body
+        if (!threadId || !studentId) return res.status(400).json({ success: false, error: 'threadId and studentId required' })
+        await reopenThread({ threadId, studentId, studentName: studentName || 'Student' })
+        return res.status(200).json({ success: true })
       }
 
       if (action === 'updateStatus') {

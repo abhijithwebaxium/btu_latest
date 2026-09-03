@@ -166,6 +166,23 @@ export async function updateThreadStatus(data: {
   }
 }
 
+export async function reopenThread(data: { threadId: string; studentId: string; studentName: string }) {
+  await connectToDatabase()
+  const thread = await SupportThread.findOne({ _id: data.threadId, studentId: data.studentId })
+  if (!thread) throw new Error('Thread not found or not authorized')
+
+  await SupportThread.findByIdAndUpdate(data.threadId, { status: 'open', lastMessageAt: new Date() })
+
+  await SupportEvent.create({
+    threadId: data.threadId,
+    actorType: 'student',
+    actorName: data.studentName,
+    eventType: 'status_changed',
+    oldValue: thread.status,
+    newValue: 'open',
+  })
+}
+
 export async function getAllThreads(opts: { status?: string; category?: string; page?: number; limit?: number }) {
   await connectToDatabase()
   const { status, category, page = 1, limit = 30 } = opts
