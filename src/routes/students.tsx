@@ -106,138 +106,157 @@ function StudentAcademicModal({
   const { assignments, projects, internships } = getStudentSubs(student)
   const name = student.personalDetails?.name || 'Student'
 
-  const tabs: { id: ModalTab; label: string; icon: React.ElementType; subs: EvalSubject[]; color: string }[] = [
-    { id: 'assignments', label: 'Assignments', icon: ClipboardList, subs: assignments, color: 'text-blue-400 border-blue-500 bg-blue-500/10' },
-    { id: 'projects',    label: 'Projects',    icon: Folder,        subs: projects,    color: 'text-violet-400 border-violet-500 bg-violet-500/10' },
-    { id: 'internships', label: 'Internships', icon: Briefcase,     subs: internships, color: 'text-emerald-400 border-emerald-500 bg-emerald-500/10' },
+  const tabs: { id: ModalTab; label: string; icon: React.ElementType; subs: EvalSubject[] }[] = [
+    { id: 'assignments', label: 'Assignments', icon: ClipboardList, subs: assignments },
+    { id: 'projects',    label: 'Projects',    icon: Folder,        subs: projects    },
+    { id: 'internships', label: 'Internships', icon: Briefcase,     subs: internships },
   ]
   const activeTab = tabs.find(t => t.id === tab)!
   const subs = activeTab.subs
+  const totalCredits = subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)
+  const semCount = [...new Set(subs.map(s => s.semester).filter(Boolean))].length
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [onClose])
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 student-academic-modal-backdrop"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[85vh] flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden"
+        className="student-academic-modal w-full max-w-2xl max-h-[90vh] flex flex-col bg-slate-900 rounded-2xl border border-slate-800 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.7)] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
+        {/* Top accent stripe */}
+        <div className="h-0.75 bg-linear-to-r from-[#ed143d] via-[#ed143d]/60 to-transparent shrink-0" />
+
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-slate-800 shrink-0">
-          <div>
-            <h3 className="font-bold text-white text-base">{name}</h3>
-            <p className="text-xs text-slate-400 mt-0.5 font-mono">
+        <div className="flex items-center gap-4 px-6 pt-5 pb-4 shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-[#ed143d]/10 border border-[#ed143d]/20 flex items-center justify-center shrink-0">
+            <GraduationCap className="w-5 h-5 text-[#ed143d]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-white truncate">{name}</h3>
+            <p className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
               {student.enrollmentID || student.applicationID || student._id}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+            className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1.5 px-6 py-3 border-b border-slate-800 shrink-0">
-          {tabs.map(t => {
-            const Icon = t.icon
-            const isActive = tab === t.id
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  isActive
-                    ? t.color
-                    : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {t.label}
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  isActive ? 'bg-white/20' : 'bg-slate-800'
-                }`}>
-                  {t.subs.length}
-                </span>
-              </button>
-            )
-          })}
+        {/* Segmented tab switcher */}
+        <div className="px-6 pb-5 shrink-0">
+          <div className="flex gap-1 p-1 bg-slate-800 rounded-xl">
+            {tabs.map(t => {
+              const Icon = t.icon
+              const isActive = tab === t.id
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                    isActive
+                      ? 'bg-[#ed143d] text-white shadow-lg shadow-[#ed143d]/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  {t.label}
+                  <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-400'
+                  }`}>
+                    {t.subs.length}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 p-6">
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-6 pb-6 bg-slate-900 custom-scrollbar">
           {subs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-              <BookOpen className="w-8 h-8 mb-3 opacity-40" />
-              <p className="text-sm font-medium">No {activeTab.label.toLowerCase()} found</p>
-              <p className="text-xs mt-1 text-slate-600">
-                {tab === 'assignments'
-                  ? 'No assignment subjects in this student\'s evaluation.'
-                  : tab === 'projects'
-                  ? 'No project subjects in this student\'s evaluation.'
-                  : 'No internship subjects in this student\'s evaluation.'}
-              </p>
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-14 h-14 rounded-2xl bg-slate-800/60 border border-slate-700/40 flex items-center justify-center mb-4">
+                <BookOpen className="w-7 h-7 text-slate-600" />
+              </div>
+              <p className="text-sm font-semibold text-slate-400">No {activeTab.label.toLowerCase()} pending</p>
+              <p className="text-xs text-slate-500 mt-1">This student has no {activeTab.label.toLowerCase()} to review.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {/* Summary row */}
-              <div className="flex gap-4 text-xs text-slate-400 pb-3 border-b border-slate-800">
-                <span><span className="font-bold text-white">{subs.length}</span> subject{subs.length !== 1 ? 's' : ''}</span>
-                <span><span className="font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</span> total credits</span>
-                <span><span className="font-bold text-white">{[...new Set(subs.map(s => s.semester).filter(Boolean))].length}</span> semester{[...new Set(subs.map(s => s.semester).filter(Boolean))].length !== 1 ? 's' : ''}</span>
+            <div className="space-y-4">
+              {/* Stats grid */}
+              <div className="grid grid-cols-3 gap-2.5">
+                {([
+                  { label: 'Subjects',  value: subs.length  },
+                  { label: 'Credits',   value: totalCredits },
+                  { label: 'Semesters', value: semCount     },
+                ] as { label: string; value: number }[]).map(stat => (
+                  <div key={stat.label} className="bg-slate-800/50 border border-slate-700/40 rounded-xl p-3 text-center">
+                    <p className="text-xl font-black text-white tabular-nums">{stat.value}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
               </div>
 
               {/* Subject cards */}
-              {subs.map((sub, i) => {
-                const code  = sub.btuSubjectCode || sub.subjectCode || '—'
-                const title = sub.btuSubjectTitle || '—'
-                const batch = sub.examBatch || sub.examBatchSr || ''
-                const deadline = tab === 'assignments' ? ASSIGNMENT_DATES[batch] : undefined
-                const typeLabel = tab !== 'assignments' ? (PROJECT_LABELS[sub.examStatus || ''] || sub.examStatus) : undefined
+              <div className="grid gap-2">
+                {subs.map((sub, i) => {
+                  const code      = sub.btuSubjectCode || sub.subjectCode || '—'
+                  const title     = sub.btuSubjectTitle || '—'
+                  const batch     = sub.examBatch || sub.examBatchSr || ''
+                  const deadline  = tab === 'assignments' ? ASSIGNMENT_DATES[batch] : undefined
+                  const typeLabel = tab !== 'assignments' ? (PROJECT_LABELS[sub.examStatus || ''] || sub.examStatus) : undefined
 
-                return (
-                  <div
-                    key={i}
-                    className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-4 space-y-2.5"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-white text-sm leading-snug">{title}</p>
-                        <p className="text-xs font-mono text-slate-400 mt-0.5">{code}</p>
+                  return (
+                    <div key={i} className="relative bg-slate-800/50 border border-slate-700/40 rounded-xl overflow-hidden">
+                      <div className="absolute left-0 inset-y-0 w-0.75 bg-[#ed143d]" />
+                      <div className="pl-5 pr-4 pt-4 pb-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-white text-sm leading-snug">{title}</p>
+                            <p className="text-[11px] font-mono text-slate-500 mt-0.5">{code}</p>
+                          </div>
+                          {typeLabel && (
+                            <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-lg border bg-[#ed143d]/10 border-[#ed143d]/30 text-[#ed143d]">
+                              {typeLabel}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {sub.semester != null && (
+                            <span className="text-[11px] bg-slate-900/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">Sem {sub.semester}</span>
+                          )}
+                          {sub.credits != null && (
+                            <span className="text-[11px] bg-slate-900/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">{sub.credits} credits</span>
+                          )}
+                          {batch && (
+                            <span className="text-[11px] bg-slate-900/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">{batch}</span>
+                          )}
+                          {(sub.examSession || sub.examSessionSr) && (
+                            <span className="text-[11px] bg-slate-900/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">{sub.examSession || sub.examSessionSr}</span>
+                          )}
+                        </div>
+                        {deadline && (
+                          <div className="mt-3 pt-3 border-t border-slate-700/40 flex items-center gap-2 text-xs text-[#ed143d]">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Deadline: <strong>{deadline}</strong></span>
+                          </div>
+                        )}
                       </div>
-                      {typeLabel && (
-                        <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${activeTab.color}`}>
-                          {typeLabel}
-                        </span>
-                      )}
                     </div>
-
-                    <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-400">
-                      {sub.semester != null && (
-                        <span>Semester <span className="font-semibold text-slate-200">{sub.semester}</span></span>
-                      )}
-                      {sub.credits != null && (
-                        <span><span className="font-semibold text-slate-200">{sub.credits}</span> credits</span>
-                      )}
-                      {batch && (
-                        <span>Batch <span className="font-semibold text-slate-200">{batch}</span></span>
-                      )}
-                      {(sub.examSession || sub.examSessionSr) && (
-                        <span>Session <span className="font-semibold text-slate-200">{sub.examSession || sub.examSessionSr}</span></span>
-                      )}
-                    </div>
-
-                    {deadline && (
-                      <div className="flex items-center gap-1.5 text-xs text-amber-400">
-                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>Submission deadline: <strong>{deadline}</strong></span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -469,21 +488,21 @@ function StudentDirectoryPage() {
                       className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold hover:bg-blue-500/20 transition-colors"
                     >
                       <ClipboardList className="w-3.5 h-3.5" />
-                      Assignments {assignments.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({assignments.length})</span>}
+                      Assignments {assignments.length > 0 && <span className="ml-0.5 text-[10px] font-bold">({assignments.length})</span>}
                     </button>
                     <button
                       onClick={() => openModal(student, 'projects')}
                       className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-semibold hover:bg-violet-500/20 transition-colors"
                     >
                       <Folder className="w-3.5 h-3.5" />
-                      Projects {projects.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({projects.length})</span>}
+                      Projects {projects.length > 0 && <span className="ml-0.5 text-[10px] font-bold">({projects.length})</span>}
                     </button>
                     <button
                       onClick={() => openModal(student, 'internships')}
                       className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 transition-colors"
                     >
                       <Briefcase className="w-3.5 h-3.5" />
-                      Internships {internships.length > 0 && <span className="ml-0.5 text-[10px] font-bold opacity-80">({internships.length})</span>}
+                      Internships {internships.length > 0 && <span className="ml-0.5 text-[10px] font-bold">({internships.length})</span>}
                     </button>
                   </div>
                 </div>
@@ -549,21 +568,21 @@ function StudentDirectoryPage() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
                             >
                               <ClipboardList className="w-3.5 h-3.5" /> Assignments
-                              {assignments.length > 0 && <span className="ml-0.5 text-slate-400">({assignments.length})</span>}
+                              {assignments.length > 0 && <span className="ml-0.5 text-slate-200">({assignments.length})</span>}
                             </button>
                             <button
                               onClick={() => openModal(student, 'projects')}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
                             >
                               <Folder className="w-3.5 h-3.5" /> Projects
-                              {projects.length > 0 && <span className="ml-0.5 text-slate-400">({projects.length})</span>}
+                              {projects.length > 0 && <span className="ml-0.5 text-slate-200">({projects.length})</span>}
                             </button>
                             <button
                               onClick={() => openModal(student, 'internships')}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-700 bg-slate-800 text-xs font-medium text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
                             >
                               <Briefcase className="w-3.5 h-3.5" /> Internships
-                              {internships.length > 0 && <span className="ml-0.5 text-slate-400">({internships.length})</span>}
+                              {internships.length > 0 && <span className="ml-0.5 text-slate-200">({internships.length})</span>}
                             </button>
                           </div>
                         </td>
