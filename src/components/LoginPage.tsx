@@ -41,7 +41,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[2px]" />
 
       {/* Two-panel card */}
-      <div className="relative z-10 w-full max-w-3xl rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/60 flex flex-col sm:flex-row">
+      <div className="relative z-10 w-full max-w-3xl rounded-3xl overflow-hidden border border-slate-200 shadow-2xl shadow-slate-900/40 flex flex-col sm:flex-row">
 
         {/* Left panel — branding */}
         <div className="relative sm:w-65 shrink-0 bg-linear-to-br from-[#ed143d] via-rose-700 to-rose-900 p-8 flex flex-col justify-between overflow-hidden">
@@ -86,19 +86,19 @@ export default function LoginPage() {
         </div>
 
         {/* Right panel — form */}
-        <div className="flex-1 bg-slate-900/90 backdrop-blur-xl p-8 space-y-6">
+        <div className="flex-1 bg-white p-8 space-y-6">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#ed143d]/30 bg-[#ed143d]/10 px-3 py-1 text-[11px] font-bold text-[#ed143d]">
               Student Sign In
             </span>
-            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-white">Welcome back</h2>
-            <p className="mt-1 text-xs text-slate-400">
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900">Welcome back</h2>
+            <p className="mt-1 text-xs text-slate-500">
               Enter your registered mobile number and date of birth.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 pointer-events-none" />
               <span>{errorMsg}</span>
             </div>
@@ -106,11 +106,11 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="phone" className="block text-xs font-semibold text-slate-300">
+              <label htmlFor="phone" className="block text-xs font-semibold text-slate-700">
                 Mobile / WhatsApp Number
               </label>
               <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <input
                   id="phone"
                   type="tel"
@@ -118,17 +118,17 @@ export default function LoginPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. 9876543210"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/20 focus:bg-white"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="dob" className="block text-xs font-semibold text-slate-300">
+              <label htmlFor="dob" className="block text-xs font-semibold text-slate-700">
                 Date of Birth
               </label>
               <div className="relative">
-                <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <input
                   id="dob"
                   type="text"
@@ -136,7 +136,7 @@ export default function LoginPage() {
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
                   placeholder="e.g. 18092002 (DDMMYYYY)"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/30"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/20 focus:bg-white"
                 />
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-[11px] text-slate-500">
+          <p className="text-center text-[11px] text-slate-400">
             Protected by BTU Student Authentication
           </p>
         </div>
