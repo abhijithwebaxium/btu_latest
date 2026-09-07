@@ -4,6 +4,7 @@ import {
   LifeBuoy, Plus, X, Send, ChevronLeft, Clock, CheckCircle2,
   AlertCircle, RefreshCw, MessageSquare, Loader2, RotateCcw, Filter,
 } from 'lucide-react'
+import { STATUS_LABELS, PRIORITY_COLORS, timeAgo } from '../lib/ticketUtils'
 
 export interface Thread {
   _id: string
@@ -39,33 +40,9 @@ interface Props {
   studentId: string
   studentName: string
   initialThread?: Thread | null
-  categoryFilter?: 'assignment' | 'project'
+  categoryFilter?: 'assignment' | 'project' | 'internship'
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  open:               { label: 'Open',              color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-  in_progress:        { label: 'In Progress',       color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  resolution_pending: { label: 'Pending Review',    color: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
-  resolved:           { label: 'Resolved',          color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  closed:             { label: 'Closed',            color: 'bg-slate-700 text-slate-400 border-slate-600' },
-}
-
-const PRIORITY_COLORS: Record<string, string> = {
-  urgent: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
-  high:   'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  normal: 'bg-slate-800 text-slate-300 border-slate-700',
-  low:    'bg-slate-800/50 text-slate-500 border-slate-800',
-}
-
-function timeAgo(d: string) {
-  const diff = Date.now() - new Date(d).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'Just now'
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return new Date(d).toLocaleDateString()
-}
 
 function StatusBadge({ status }: { status: string }) {
   const s = STATUS_LABELS[status] || { label: status, color: 'bg-slate-800 text-slate-400' }
@@ -239,17 +216,21 @@ export default function SupportTicketView({ studentId, studentName, initialThrea
     ? 'Assignment Chats'
     : categoryFilter === 'project'
       ? 'Project Chats'
-      : 'Support Tickets'
+      : categoryFilter === 'internship'
+        ? 'Internship Chats'
+        : 'Support Tickets'
 
   const pageDesc = categoryFilter === 'assignment'
     ? 'Chats you opened from your assignment cards.'
     : categoryFilter === 'project'
       ? 'Chats you opened from your project cards.'
-      : 'Submit and track your support requests.'
+      : categoryFilter === 'internship'
+        ? 'Chats you opened from your internship cards.'
+        : 'Submit and track your support requests.'
 
   const categoryThreads = categoryFilter
     ? threads.filter(t => t.category === categoryFilter)
-    : threads.filter(t => t.category !== 'assignment' && t.category !== 'project')
+    : threads.filter(t => t.category !== 'assignment' && t.category !== 'project' && t.category !== 'internship')
 
   const visibleThreads = statusFilter === 'all'
     ? categoryThreads

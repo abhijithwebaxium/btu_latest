@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from '@tanstack/react-router'
 import {
   GraduationCap, LogOut, User, CheckCircle2, FileText,
-  Building2, Calendar, Award, Mail, MapPin, Menu,
+  Building2, Briefcase, Calendar, Award, Mail, MapPin, Menu,
   ChevronRight, Phone, BadgeCheck, Clock, AlertCircle,
   BarChart3, Shield, TrendingUp, BookOpen, Sun, Moon,
   ArrowUpRight, Layers, Activity, LifeBuoy, ExternalLink,
@@ -53,7 +53,7 @@ export interface LoggedInStudent {
   }
 }
 
-type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'profile' | 'support' | 'chat-assignments' | 'chat-projects'
+type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'internship' | 'profile' | 'support' | 'chat-assignments' | 'chat-projects' | 'chat-internship'
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -220,7 +220,8 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
     'Dec-2026': '30th October 2026', 'June-2027': '30th April 2027',
   }
   const assignmentSubs = reappearSubs.filter(s => s.examStatus === 'A.E.B.T.U.C')
-  const projectSubs    = reappearSubs.filter(s => ['M.I.P.R.S', 'M.A.P.R.S.I', 'M.A.P.R.S.II', 'I.R.S'].includes(s.examStatus))
+  const projectSubs      = reappearSubs.filter(s => ['M.I.P.R.S', 'M.A.P.R.S.I', 'M.A.P.R.S.II'].includes(s.examStatus))
+  const internshipSubs   = reappearSubs.filter(s => s.examStatus === 'I.R.S')
   const projectTypeLabel: Record<string, string> = {
     'M.I.P.R.S': 'Mini Project', 'M.A.P.R.S.I': 'Major Project I',
     'M.A.P.R.S.II': 'Major Project II', 'I.R.S': 'Internship',
@@ -240,14 +241,16 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
         { id: 'classes'      as Tab, label: 'Classes',     icon: BookOpen,      badge: null },
         { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: null },
         { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: null },
+        { id: 'internship'   as Tab, label: 'Internship',  icon: Briefcase,     badge: null },
       ],
     },
     {
       label: 'Support',
       items: [
-        { id: 'support'           as Tab, label: 'Support Tickets',  icon: LifeBuoy,    badge: null },
-        { id: 'chat-assignments'  as Tab, label: 'Assignment Chats', icon: ClipboardList, badge: null },
-        { id: 'chat-projects'     as Tab, label: 'Project Chats',    icon: Folder,       badge: null },
+        { id: 'support'            as Tab, label: 'Support Tickets',   icon: LifeBuoy,    badge: null },
+        { id: 'chat-assignments'   as Tab, label: 'Assignment Chats',  icon: ClipboardList, badge: null },
+        { id: 'chat-projects'      as Tab, label: 'Project Chats',     icon: Folder,       badge: null },
+        { id: 'chat-internship'    as Tab, label: 'Internship Chats',  icon: Briefcase,    badge: null },
       ],
     },
     {
@@ -277,7 +280,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
       const d = await r.json()
       if (d.success) {
         setPendingThread(d.thread)
-        setTab(category === 'assignment' ? 'chat-assignments' : category === 'project' ? 'chat-projects' : 'support')
+        setTab(category === 'assignment' ? 'chat-assignments' : category === 'project' ? 'chat-projects' : category === 'internship' ? 'chat-internship' : 'support')
         setMobileOpen(false)
       }
     } catch { /* silent */ } finally {
@@ -480,7 +483,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               </div>
 
               {/* Announcements */}
-              {announcements.length > 0 && (
+              {/* {announcements.length > 0 && (
                 <div className="space-y-3">
                   {announcements.map(ann => {
                     const urgentStyle  = 'bg-rose-500/10  border-rose-500/30  text-rose-300'
@@ -512,7 +515,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                     )
                   })}
                 </div>
-              )}
+              )} */}
 
               {/* KPI cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -1163,7 +1166,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
               <div>
                 <h2 className="text-2xl font-bold text-white">Projects</h2>
                 <p className="text-slate-400 text-sm">
-                  Project and internship subjects requiring reappear or re-submission — grouped by semester.
+                  Project subjects requiring reappear or re-submission — grouped by semester.
                 </p>
               </div>
 
@@ -1281,10 +1284,133 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
             </motion.div>
           )}
 
+          {/* ══ INTERNSHIP ══ */}
+          {tab === 'internship' && (
+            <motion.div
+              key="internship"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-white">Internship</h2>
+                <p className="text-slate-400 text-sm">
+                  Internship subjects requiring reappear or re-submission — grouped by semester.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Total Subjects', value: internshipSubs.length,                                                       color: 'text-white' },
+                  { label: 'Total Credits',  value: internshipSubs.reduce((s, x) => s + (Number(x.credits) || 0), 0),            color: 'text-[#ed143d]' },
+                  { label: 'Semesters',      value: [...new Set(internshipSubs.map(s => s.semester).filter(Boolean))].length,     color: 'text-blue-400' },
+                ].map(c => (
+                  <div key={c.label} className="rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center shadow-xl">
+                    <p className={`text-2xl font-extrabold ${c.color}`}>{c.value}</p>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">{c.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {internshipSubs.length === 0 ? (
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center">
+                  <Briefcase className="w-10 h-10 mx-auto mb-3 text-slate-700" />
+                  <p className="text-sm text-slate-500">No internship subjects found. Your evaluation may still be pending.</p>
+                </div>
+              ) : (
+                Object.entries(
+                  internshipSubs.reduce<Record<number, typeof internshipSubs>>((acc, s) => {
+                    const sem = s.semester ?? 0
+                    ;(acc[sem] = acc[sem] || []).push(s)
+                    return acc
+                  }, {})
+                )
+                  .sort(([a], [b]) => Number(a) - Number(b))
+                  .map(([sem, subs]) => (
+                    <div key={sem} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl">
+                      <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20">
+                            <span className="text-sm font-black text-blue-400">{Number(sem) || '?'}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white">{Number(sem) ? `Semester ${sem}` : 'Unassigned'}</h3>
+                            <p className="text-[11px] text-slate-500">{subs.length} internship{subs.length !== 1 ? 's' : ''}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-white">{subs.reduce((s, x) => s + (Number(x.credits) || 0), 0)}</p>
+                          <p className="text-xs text-slate-500 uppercase tracking-wider">credits</p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {subs.map((sub, i) => {
+                          const cardKey = `int-${sub.subjectCode}-${i}`
+                          const isCreating = chatLoading === cardKey
+                          return (
+                            <div key={i} className="relative rounded-xl border-2 border-slate-800 bg-slate-900 overflow-hidden hover:border-slate-700 hover:bg-slate-800/50 transition-all flex flex-col">
+                              <div className="p-4 pt-4.5 flex flex-col flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2.5">
+                                  {sub.subjectCode && (
+                                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#ed143d]/10 text-[#ed143d] border border-[#ed143d]/20 shrink-0">
+                                      {sub.subjectCode}
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 bg-blue-500/10 text-blue-400 border-blue-500/30">
+                                    Internship
+                                  </span>
+                                </div>
+
+                                <p className="text-sm font-semibold text-white leading-snug mb-3">{sub.subjectTitle || '—'}</p>
+
+                                {sub.credits && (
+                                  <div className="inline-flex items-center gap-1 mb-3 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 self-start">
+                                    <Award className="w-3 h-3 text-emerald-400" />
+                                    <span className="text-[11px] font-bold text-emerald-400">{sub.credits} CR</span>
+                                  </div>
+                                )}
+
+                                <div className="space-y-1.5 pt-2.5 border-t border-slate-800/60 flex-1">
+                                  {sub.examBatch && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                                      <Calendar className="w-3 h-3 shrink-0 text-slate-600" />
+                                      <span>Batch: <span className="text-slate-300 font-semibold">{sub.examBatch}</span></span>
+                                    </div>
+                                  )}
+                                  {sub.examSession && (
+                                    <p className="text-xs text-slate-500 truncate leading-snug">{sub.examSession}</p>
+                                  )}
+                                </div>
+
+                                <button
+                                  onClick={() => openChat(
+                                    cardKey,
+                                    `Internship Query: ${sub.subjectTitle || sub.subjectCode || 'Internship'}`,
+                                    `I need assistance with my internship re-submission:\n\nSubject: ${sub.subjectTitle || '—'}\nCode: ${sub.subjectCode || '—'}\nSemester: ${sub.semester ?? '—'}\nExam Batch: ${sub.examBatch || '—'}\n\nPlease guide me on the next steps.`,
+                                    'internship',
+                                  )}
+                                  disabled={isCreating}
+                                  className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-blue-500/10 hover:border-blue-500/30 border border-slate-700 text-slate-300 hover:text-blue-400 text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  {isCreating ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Opening…</> : <><MessageSquare className="w-3.5 h-3.5" /> Chat</>}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </motion.div>
+          )}
+
           {/* ══ SUPPORT ══ */}
           {tab === 'support' && (
             <motion.div key="support" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread && pendingThread.category !== 'assignment' && pendingThread.category !== 'project' ? pendingThread : null} />
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread && pendingThread.category !== 'assignment' && pendingThread.category !== 'project' && pendingThread.category !== 'internship' ? pendingThread : null} />
             </motion.div>
           )}
 
@@ -1297,6 +1423,12 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
           {tab === 'chat-projects' && (
             <motion.div key="chat-projects" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread?.category === 'project' ? pendingThread : null} categoryFilter="project" />
+            </motion.div>
+          )}
+
+          {tab === 'chat-internship' && (
+            <motion.div key="chat-internship" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <SupportTicketView studentId={student._id} studentName={p.name || 'Student'} initialThread={pendingThread?.category === 'internship' ? pendingThread : null} categoryFilter="internship" />
             </motion.div>
           )}
 

@@ -4,6 +4,7 @@ import {
   LifeBuoy, RefreshCw, ChevronLeft, Send, Loader2,
   CheckCircle2, MessageSquare, Filter, Clock,
 } from 'lucide-react'
+import { STATUS_LABELS, PRIORITY_COLORS, CATEGORY_SOURCE, timeAgo } from '../lib/ticketUtils'
 
 interface Thread {
   _id: string
@@ -39,26 +40,6 @@ type TimelineItem = { kind: 'message'; data: Message } | { kind: 'event'; data: 
 
 const STATUS_OPTIONS = ['all', 'open', 'in_progress', 'resolution_pending', 'resolved']
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  open:               { label: 'Open',           color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-  in_progress:        { label: 'In Progress',    color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  resolution_pending: { label: 'Pending',        color: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
-  resolved:           { label: 'Resolved',       color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  closed:             { label: 'Closed',         color: 'bg-slate-700 text-slate-400 border-slate-600' },
-}
-
-const PRIORITY_COLORS: Record<string, string> = {
-  urgent: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
-  high:   'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  normal: 'bg-slate-800 text-slate-300 border-slate-700',
-  low:    'bg-slate-800/50 text-slate-500 border-slate-800',
-}
-
-const CATEGORY_SOURCE: Record<string, { label: string; color: string } | undefined> = {
-  assignment: { label: 'Assignment', color: 'bg-violet-500/15 text-violet-400 border-violet-500/30' },
-  project:    { label: 'Project',    color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' },
-}
-
 function SourceBadge({ category }: { category: string }) {
   const s = CATEGORY_SOURCE[category]
   if (!s) return null
@@ -67,16 +48,6 @@ function SourceBadge({ category }: { category: string }) {
       {s.label}
     </span>
   )
-}
-
-function timeAgo(d: string) {
-  const diff = Date.now() - new Date(d).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'Just now'
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return new Date(d).toLocaleDateString()
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -230,13 +201,17 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
     ? 'Assignment Chats'
     : initialCategoryFilter === 'project'
       ? 'Project Chats'
-      : 'Support Tickets'
+      : initialCategoryFilter === 'internship'
+        ? 'Internship Chats'
+        : 'Support Tickets'
 
   const pageDesc = initialCategoryFilter === 'assignment'
     ? 'Student queries raised from assignment cards'
     : initialCategoryFilter === 'project'
       ? 'Student queries raised from project cards'
-      : 'All student support requests'
+      : initialCategoryFilter === 'internship'
+        ? 'Student queries raised from internship cards'
+        : 'All student support requests'
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="admin-ticket-desk space-y-6">

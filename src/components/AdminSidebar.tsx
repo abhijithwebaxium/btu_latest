@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import {
-  BarChart3, Bell, ClipboardList, FileJson, Folder, GraduationCap,
+  BarChart3, Briefcase, ClipboardList, FileJson, Folder, GraduationCap,
   LifeBuoy, LogOut, Users, X,
 } from 'lucide-react'
 
-export type AdminSection = 'dashboard' | 'students' | 'import' | 'tickets' | 'assignments' | 'projects' | 'announcements'
+export type AdminSection = 'dashboard' | 'students' | 'import' | 'tickets' | 'assignments' | 'projects' | 'internship' | 'announcements'
 
 type NavItem = { id: AdminSection; label: string; icon: React.FC<{ className?: string }> }
 
@@ -29,7 +29,8 @@ const groups: { label: string; items: NavItem[] }[] = [
     { id: 'tickets',     label: 'Support Tickets',   icon: LifeBuoy    },
     { id: 'assignments', label: 'Assignment Chats',  icon: ClipboardList },
     { id: 'projects',    label: 'Project Chats',     icon: Folder      },
-    { id: 'announcements', label: 'Announcements',  icon: Bell        },
+    { id: 'internship',  label: 'Internship Chats',  icon: Briefcase   },
+    // { id: 'announcements', label: 'Announcements',  icon: Bell        },
   ] },
 ]
 

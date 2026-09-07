@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
-  Bell,
+  // Bell,
   BookOpen,
   Briefcase,
   Folder,
@@ -23,7 +23,6 @@ import {
   ArrowUpRight,
   Activity,
   UserPlus,
-  Code2,
   LogOut,
 } from 'lucide-react';
 import { 
@@ -273,7 +272,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window === 'undefined') return 'dashboard';
     const requestedTab = sessionStorage.getItem('admin-active-tab');
-    const validTabs = ['dashboard', 'assignments', 'classes', 'internships', 'projects', 'tickets', 'announcements'];
+    const validTabs = ['dashboard', 'assignments', 'classes', 'internships', 'projects', 'tickets', 'internship', 'announcements'];
     return requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'dashboard';
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -353,8 +352,8 @@ export default function Dashboard() {
           const openThreads = ticketsRes.value.threads as Record<string, unknown>[]
           setTickets(openThreads.map(mapTicketFromDB));
           setOpenCounts({
-            support: openThreads.filter(t => t.category !== 'assignment' && t.category !== 'project').length,
-            academic: openThreads.filter(t => t.category === 'assignment' || t.category === 'project').length,
+            support: openThreads.filter(t => t.category !== 'assignment' && t.category !== 'project' && t.category !== 'internship').length,
+            academic: openThreads.filter(t => t.category === 'assignment' || t.category === 'project' || t.category === 'internship').length,
           })
         }
         if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
@@ -404,21 +403,12 @@ export default function Dashboard() {
   };
 
   const q = searchQuery.toLowerCase();
-  const filteredAssignments = q
-    ? assignments.filter(a => a.title.toLowerCase().includes(q) || a.course.toLowerCase().includes(q))
-    : assignments;
   const filteredInternships = q
     ? internships.filter(i => i.company.toLowerCase().includes(q) || i.role.toLowerCase().includes(q))
     : internships;
-  const filteredProjects = q
-    ? projects.filter(p => p.title.toLowerCase().includes(q) || p.lead.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))
-    : projects;
   const filteredClasses = q
     ? classes.filter(c => c.title.toLowerCase().includes(q) || c.instructor.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
     : classes;
-  const filteredTickets = q
-    ? tickets.filter(t => t.subject.toLowerCase().includes(q) || t.user.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
-    : tickets;
 
   const navGroups = [
     {
@@ -445,7 +435,7 @@ export default function Dashboard() {
       label: 'Support',
       items: [
         { id: 'tickets',       label: 'Support Tickets', icon: LifeBuoy, badge: tickets.filter(t => t.status === 'Open').length },
-        { id: 'announcements', label: 'Announcements',   icon: Bell,     badge: null },
+        // { id: 'announcements', label: 'Announcements',   icon: Bell,     badge: null },
       ],
     },
   ];
@@ -577,116 +567,6 @@ export default function Dashboard() {
           }}
         />
 
-        {false && <>{mobileNavOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-slate-950/70 backdrop-blur-sm lg:hidden"
-            onClick={() => setMobileNavOpen(false)}
-          />
-        )}
-
-        <aside className={`fixed inset-y-0 left-0 z-40 w-[260px] bg-slate-900/95 border-r border-slate-800 flex flex-col justify-between backdrop-blur-2xl overflow-y-auto transition-transform duration-300 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-          <div>
-            <div className="p-6 flex items-center space-x-3 border-b border-slate-800/80">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#ed143d] to-rose-500 flex items-center justify-center shadow-lg shadow-[#ed143d]/30">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="font-extrabold text-[14px] text-white tracking-wide flex items-center">
-                  BTU <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">Campus OS</span>
-                </h1>
-                <p className="text-[11px] text-slate-400 font-medium">Bir Tikendrajit University</p>
-              </div>
-            </div>
-
-            <nav className="p-4 space-y-5">
-              {navGroups.map((group) => (
-                <div key={group.label}>
-                  <p className="px-4 mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                    {group.label}
-                  </p>
-                  <div className="space-y-1">
-                    {group.items.map((item) => {
-                      const isActive = activeTab === item.id;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            setMobileNavOpen(false);
-                            if (item.id === 'import') {
-                              navigate({ to: '/import' })
-                            } else if (item.id === 'students') {
-                              navigate({ to: '/students' })
-                            } else {
-                              sessionStorage.setItem('admin-active-tab', item.id)
-                              setActiveTab(item.id)
-                            }
-                          }}
-                          className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
-                            isActive
-                              ? 'sidebar-nav-active text-white font-semibold'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                          }`}
-                        >
-                          {isActive && (
-                            <motion.div
-                              layoutId="activeTabBg"
-                              className="absolute inset-0 bg-gradient-to-r from-[#ed143d] to-rose-600 rounded-xl shadow-lg shadow-[#ed143d]/30"
-                              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            />
-                          )}
-
-                          <div className="relative z-10 flex items-center space-x-3">
-                            <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                            <span className={`sidebar-nav-label ${isActive ? 'text-white' : ''}`}>{item.label}</span>
-                          </div>
-
-                          {item.badge !== null && (
-                            <span className={`relative z-10 text-xs px-2 py-0.5 rounded-full font-bold ${
-                              isActive
-                                ? 'bg-white/20 text-white'
-                                : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
-                            }`}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </nav>
-          </div>
-
-          <div className="p-4 border-t border-slate-800/80 m-3 rounded-2xl bg-slate-950/50 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-[#ed143d] flex items-center justify-center font-bold text-white shadow-md">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-white">BTU Admin</p>
-                <p className="text-xs text-slate-400">Staff Portal</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.removeItem('staff-session');
-                  localStorage.removeItem('current-student');
-                  localStorage.removeItem('admin-key');
-                }
-                navigate({ to: '/login' });
-              }}
-              aria-label="Log out"
-              title="Log out"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#ed143d]/10 hover:text-[#ed143d]"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </aside></>}
 
         <main className="h-screen overflow-y-auto bg-slate-950 lg:ml-[260px]">
           
@@ -1007,77 +887,6 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {false && activeTab === 'assignments' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">Course Assignments</h2>
-                    <p className="text-slate-400 text-xs sm:text-sm mt-0.5">Track active submissions, grading timelines, and deadlines.</p>
-                  </div>
-                  <button
-                    onClick={() => { setModalType('assignment'); setIsModalOpen(true); }}
-                    className="w-full sm:w-auto justify-center shrink-0 px-4 py-2.5 bg-[#ed143d] hover:bg-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#ed143d]/30 flex items-center space-x-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create Assignment</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {loading ? (
-                    <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading assignments…</div>
-                  ) : filteredAssignments.length === 0 ? (
-                    <div className="col-span-2 py-16 text-center">
-                      <BookOpen className="mx-auto mb-3 h-9 w-9 text-slate-700" />
-                      <p className="font-semibold text-slate-400">No assignments found</p>
-                      <p className="mt-1 text-xs text-slate-600">Create your first assignment using the button above.</p>
-                    </div>
-                  ) : filteredAssignments.map((asn) => {
-                    const percentage = Math.round((asn.submitted / asn.total) * 100);
-                    return (
-                      <div key={asn.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden group hover:border-[#ed143d]/50 transition-all flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 flex-1">
-                              <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-[#ed143d] border border-slate-700 inline-block">
-                                {asn.course}
-                              </span>
-                              <h3 className="text-base sm:text-lg font-bold text-white mt-2 group-hover:text-[#ed143d] transition-colors leading-snug">{asn.title}</h3>
-                            </div>
-                            <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full font-bold ${
-                              asn.priority === 'Urgent' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-300'
-                            }`}>
-                              {asn.priority}
-                            </span>
-                          </div>
-
-                          <div className="mt-5 space-y-2">
-                            <div className="flex justify-between text-xs font-medium text-slate-400">
-                              <span>Submissions ({asn.submitted}/{asn.total})</span>
-                              <span className="text-white font-bold">{percentage}%</span>
-                            </div>
-                            <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                              <div 
-                                className="bg-gradient-to-r from-[#ed143d] to-rose-500 h-full transition-all duration-500" 
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                          <span className="flex items-center">
-                            <Clock className="w-3.5 h-3.5 mr-1 text-[#ed143d] shrink-0" />
-                            Due {asn.deadline}
-                          </span>
-                          <span className="font-semibold text-slate-300">{asn.status}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
 
             {activeTab === 'internships' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -1129,58 +938,6 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {false && activeTab === 'projects' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Capstone Projects Hub</h2>
-                  <p className="text-slate-400 text-sm">Student research, open-source repositories, and tech stacks.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {loading ? (
-                    <div className="col-span-2 py-16 text-center text-sm text-slate-500">Loading projects…</div>
-                  ) : filteredProjects.length === 0 ? (
-                    <div className="col-span-2 py-16 text-center">
-                      <Folder className="mx-auto mb-3 h-9 w-9 text-slate-700" />
-                      <p className="font-semibold text-slate-400">No capstone projects yet</p>
-                      <p className="mt-1 text-xs text-slate-600">Projects added via the API will appear here.</p>
-                    </div>
-                  ) : filteredProjects.map((proj) => (
-                    <div key={proj.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d]">
-                            {proj.category}
-                          </span>
-                          <h3 className="text-lg font-bold text-white mt-2">{proj.title}</h3>
-                        </div>
-                        <Code2 className="w-5 h-5 text-slate-500" />
-                      </div>
-
-                      <p className="text-xs text-slate-400">Team Lead: <span className="text-white font-medium">{proj.lead}</span></p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {proj.tech.map((t, idx) => (
-                          <span key={idx} className="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="space-y-1.5 pt-2">
-                        <div className="flex justify-between text-xs text-slate-400">
-                          <span>Milestone Completion</span>
-                          <span className="text-white font-bold">{proj.progress}%</span>
-                        </div>
-                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                          <div className="bg-[#ed143d] h-full" style={{ width: `${proj.progress}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
 
             {activeTab === 'classes' && (
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -1233,95 +990,14 @@ export default function Dashboard() {
               </motion.div>
             )}
 
-            {false && <>
-            {activeTab === 'tickets' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-[1500px] space-y-7">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="max-w-2xl">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#ed143d]"><LifeBuoy className="h-4 w-4" />Support Center</div>
-                    <h2 className="text-3xl font-extrabold tracking-tight text-white">Campus Support Helpdesk</h2>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">Track and resolve academic, infrastructure, administration, and technical requests.</p>
-                  </div>
-                  <button 
-                    onClick={() => { setModalType('ticket'); setIsModalOpen(true); }}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#ed143d] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#ed143d]/30 transition-all hover:-translate-y-0.5 hover:bg-rose-700"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Submit Ticket</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  {[
-                    { label: 'Open Tickets', value: tickets.filter(ticket => ticket.status === 'Open').length, icon: LifeBuoy, color: 'text-[#ed143d]', bg: 'bg-[#ed143d]/10' },
-                    { label: 'In Progress', value: tickets.filter(ticket => ticket.status === 'In Progress').length, icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                    { label: 'Urgent', value: tickets.filter(ticket => ticket.priority === 'Urgent' && ticket.status !== 'Resolved').length, icon: Activity, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-                    { label: 'Resolved', value: tickets.filter(ticket => ticket.status === 'Resolved').length, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                  ].map(({ label, value, icon: Icon, color, bg }) => (
-                    <div key={label} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl sm:p-5">
-                      <div className="flex items-center justify-between"><div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}><Icon className={`h-5 w-5 ${color}`} /></div><span className={`text-3xl font-extrabold ${color}`}>{value}</span></div>
-                      <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="support-ticket-table overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl">
-                  <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 sm:px-6">
-                    <div><h3 className="font-bold text-white">All Support Requests</h3><p className="mt-0.5 text-xs text-slate-500">{filteredTickets.length} ticket{filteredTickets.length === 1 ? '' : 's'} in the current view</p></div>
-                    <span className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">Newest first</span>
-                  </div>
-                  <div className="divide-y divide-slate-800/60">
-                  {filteredTickets.map((tck) => (
-                    <div key={tck.id} className="support-ticket-row group grid gap-5 p-5 transition-colors hover:bg-slate-800/30 sm:p-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${tck.status === 'Resolved' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : tck.priority === 'Urgent' ? 'border-rose-500/20 bg-rose-500/10 text-rose-400' : 'border-slate-700 bg-slate-800 text-[#ed143d]'}`}>
-                        {tck.status === 'Resolved' ? <CheckCircle2 className="h-5 w-5" /> : <LifeBuoy className="h-5 w-5" />}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#ed143d]">{tck.id}</span>
-                          <span className="rounded-md border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-400">{tck.category}</span>
-                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${tck.status === 'Resolved' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : tck.status === 'In Progress' ? 'border-blue-500/20 bg-blue-500/10 text-blue-400' : 'border-amber-500/20 bg-amber-500/10 text-amber-400'}`}>{tck.status}</span>
-                        </div>
-                        <h3 className="break-words text-base font-bold leading-6 text-white">{tck.subject}</h3>
-                        <p className="mt-1.5 text-xs text-slate-400">Submitted by <span className="font-semibold text-slate-300">{tck.user}</span> <span className="mx-1 text-slate-600">•</span> {tck.time}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3 lg:justify-end">
-                        <span className={`rounded-full border px-3 py-1 text-xs font-bold ${
-                          tck.priority === 'Urgent' ? 'border-rose-500/30 bg-rose-500/10 text-rose-400' : tck.priority === 'High' ? 'border-amber-500/20 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800 text-slate-300'
-                        }`}>
-                          {tck.priority} Priority
-                        </span>
-
-                        {tck.status !== 'Resolved' ? (
-                          <button
-                            onClick={() => handleResolveTicket(tck.id)}
-                            className="rounded-xl bg-[#ed143d] px-4 py-2 text-xs font-semibold text-white shadow-md shadow-[#ed143d]/20 transition-all hover:bg-rose-700"
-                          >
-                            Mark Resolved
-                          </button>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Resolved
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {filteredTickets.length === 0 && <div className="px-6 py-16 text-center"><LifeBuoy className="mx-auto mb-3 h-9 w-9 text-slate-700" /><p className="font-semibold text-slate-400">No support tickets found</p><p className="mt-1 text-xs text-slate-600">Try a different search or submit a new request.</p></div>}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            </>}
-            {(activeTab === 'tickets' || activeTab === 'assignments' || activeTab === 'projects') && (
+            {(activeTab === 'tickets' || activeTab === 'assignments' || activeTab === 'projects' || activeTab === 'internship') && (
               <AdminTicketDesk
                 key={activeTab}
-                initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : 'support'}
+                initialCategoryFilter={activeTab === 'assignments' ? 'assignment' : activeTab === 'projects' ? 'project' : activeTab === 'internship' ? 'internship' : 'support'}
                 initialStatusFilter="open"
               />
             )}
-            {activeTab === 'announcements' && <AdminAnnouncementDesk />}
+            {/* {activeTab === 'announcements' && <AdminAnnouncementDesk />} */}
 
           </div>
         </main>

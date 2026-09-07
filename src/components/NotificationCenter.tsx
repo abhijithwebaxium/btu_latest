@@ -4,6 +4,7 @@ import {
   Bell, X, CheckCheck, Trash2, LifeBuoy, Megaphone, Sparkles,
   CheckCircle2, Clock, AlertCircle, RefreshCw,
 } from 'lucide-react'
+import { timeAgo } from '../lib/ticketUtils'
 
 interface Notification {
   _id: string
@@ -38,16 +39,6 @@ const kindColor: Record<string, string> = {
   announcement: 'text-sky-400 bg-sky-400/10',
 }
 
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'Just now'
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  const d = Math.floor(h / 24)
-  return `${d}d ago`
-}
 
 export default function NotificationCenter({ studentId, recipientType = 'STUDENT' }: Props) {
   const [open, setOpen] = useState(false)
