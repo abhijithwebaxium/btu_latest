@@ -12,6 +12,7 @@
     { "source": "/api/dashboard-stats", "destination": "/api/dashboard-stats.ts" },
     { "source": "/api/support", "destination": "/api/support.ts" },
     { "source": "/api/notifications", "destination": "/api/notifications.ts" },
+    { "source": "/api/kampus-launch", "destination": "/api/kampus-launch.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

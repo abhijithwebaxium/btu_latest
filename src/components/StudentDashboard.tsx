@@ -135,7 +135,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   const [theme, setTheme]     = useState<string>('light')
   const [pendingThread, setPendingThread] = useState<SupportThread | null>(null)
   const [chatLoading, setChatLoading]     = useState<string | null>(null) // holds subjectCode of loading card
-  const [announcements, setAnnouncements] = useState<Array<{
+const [announcements, setAnnouncements] = useState<Array<{
     _id: string; title: string; message: string
     priority: 'normal' | 'high' | 'urgent'; expiresAt: string
     targetType: string
@@ -245,7 +245,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
         { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: null },
         { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: null },
         { id: 'internship'   as Tab, label: 'Internship',  icon: Briefcase,     badge: null },
-        { id: 'study-materials',    label: 'Study Materials', icon: Library,    badge: null, href: 'https://test.kampus.org.in' },
+        { id: 'study-materials', label: 'Study Materials', icon: Library, badge: null, href: 'https://test.kampus.org.in/login' },
       ],
     },
     {
@@ -265,15 +265,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
 
   function navigate(id: Tab) { setTab(id); setMobileOpen(false) }
 
-  function openStudyMaterials() {
-    const base = (import.meta.env.VITE_KAMPUS_URL as string) || 'https://test.kampus.org.in'
-    const user = (import.meta.env.VITE_KAMPUS_USERNAME as string) || ''
-    const pass = (import.meta.env.VITE_KAMPUS_PASSWORD as string) || ''
-    window.open(`${base}/login?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`, '_blank', 'noopener,noreferrer')
-    setMobileOpen(false)
-  }
-
-  async function openChat(cardKey: string, subject: string, body: string, category: string = 'academic') {
+async function openChat(cardKey: string, subject: string, body: string, category: string = 'academic') {
     setChatLoading(cardKey)
     try {
       const r = await fetch('/api/support', {
@@ -337,12 +329,29 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                 </p>
                 <div className="space-y-1">
                   {group.items.map((item) => {
-                    const isExternal = 'href' in item
-                    const active = !isExternal && tab === (item.id as Tab)
+                    const { id, label, icon: Icon, badge } = item
+                    if ('href' in item) {
+                      return (
+                        <a
+                          key={id}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                        >
+                          <div className="relative z-10 flex min-w-0 flex-1 items-center space-x-3">
+                            <Icon className="w-4.5 h-4.5 shrink-0 text-slate-400 group-hover:text-white" />
+                            <span className="sidebar-nav-label truncate">{label}</span>
+                          </div>
+                          <ExternalLink className="w-3 h-3 shrink-0 text-slate-500 group-hover:text-slate-400" />
+                        </a>
+                      )
+                    }
+                    const active = tab === id
                     return (
                       <button
-                        key={item.id}
-                        onClick={() => isExternal ? openStudyMaterials() : navigate(item.id as Tab)}
+                        key={id}
+                        onClick={() => navigate(id as Tab)}
                         className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
                           active ? 'sidebar-nav-active text-white font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
@@ -355,18 +364,15 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           />
                         )}
                         <div className="relative z-10 flex min-w-0 flex-1 items-center space-x-3">
-                          <item.icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{item.label}</span>
+                          <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{label}</span>
                         </div>
-                        {item.badge !== null && item.badge !== undefined && (
+                        {badge !== null && badge !== undefined && (
                           <span className={`relative z-10 ml-2 shrink-0 text-xs px-2 py-0.5 rounded-full font-bold ${
                             active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
                           }`}>
-                            {item.badge}
+                            {badge}
                           </span>
-                        )}
-                        {isExternal && (
-                          <ExternalLink className="relative z-10 ml-1 w-3 h-3 shrink-0 text-slate-500 group-hover:text-slate-300" />
                         )}
                       </button>
                     )
