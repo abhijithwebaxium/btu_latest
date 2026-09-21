@@ -7,7 +7,7 @@ import {
   ChevronRight, Phone, BadgeCheck, Clock, AlertCircle,
   BarChart3, Shield, TrendingUp, BookOpen, Sun, Moon,
   ArrowUpRight, Layers, Activity, LifeBuoy, ExternalLink,
-  ClipboardList, Folder, MessageSquare, Loader2,
+  ClipboardList, Folder, MessageSquare, Loader2, Library,
 } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
 import SupportTicketView, { type Thread as SupportThread } from './SupportTicketView'
@@ -54,6 +54,9 @@ export interface LoggedInStudent {
 }
 
 type Tab = 'overview' | 'evaluation' | 'transcripts' | 'classes' | 'assignments' | 'projects' | 'internship' | 'profile' | 'support' | 'chat-assignments' | 'chat-projects' | 'chat-internship'
+type NavItem =
+  | { id: Tab; label: string; icon: React.ElementType; badge: string | number | null }
+  | { id: string; label: string; icon: React.ElementType; badge: string | number | null; href: string }
 
 /* ── Status badge (same style as staff badges) ── */
 function StatusBadge({ status }: { status?: string }) {
@@ -228,7 +231,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   }
 
   /* Nav groups — mirrors staff structure */
-  const navGroups = [
+  const navGroups: Array<{ label: string; items: NavItem[] }> = [
     {
       label: 'Overview',
       items: [{ id: 'overview' as Tab, label: 'Dashboard', icon: BarChart3, badge: null }],
@@ -242,6 +245,7 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
         { id: 'assignments'  as Tab, label: 'Assignments', icon: ClipboardList, badge: null },
         { id: 'projects'     as Tab, label: 'Projects',    icon: Folder,        badge: null },
         { id: 'internship'   as Tab, label: 'Internship',  icon: Briefcase,     badge: null },
+        { id: 'study-materials',    label: 'Study Materials', icon: Library,    badge: null, href: 'https://test.kampus.org.in' },
       ],
     },
     {
@@ -260,6 +264,14 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
   ]
 
   function navigate(id: Tab) { setTab(id); setMobileOpen(false) }
+
+  function openStudyMaterials() {
+    const base = (import.meta.env.VITE_KAMPUS_URL as string) || 'https://test.kampus.org.in'
+    const user = (import.meta.env.VITE_KAMPUS_USERNAME as string) || ''
+    const pass = (import.meta.env.VITE_KAMPUS_PASSWORD as string) || ''
+    window.open(`${base}/login?username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`, '_blank', 'noopener,noreferrer')
+    setMobileOpen(false)
+  }
 
   async function openChat(cardKey: string, subject: string, body: string, category: string = 'academic') {
     setChatLoading(cardKey)
@@ -324,12 +336,13 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                   {group.label}
                 </p>
                 <div className="space-y-1">
-                  {group.items.map(({ id, label, icon: Icon, badge }) => {
-                    const active = tab === id
+                  {group.items.map((item) => {
+                    const isExternal = 'href' in item
+                    const active = !isExternal && tab === (item.id as Tab)
                     return (
                       <button
-                        key={id}
-                        onClick={() => navigate(id)}
+                        key={item.id}
+                        onClick={() => isExternal ? openStudyMaterials() : navigate(item.id as Tab)}
                         className={`sidebar-nav-item relative w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-medium transition-all duration-200 group ${
                           active ? 'sidebar-nav-active text-white font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                         }`}
@@ -342,15 +355,18 @@ export default function StudentDashboard({ student, onSignOut }: { student: Logg
                           />
                         )}
                         <div className="relative z-10 flex min-w-0 flex-1 items-center space-x-3">
-                          <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
-                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{label}</span>
+                          <item.icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                          <span className={`sidebar-nav-label truncate ${active ? 'text-white' : ''}`}>{item.label}</span>
                         </div>
-                        {badge !== null && badge !== undefined && (
+                        {item.badge !== null && item.badge !== undefined && (
                           <span className={`relative z-10 ml-2 shrink-0 text-xs px-2 py-0.5 rounded-full font-bold ${
                             active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
                           }`}>
-                            {badge}
+                            {item.badge}
                           </span>
+                        )}
+                        {isExternal && (
+                          <ExternalLink className="relative z-10 ml-1 w-3 h-3 shrink-0 text-slate-500 group-hover:text-slate-300" />
                         )}
                       </button>
                     )
