@@ -71,7 +71,7 @@ export default function NotificationCenter({ studentId, recipientType = 'STUDENT
         prevUnread.current = newCount
         setUnread(newCount)
       }
-    } catch { /* silent */ }
+    } catch { /* silent  */ }
   }, [buildParams, recipientType])
 
   const fetchNotifications = useCallback(async () => {
