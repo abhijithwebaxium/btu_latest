@@ -1,4 +1,4 @@
-# Architecture Audit — BTU Campus OS
+# Architecture Audit — SVU Campus OS
 
 ## Frameworks & Versions
 
@@ -50,7 +50,7 @@ All API files set `Access-Control-Allow-Origin: *`.
 ## Folder Structure
 
 ```
-btu_new1/
+svu_new1/
 ├── api/                    Vercel serverless handlers (prod backend)
 │   ├── admin-login.ts
 │   ├── assignments.ts
@@ -85,7 +85,7 @@ btu_new1/
 │   ├── router.tsx          createTanStackRouter factory
 │   ├── routeTree.gen.ts    Auto-generated route tree
 │   └── styles.css          Tailwind entry + light-theme overrides
-├── public/image/           btu.jpg, btu_logo.png
+├── public/image/           svu.jpg, svu-mark.svg
 ├── .env                    Committed credentials — see gaps doc
 ├── vercel.json             Route rewrites for prod
 ├── vite.config.ts          Vite config + inline dev API server
@@ -129,7 +129,7 @@ If `VITE_APP_URL` is empty, path-only URLs are used (functional). If mis-set, th
 | Name | Where read | Controls |
 |---|---|---|
 | `MONGO_URI` | `src/lib/db.ts:35` | MongoDB Atlas SRV connection string |
-| `ADMIN_EMAIL` | `api/admin-login.ts:18`, `vite.config.ts:51` | Staff login email (fallback `admin@btu.ac.in`) |
+| `ADMIN_EMAIL` | `api/admin-login.ts:18`, `vite.config.ts:51` | Staff login email (fallback `admin@svu.ac.in`) |
 | `ADMIN_PASSWORD` | admin-login, all admin API files, vite middleware | Staff password AND bearer key for every admin-only endpoint |
 | `VITE_APP_URL` | `src/lib/config.ts:1` | Base URL for `/report` window.open links |
 

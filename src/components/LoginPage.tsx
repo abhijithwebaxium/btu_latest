@@ -17,7 +17,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/student-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, dob, university: 'BTU' }),
+        body: JSON.stringify({ phone, dob, university: 'SVU' }),
       });
       const data = await res.json();
       if (data.success && data.student) {
@@ -25,7 +25,7 @@ export default function LoginPage() {
         localStorage.setItem('current-student', JSON.stringify(data.student));
         navigate({ to: '/' });
       } else {
-        setErrorMsg(data.error || 'Invalid BTU student phone number or date of birth.');
+        setErrorMsg(data.error || 'Invalid SVU student phone number or date of birth.');
       }
     } catch (err) {
       setErrorMsg(`Connection error: ${(err as Error).message}`);
@@ -37,7 +37,7 @@ export default function LoginPage() {
   return (
     <main className="relative min-h-screen overflow-hidden flex items-center justify-center p-4 sm:p-6">
       {/* Background image */}
-      <img src="/image/btu.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+      <img src="/image/svu.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[2px]" />
 
       {/* Two-panel card */}
@@ -56,9 +56,9 @@ export default function LoginPage() {
               <GraduationCap className="h-7 w-7 text-white" />
             </div>
             <h1 className="text-xl font-black text-white leading-snug">
-              Bir Tikendrajit<br />University
+              Swami Vivekanand<br />University
             </h1>
-            <p className="mt-1.5 text-xs font-medium text-rose-200">Student Portal — BTU Campus OS</p>
+            <p className="mt-1.5 text-xs font-medium text-rose-200">Student Portal — SVU Campus OS</p>
           </div>
 
           {/* Feature list */}
@@ -146,13 +146,13 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#ed143d] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#ed143d]/25 transition-colors hover:bg-rose-700 disabled:opacity-50"
             >
-              <span>{isLoading ? 'Verifying account...' : 'Sign in to BTU'}</span>
+              <span>{isLoading ? 'Verifying account...' : 'Sign in to SVU'}</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 pointer-events-none" />
             </button>
           </form>
 
           <p className="text-center text-[11px] text-slate-400">
-            Protected by BTU Student Authentication
+            Protected by SVU Student Authentication
           </p>
         </div>
 

@@ -42,7 +42,7 @@ export default function AdminSidebar({ activeItem, mobileOpen, onNavigate, onClo
         <div>
           <div className="flex items-center gap-3 border-b border-slate-800/80 p-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-tr from-[#ed143d] to-rose-500 shadow-lg shadow-[#ed143d]/30"><GraduationCap className="h-6 w-6 text-white" /></div>
-            <div><h1 className="flex items-center text-[14px] font-extrabold tracking-wide text-white">BTU <span className="ml-1 rounded border border-[#ed143d]/30 bg-[#ed143d]/20 px-1.5 py-0.5 font-mono text-[10px] text-[#ed143d]">Campus OS</span></h1><p className="text-[11px] font-medium text-slate-400">Bir Tikendrajit University</p></div>
+            <div><h1 className="flex items-center text-[14px] font-extrabold tracking-wide text-white">SVU <span className="ml-1 rounded border border-[#ed143d]/30 bg-[#ed143d]/20 px-1.5 py-0.5 font-mono text-[10px] text-[#ed143d]">Campus OS</span></h1><p className="text-[11px] font-medium text-slate-400">Swami Vivekanand University</p></div>
             <button type="button" aria-label="Close navigation" onClick={onClose} className="ml-auto text-slate-400 lg:hidden"><X className="h-5 w-5" /></button>
           </div>
           <nav className="space-y-5 p-4">
@@ -71,7 +71,7 @@ export default function AdminSidebar({ activeItem, mobileOpen, onNavigate, onClo
           </nav>
         </div>
         <div className="m-3 flex items-center justify-between rounded-2xl border-t border-slate-800/80 bg-slate-950/50 p-4">
-          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-rose-500 to-[#ed143d] text-white"><GraduationCap className="h-5 w-5" /></div><div><p className="text-xs font-semibold text-white">BTU Admin</p><p className="text-xs text-slate-400">Staff Portal</p></div></div>
+          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-rose-500 to-[#ed143d] text-white"><GraduationCap className="h-5 w-5" /></div><div><p className="text-xs font-semibold text-white">SVU Admin</p><p className="text-xs text-slate-400">Staff Portal</p></div></div>
           <button type="button" onClick={onSignOut} aria-label="Log out" title="Log out" className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-[#ed143d]/10 hover:text-[#ed143d]"><LogOut className="h-4 w-4" /></button>
         </div>
       </aside>

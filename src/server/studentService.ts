@@ -45,7 +45,7 @@ export async function authenticateStudent(phone: string, dob: string) {
   })
 
   if (!matched) {
-    return { success: false, error: 'No student record found with this phone number in BTU database.' }
+    return { success: false, error: 'No student record found with this phone number in SVU database.' }
   }
 
   const p = ((matched as Record<string, unknown>).personalDetails || {}) as Record<string, unknown>
@@ -79,7 +79,7 @@ export async function authenticateStudent(phone: string, dob: string) {
 
   return {
     success: true,
-    student: JSON.parse(JSON.stringify(matched)),
+    student: JSON.parse(JSON.stringify({ ...matched, university: 'SVU' })),
   }
 }
 
@@ -98,7 +98,7 @@ export async function importStudentsToDatabase(jsonContent: string) {
   const records = parseResult.records
 
   for (const rec of records) {
-    const university = 'BTU'
+    const university = 'SVU'
     const courseName = rec.academicDetails?.nameOfPrograme || (typeof rec.course === 'object' && rec.course ? (rec.course as { name?: string }).name : null) || 'General Program'
     const branchName = rec.academicDetails?.branch || (typeof rec.branch === 'object' && rec.branch ? (rec.branch as { name?: string }).name : null) || 'General Branch'
 
@@ -148,15 +148,15 @@ export async function importStudentsToDatabase(jsonContent: string) {
     let evalObjectId = null
     if (rec.evaluation && typeof rec.evaluation === 'object') {
       const evalData = rec.evaluation as { approvalStage?: number; evaluationStatus?: string; subjects?: unknown[] }
-      const BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
+      const SVU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
       const normalizedSubjects = ((evalData.subjects || []) as Record<string, unknown>[]).map(subj => {
         const s = { ...subj }
         if (!s.btuSubjectCode && s.equalizedSubject) {
-          const m = String(s.equalizedSubject).match(BTU_CODE_RE)
+          const m = String(s.equalizedSubject).match(SVU_CODE_RE)
           if (m) { s.btuSubjectCode = m[1].trim(); s.btuSubjectTitle = m[2].trim() }
           else    { s.btuSubjectTitle = s.btuSubjectTitle || String(s.equalizedSubject) }
         }
-        // For reappear/re-submission/improvement: subjectCode & subjectTitle ARE the BTU details
+        // For reappear/re-submission/improvement: subjectCode & subjectTitle ARE the SVU details
         if (!s.btuSubjectCode  && s.subjectCode)  s.btuSubjectCode  = s.subjectCode
         if (!s.btuSubjectTitle && s.subjectTitle) s.btuSubjectTitle = s.subjectTitle
         return s
@@ -232,7 +232,7 @@ export async function fetchStudentsFromDatabase(searchQuery: string = '', limit:
     .sort({ updatedAt: -1 })
     .lean()
 
-  return { success: true, students: JSON.parse(JSON.stringify(docs)) }
+  return { success: true, students: JSON.parse(JSON.stringify(docs.map(student => ({ ...student, university: 'SVU' })))) }
 }
 
 export async function updateEvaluationSubjects(

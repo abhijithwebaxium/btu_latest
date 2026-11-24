@@ -48,7 +48,7 @@ function apiServerPlugin(env: Record<string, string>): Plugin {
             req.on('end', async () => {
               try {
                 const { email, password } = JSON.parse(body)
-                const adminEmail = env.ADMIN_EMAIL || 'admin@btu.ac.in'
+                const adminEmail = env.ADMIN_EMAIL || 'admin@svu.ac.in'
                 const adminPassword = env.ADMIN_PASSWORD
                 if (!adminPassword) {
                   res.statusCode = 503

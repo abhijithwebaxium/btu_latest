@@ -1,4 +1,4 @@
-# Features by Page — BTU Campus OS
+# Features by Page — SVU Campus OS
 
 ---
 
@@ -6,7 +6,7 @@
 
 **Files:** `src/routes/login.tsx` → `src/components/LoginPage.tsx`
 
-- Two-panel card; background `/image/btu.jpg`
+- Two-panel card; background `/image/svu.jpg`
 - Fields:
   - `phone` — `type="tel" required`, placeholder `9876543210`
   - `dob` — `type="text" required`, placeholder `18092002 (DDMMYYYY)`. ISO format also accepted by server.
@@ -167,7 +167,7 @@ ESC key closes modal. Backdrop click closes modal.
 - Equalized credit summary
 - Reappear / re-submission list with `ASSIGNMENT_DATES` deadlines
 - Complex credit-completion matrix with `rowspan`/`colspan`
-- Hard-coded: "BTU syllabus - 166 Credits" (line 402), Additional Credit = `max(0, 83 - totalCredits)` (line 442)
+- Hard-coded: "SVU syllabus - 166 Credits" (line 402), Additional Credit = `max(0, 83 - totalCredits)` (line 442)
 - LH (Learning Hours) figures hard-coded per project type
 
 **Dead code:** `if (student.CERValidation?.status)` validator signature block (line 539–555) — no schema field exists for `CERValidation`.
@@ -195,13 +195,13 @@ Rendered by `Dashboard.tsx:384-386` when `current-student` is present.
 - Announcement banners (color-coded by priority; time remaining label)
 - 3 KPI cards: EQUALIZED CREDITS, REAPPEAR CREDITS, TOTAL CREDITS
 - Academic Profile grid (8 fields)
-- Credit Summary progress bars: BTU Evaluation, Credit Transfers, Semesters Completed (of 8)
+- Credit Summary progress bars: SVU Evaluation, Credit Transfers, Semesters Completed (of 8)
 - Fee status pill
 
 ### Tab: `evaluation`
 
 - 4 stat cards: total subjects, total credits, equalized credits, equalized subjects
-- Subject table; regex `BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/` splits embedded `CODE - Title`
+- Subject table; regex `SVU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/` splits embedded `CODE - Title`
 - "Credit Evaluation Report" link → `/report` in new tab
 
 ### Tab: `transcripts`
@@ -246,7 +246,7 @@ Renders `<SupportTicketView categoryFilter='project'>`
 - Academic Snapshot key-value rows
 - Fee status card
 
-**Footer:** hard-coded `academics@btu.ac.in`.
+**Footer:** hard-coded `academics@svu.ac.in`.
 
 ---
 
@@ -276,7 +276,7 @@ Renders `<SupportTicketView categoryFilter='project'>`
 - Status filter chips: all, open, in_progress, resolution_pending, resolved
 - Colored left stripe for assignment (violet) and project (cyan) threads
 - Header "Set status:" buttons: `open`, `in_progress`, `resolved` only — cannot set `resolution_pending` or `closed` from admin UI
-- Reply hard-codes `senderType:'admin'`, `senderId:'admin'`, `senderName:'BTU Admin'`
+- Reply hard-codes `senderType:'admin'`, `senderId:'admin'`, `senderName:'SVU Admin'`
 
 ---
 

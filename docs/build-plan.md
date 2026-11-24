@@ -1,4 +1,4 @@
-# Build Plan — BTU Campus OS (Rebuild)
+# Build Plan — SVU Campus OS (Rebuild)
 
 Ordered checklist for rebuilding on TanStack Start + Tailwind + shadcn/ui against the existing MongoDB/API backend.
 
@@ -43,7 +43,7 @@ The entire app requires auth and layout before any page can be built. These item
   - [ ] On success: establish staff session, redirect to `/`
   - [ ] Feature list preview panel (static copy)
 - **Open questions:**
-  - GaQ #11: Does BTU plan to have multiple named admin users? The current system is a single shared credential (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). If multi-user is coming, design the auth table now rather than retrofitting.
+  - GaQ #11: Does SVU plan to have multiple named admin users? The current system is a single shared credential (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). If multi-user is coming, design the auth table now rather than retrofitting.
 
 ---
 
@@ -150,7 +150,7 @@ Pages that only read data or perform soft/safe writes (mark-read). Build these a
   - [ ] Announcement banners (color by priority; "Xd left" / "Xh left" countdown from `expiresAt`)
   - [ ] 3 KPI cards: EQUALIZED CREDITS, REAPPEAR CREDITS, TOTAL CREDITS (all computed client-side from `evaluation.subjects`)
   - [ ] Academic Profile grid: Enrollment ID, Programme, Branch, Parent University, Academic Session, Admission Batch, Study Mode, Profile Status
-  - [ ] Credit progress bars: BTU Evaluation, Credit Transfers, Semesters Completed (of 8)
+  - [ ] Credit progress bars: SVU Evaluation, Credit Transfers, Semesters Completed (of 8)
   - [ ] Fee status pill
 - **Open questions:**
   - GaQ #7: `improvement`-equalized subjects are shown in Classes tab but excluded from report credit totals. Confirm whether they should appear in the overview KPI numbers.
@@ -162,7 +162,7 @@ Pages that only read data or perform soft/safe writes (mark-read). Build these a
 - **Audit refs:** `features-by-page.md` §StudentDashboard evaluation, `data-model.md` §evaluations, `business-logic.md` §equalized field, §examStatus, §Subject Code Normalization
 - **What to build:**
   - [ ] 4 stat cards: total subjects, total credits, equalized credits, equalized subjects
-  - [ ] Subject table with code/title parsed via `BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/`
+  - [ ] Subject table with code/title parsed via `SVU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/`
   - [ ] Link to Credit Evaluation Report
 - **Open questions:**
   - GaQ #1: Confirm the meaning of all `examStatus` codes so column labels are correct.
@@ -247,8 +247,8 @@ Forms, mutations, exports. Require stable auth (Phase 1) and confirmed data shap
   - [ ] Error state with message
   - [ ] DB record count display on mount
 - **Open questions:**
-  - GaQ #3: Is `Student._id` always the BTU ERP string in production, or is the `STU_<uuid>` fallback ever triggered? Matters for displaying IDs.
-  - GaQ #12: Should `/api/evaluation/update-subjects` exist in the new prod backend? Currently dev-only and missing from prod. Decide before building the import flow, as it is the only way to stamp BTU subject codes post-import.
+  - GaQ #3: Is `Student._id` always the SVU ERP string in production, or is the `STU_<uuid>` fallback ever triggered? Matters for displaying IDs.
+  - GaQ #12: Should `/api/evaluation/update-subjects` exist in the new prod backend? Currently dev-only and missing from prod. Decide before building the import flow, as it is the only way to stamp SVU subject codes post-import.
 
 ---
 
@@ -300,7 +300,7 @@ Forms, mutations, exports. Require stable auth (Phase 1) and confirmed data shap
   - [ ] If thread is `resolved` or `closed`: hide reply box, show "Reopen" button
   - [ ] Poll thread list every 10 s; poll active thread messages every 4 s (or replace with SSE/WS)
   - [ ] Status filter chips: All, Open, In Progress, Pending, Resolved
-- **Note:** Admin reply hard-codes `senderName: 'BTU Admin'`. If multi-user admin is implemented (GaQ #11), use the authenticated admin's name instead.
+- **Note:** Admin reply hard-codes `senderName: 'SVU Admin'`. If multi-user admin is implemented (GaQ #11), use the authenticated admin's name instead.
 - **Open questions:**
   - GaQ #9: `resolution_pending` can be set via API but is not in the admin UI's status buttons. Should the new admin UI surface it?
   - GaQ #11: Multi-admin affects the sender name displayed in messages.
@@ -371,7 +371,7 @@ Forms, mutations, exports. Require stable auth (Phase 1) and confirmed data shap
 - **What to build:**
   - [ ] Dual mode: admin preview (`?admin=1` + server-held preview student) and student self-view
   - [ ] Full multi-section report table: personal, academic, transfer equivalency, equalized credit summary, reappear list with deadlines, credit-completion matrix
-  - [ ] Static figures: "BTU syllabus - 166 Credits", Additional Credit = `max(0, 83 - totalCredits)`
+  - [ ] Static figures: "SVU syllabus - 166 Credits", Additional Credit = `max(0, 83 - totalCredits)`
   - [ ] LH (Learning Hours) figures per project type (currently hard-coded; confirm values with domain owner)
 - **Open questions:**
   - GaQ #2: What is `CERValidation`? The existing code shows a validator signature block when `student.CERValidation?.status` is set, but no schema field exists. Either implement the feature or drop the block.
@@ -524,7 +524,7 @@ Permissions, states that require the core pages to be working first, and feature
 - **Audit refs:** `api-surface.md` §POST /api/evaluation/update-subjects, `business-logic.md` §Evaluation Subject Update Logic
 - **What to build:** Currently dev-only (no prod endpoint). If this feature is needed, add `api/evaluation-update.ts` to the new backend.
 - **Open questions:**
-  - GaQ #12: **Must be resolved first.** Should this endpoint exist in production? It's the only mechanism to stamp BTU subject codes post-import. If yes, it also needs auth (currently unprotected even in dev).
+  - GaQ #12: **Must be resolved first.** Should this endpoint exist in production? It's the only mechanism to stamp SVU subject codes post-import. If yes, it also needs auth (currently unprotected even in dev).
 
 ---
 
@@ -565,7 +565,7 @@ Questions that block specific items are noted above. Full list for reference:
 |---|---|---|
 | 1 | What do `A.E.B.T.U.C`, `A.L.V`, `M.I.P.R.S`, `M.A.P.R.S.I`, `M.A.P.R.S.II`, `I.R.S` abbreviations mean in full? | 1.2, 2.7, 3.14, 4.1 |
 | 2 | What is `CERValidation`? Who sets it? | 3.11, 4.2 |
-| 3 | Is `Student._id` always the BTU ERP string in prod? | 3.1 |
+| 3 | Is `Student._id` always the SVU ERP string in prod? | 3.1 |
 | 4 | Who sets `isProfileVerified` / `isFeeCompleted`? | 4.9 |
 | 5 | Is `Student.paymentLevel` meaningful? Should it appear on profile? | 2.10 |
 | 6 | Are the 166-credit target and 83-credit threshold ever going to change? | 3.11 |
@@ -573,6 +573,6 @@ Questions that block specific items are noted above. Full list for reference:
 | 8 | What are all the `ASSIGNMENT_DATES` batch → deadline mappings? | 2.9, 3.11, 4.1 |
 | 9 | What is the intended final state of the ticket status machine (`closed`, `resolution_pending`)? | 3.4, 3.6, 4.12, 4.13 |
 | 10 | Should clicking a notification navigate to the thread? If yes, what are the routes? | 4.3 |
-| 11 | Will BTU ever need multiple named admin users? | 1.3, 2.1, 3.5 |
+| 11 | Will SVU ever need multiple named admin users? | 1.3, 2.1, 3.5 |
 | 12 | Should `/api/evaluation/update-subjects` exist in the new prod backend? | 3.1, 4.10 |
 | 13 | What `ASSIGNMENT_DATES` entries cover exam batches beyond Dec-2024 and June-2025? | 2.9, 4.1 |

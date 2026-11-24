@@ -230,7 +230,7 @@ export default function AdminAnnouncementDesk() {
                 </label>
                 <input
                   required value={targetValue} onChange={e => setTargetValue(e.target.value)}
-                  placeholder={targetType === 'branch' ? 'e.g. Computer Science and Engineering' : 'e.g. BTU2024CS001'}
+                  placeholder={targetType === 'branch' ? 'e.g. Computer Science and Engineering' : 'e.g. SVU2024CS001'}
                   className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#ed143d] focus:ring-1 focus:ring-[#ed143d]"
                 />
               </div>

@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { email, password } = req.body || {}
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@btu.ac.in'
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@svu.ac.in'
     const adminPassword = process.env.ADMIN_PASSWORD
 
     if (!adminPassword) {

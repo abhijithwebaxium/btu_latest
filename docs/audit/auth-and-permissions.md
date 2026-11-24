@@ -1,4 +1,4 @@
-# Auth & Permissions Audit — BTU Campus OS
+# Auth & Permissions Audit — SVU Campus OS
 
 ## Mechanism Overview
 
@@ -43,7 +43,7 @@ Server algorithm:
 
 1. `POST /api/auth/admin-login` with `{ email, password }`.
 2. Success: remove `current-student`, set `staff-session='1'`, set `admin-key=<password>`, navigate to `/`.
-3. Server compares plain-text against `ADMIN_EMAIL` (default `admin@btu.ac.in`) and `ADMIN_PASSWORD` env vars.
+3. Server compares plain-text against `ADMIN_EMAIL` (default `admin@svu.ac.in`) and `ADMIN_PASSWORD` env vars.
 4. No hashing, no rate limit, no MFA, no session invalidation mechanism.
 
 ### Logout (duplicated in 5 places)
@@ -124,7 +124,7 @@ Server checks: `req.headers['x-admin-key'] === process.env.ADMIN_PASSWORD`
 | No-auth `POST /api/students/import` | Critical | Anyone can bulk-overwrite courses, branches, evaluations, students |
 | No-auth `GET/POST /api/notifications` | High | Any actor can enumerate or create notifications for any student |
 | Plaintext admin password in localStorage | High | XSS or localStorage inspection yields full admin capability |
-| No-auth `POST /api/evaluation/update-subjects` | Medium | Anyone can stamp arbitrary BTU codes onto evaluation subjects (dev only) |
+| No-auth `POST /api/evaluation/update-subjects` | Medium | Anyone can stamp arbitrary SVU codes onto evaluation subjects (dev only) |
 | Wildcard CORS (`Access-Control-Allow-Origin: *`) | Medium | The no-auth endpoints above are callable cross-origin from any website |
 | Student DOB as password | Medium | DOB matched from last-10-digits of any of 4 phone fields; no lockout; no rate limit |
 | Plain-text comparison for admin key | Low | Simple `===`, not timing-safe; not currently exploitable without the key |

@@ -1,10 +1,10 @@
-# Business Logic Audit — BTU Campus OS
+# Business Logic Audit — SVU Campus OS
 
 ---
 
-## Core domain: BTU Credit Transfer
+## Core domain: SVU Credit Transfer
 
-The app's primary function is to track students who transferred to BTU from another university under a "Credit Transfer" scheme. Each student's subjects from their previous university are imported, evaluated against BTU's curriculum, and each subject is tagged with an `equalized` status and an `examStatus` code. The resulting "Credit Evaluation Report" is the main output artifact.
+The app's primary function is to track students who transferred to SVU from another university under a "Credit Transfer" scheme. Each student's subjects from their previous university are imported, evaluated against SVU's curriculum, and each subject is tagged with an `equalized` status and an `examStatus` code. The resulting "Credit Evaluation Report" is the main output artifact.
 
 ---
 
@@ -15,7 +15,7 @@ Each element in `evaluation.subjects` has an `equalized` field indicating the ou
 | Value | Meaning | Credit treatment |
 |---|---|---|
 | `'equalized'` | Subject accepted for credit transfer | Contributes to `equalizedCredits` |
-| `'reappear'` | Student must appear at BTU exam | Contributes to `theoryCredits` / lab / project buckets (in report) |
+| `'reappear'` | Student must appear at SVU exam | Contributes to `theoryCredits` / lab / project buckets (in report) |
 | `'re-submission'` | Same treatment as reappear for report totals | Shown as "Re-submission" badge in student UI |
 | `'improvement'` | Shown in student Classes tab as current enrollment | NOT included in `report.tsx` credit totals — silently dropped |
 
@@ -62,7 +62,7 @@ All credit totals are **computed on demand** — never cached. Computed identica
 | `totalCredits` | `equalizedCredits + theoryCredits + labCredits + miniProjectCredits + majorProjectICredits + majorProjectIICredits + InternshipCredits` |
 
 Hard-coded rules in report:
-- `report.tsx:402`: "BTU syllabus - 166 Credits" — hard-coded target
+- `report.tsx:402`: "SVU syllabus - 166 Credits" — hard-coded target
 - `report.tsx:442`: Additional Credit Requirement = `max(0, 83 - totalCredits)` — hard-coded threshold
 
 ---

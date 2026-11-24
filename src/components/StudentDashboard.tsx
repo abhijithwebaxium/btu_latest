@@ -314,9 +314,9 @@ async function openChat(cardKey: string, subject: string, body: string, category
             </div>
             <div>
               <h1 className="font-extrabold text-[14px] text-white tracking-wide flex items-center">
-                BTU <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">Student</span>
+                SVU <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-[#ed143d]/20 text-[#ed143d] border border-[#ed143d]/30 font-mono">Student</span>
               </h1>
-              <p className="text-[11px] text-slate-400 font-medium">Bir Tikendrajit University</p>
+              <p className="text-[11px] text-slate-400 font-medium">Swami Vivekanand University</p>
             </div>
           </div>
 
@@ -490,7 +490,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                     Welcome back, {name.split(' ')[0]} 👋
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
-                    {program}{branch ? ` · ${branch}` : ''} — Bir Tikendrajit University Credit Transfer
+                    {program}{branch ? ` · ${branch}` : ''} — Swami Vivekanand University Credit Transfer
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -541,9 +541,9 @@ async function openChat(cardKey: string, subject: string, body: string, category
 
               {/* KPI cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <KpiCard title="EQUALIZED CREDITS" value={equalizedCr} sub="Credits recognized by BTU from subjects you passed at your previous university" icon={Award} />
-                <KpiCard title="REAPPEAR CREDITS"  value={reappearCr}  sub="Credits for subjects not equalized that you must appear and pass at BTU" icon={BarChart3} />
-                <KpiCard title="TOTAL CREDITS"     value={evalCr}      sub="Total credits across all subjects mapped from your previous university to BTU" icon={TrendingUp} />
+                <KpiCard title="EQUALIZED CREDITS" value={equalizedCr} sub="Credits recognized by SVU from subjects you passed at your previous university" icon={Award} />
+                <KpiCard title="REAPPEAR CREDITS"  value={reappearCr}  sub="Credits for subjects not equalized that you must appear and pass at SVU" icon={BarChart3} />
+                <KpiCard title="TOTAL CREDITS"     value={evalCr}      sub="Total credits across all subjects mapped from your previous university to SVU" icon={TrendingUp} />
               </div>
 
               {/* Info grid */}
@@ -599,7 +599,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
 
                     <div className="space-y-5">
                       {[
-                        { label: 'BTU Evaluation', count: evalSubs.length, total: Math.max(evalSubs.length, prevSubs.length, 1), color: '#ed143d', sub: `${evalCr} credits mapped` },
+                        { label: 'SVU Evaluation', count: evalSubs.length, total: Math.max(evalSubs.length, prevSubs.length, 1), color: '#ed143d', sub: `${evalCr} credits mapped` },
                         { label: 'Credit Transfers', count: prevSubs.length, total: Math.max(prevSubs.length, 1), color: '#f59e0b', sub: `${prevCr} credits submitted` },
                         { label: 'Semesters Completed', count: a.semesterCompletedAtParentUniversity || 0, total: 8, color: '#10b981', sub: 'at parent university' },
                       ].map(item => (
@@ -639,7 +639,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
             </motion.div>
           )}
 
-          {/* ══ BTU EVALUATION ══ */}
+          {/* ══ SVU EVALUATION ══ */}
           {tab === 'evaluation' && (
             <motion.div
               key="evaluation"
@@ -650,8 +650,8 @@ async function openChat(cardKey: string, subject: string, body: string, category
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">BTU Evaluation</h2>
-                  <p className="text-slate-400 text-sm">Subject equalization and credit mapping at Bir Tikendrajit University.</p>
+                  <h2 className="text-2xl font-bold text-white">SVU Evaluation</h2>
+                  <p className="text-slate-400 text-sm">Subject equalization and credit mapping at Swami Vivekanand University.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <StatusBadge status={ev.evaluationStatus} />
@@ -671,7 +671,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {[
                   { label: 'Total Subjects',      value: evalSubs.length,                                              icon: BookOpen,  color: 'text-[#ed143d]',    glow: 'bg-[#ed143d]',    note: 'Subjects evaluated' },
-                  { label: 'Total Credits',        value: evalCr,                                                       icon: Award,     color: 'text-emerald-400',  glow: 'bg-emerald-500',  note: 'Credits mapped at BTU' },
+                  { label: 'Total Credits',        value: evalCr,                                                       icon: Award,     color: 'text-emerald-400',  glow: 'bg-emerald-500',  note: 'Credits mapped at SVU' },
                   { label: 'Equalized Credits',    value: equalizedCr,                                                  icon: TrendingUp, color: 'text-blue-400',    glow: 'bg-blue-500',     note: 'Credits fully equalized' },
                   { label: 'Equalized Subjects',   value: evalSubs.filter(s => s.equalized === 'equalized').length,     icon: CheckCircle2, color: 'text-violet-400', glow: 'bg-violet-500',  note: 'Subjects fully equalized' },
                 ].map(({ label, value, icon: Icon, color, glow, note }) => (
@@ -708,7 +708,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                     <thead>
                       <tr className="bg-slate-900 border-b-2 border-slate-700 text-sm font-bold uppercase tracking-[0.14em] text-slate-100">
                         <th className="px-6 py-3.5">Subject Code</th>
-                        <th className="px-4 py-3.5">BTU Subject Title</th>
+                        <th className="px-4 py-3.5">SVU Subject Title</th>
                         <th className="px-4 py-3.5">Sem</th>
                         <th className="px-4 py-3.5">Credits</th>
                         <th className="px-4 py-3.5">Grade / Mark</th>
@@ -725,9 +725,9 @@ async function openChat(cardKey: string, subject: string, body: string, category
                         </tr>
                       ) : evalSubs.map((sub, i) => {
                         const s = sub as Record<string, unknown>
-                        const BTU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
+                        const SVU_CODE_RE = /^([A-Z]{2,6}\d{2,5}[A-Z]?)\s*-\s*(.+)$/
                         const eqRaw = (s.equalizedSubject || '') as string
-                        const eqMatch = eqRaw ? eqRaw.match(BTU_CODE_RE) : null
+                        const eqMatch = eqRaw ? eqRaw.match(SVU_CODE_RE) : null
                         const isReappear = s.equalized !== 'equalized'
                         const code  = (s.btuSubjectCode  || (eqMatch ? eqMatch[1] : '')) as string
                         const title = (s.btuSubjectTitle || (eqMatch ? eqMatch[2] : ''))  as string
@@ -780,14 +780,14 @@ async function openChat(cardKey: string, subject: string, body: string, category
               <div>
                 <h2 className="text-2xl font-bold text-white">Credit Transfers</h2>
                 <p className="text-slate-400 text-sm">
-                  Academic record from {a.parentUniversity || 'previous university'} — submitted for BTU credit mapping.
+                  Academic record from {a.parentUniversity || 'previous university'} — submitted for SVU credit mapping.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 {[
                   { label: 'Total Subjects',    value: evalSubs.length,    icon: BookOpen,  color: 'text-[#ed143d]',  glow: 'bg-[#ed143d]',   note: 'Subjects evaluated' },
-                  { label: 'Total Credits',     value: evalCr,             icon: Award,     color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits mapped at BTU' },
+                  { label: 'Total Credits',     value: evalCr,             icon: Award,     color: 'text-emerald-400', glow: 'bg-emerald-500', note: 'Credits mapped at SVU' },
                   { label: 'Reappear Subjects', value: reappearSubs.length, icon: Activity,  color: 'text-orange-400', glow: 'bg-orange-500',  note: 'Awaiting examination' },
                   { label: 'Reappear Credits',  value: reappearCr,          icon: BarChart3, color: 'text-amber-400',  glow: 'bg-amber-500',   note: 'Credits pending reappear' },
                 ].map(({ label, value, icon: Icon, color, glow, note }) => (
@@ -923,7 +923,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
             >
               <div>
                 <h2 className="text-2xl font-bold text-white">My Classes</h2>
-                <p className="text-slate-400 text-sm">BTU subjects you are currently enrolled in — grouped by semester.</p>
+                <p className="text-slate-400 text-sm">SVU subjects you are currently enrolled in — grouped by semester.</p>
               </div>
 
               {/* Stats strip */}
@@ -1502,7 +1502,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                       {/* Stat strip */}
                       <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-800/80 pt-6 md:grid-cols-4">
                         {[
-                          { icon: Building2, label: 'University', value: 'BTU' },
+                          { icon: Building2, label: 'University', value: 'SVU' },
                           { icon: Calendar,  label: 'Batch',      value: student.admissionBatch || '—' },
                           { icon: Layers,    label: 'Mode',       value: student.studyMode || 'Credit Transfer' },
                           { icon: Shield,    label: 'Status',     value: student.status || 'Active' },
@@ -1603,7 +1603,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                       <div className="relative flex items-center gap-2">
                         <GraduationCap className="w-5 h-5 text-white" />
-                        <span className="text-white font-black text-sm tracking-widest">BTU</span>
+                        <span className="text-white font-black text-sm tracking-widest">SVU</span>
                       </div>
                       <span className="relative text-white/80 text-[10px] font-bold uppercase tracking-widest">Student ID</span>
                     </div>
@@ -1627,7 +1627,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                         {[
                           { key: 'ID Number',    val: sid,                                                        mono: true,  accent: true  },
                           { key: 'Batch',        val: student.admissionBatch || '—',                              mono: false, accent: false },
-                          { key: 'University',   val: 'Bir Tikendrajit Uni.',                                     mono: false, accent: false },
+                          { key: 'University',   val: 'Swami Vivekanand University',                                     mono: false, accent: false },
                           { key: 'Verification', val: student.isProfileVerified ? 'Verified ✓' : 'Pending',      mono: false, accent: false, green: student.isProfileVerified },
                         ].map(({ key, val, mono, accent, green }) => (
                           <div key={key} className={`flex items-center justify-between border-b pb-2 last:border-0 last:pb-0 ${theme === 'light' ? 'border-slate-100' : 'border-slate-800/60'}`}>
@@ -1652,7 +1652,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                             )
                           })}
                         </div>
-                        <p className={`text-[9px] font-mono text-center mt-1.5 tracking-[0.2em] ${theme === 'light' ? 'text-slate-400' : 'text-slate-700'}`}>BIR TIKENDRAJIT UNIVERSITY</p>
+                        <p className={`text-[9px] font-mono text-center mt-1.5 tracking-[0.2em] ${theme === 'light' ? 'text-slate-400' : 'text-slate-700'}`}>SWAMI VIVEKANAND UNIVERSITY</p>
                       </div>
                     </div>
                   </div>
@@ -1686,7 +1686,7 @@ async function openChat(cardKey: string, subject: string, body: string, category
                       <p className={`text-xs mt-1 ${student.isFeeCompleted ? 'text-emerald-500/70' : 'text-amber-500/70'}`}>
                         {student.isFeeCompleted
                           ? 'Fee payment confirmed and records updated.'
-                          : 'Please contact the BTU accounts office to clear dues.'}
+                          : 'Please contact the SVU accounts office to clear dues.'}
                       </p>
                     </div>
                   </div>
@@ -1703,11 +1703,11 @@ async function openChat(cardKey: string, subject: string, body: string, category
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-600">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-3.5 h-3.5 text-[#ed143d]" />
-              <span>Bir Tikendrajit University (BTU) — Student Academic Portal</span>
+              <span>Swami Vivekanand University (SVU) — Student Academic Portal</span>
             </div>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1"><Phone className="w-3 h-3" />Credit Transfer Cell</span>
-              <span className="flex items-center gap-1"><Mail className="w-3 h-3" />academics@btu.ac.in</span>
+              <span className="flex items-center gap-1"><Mail className="w-3 h-3" />academics@svu.ac.in</span>
             </div>
           </div>
         </footer>

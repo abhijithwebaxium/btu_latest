@@ -1,4 +1,4 @@
-# API Surface Audit — BTU Campus OS
+# API Surface Audit — SVU Campus OS
 
 Every endpoint exists in two places: `vite.config.ts` (dev middleware) and `api/*.ts` (Vercel prod). Where they differ, both are noted. All requests use relative `fetch('/api/...')` from the browser (same-origin).
 
@@ -24,7 +24,7 @@ HTTP status codes: `400` validation, `401` bad login, `403` missing/wrong admin 
 ```json
 { "phone": "string", "dob": "string" }
 ```
-`university: 'BTU'` is also sent by LoginPage but ignored server-side.
+`university: 'SVU'` is also sent by LoginPage but ignored server-side.
 
 **Response 200:**
 ```json

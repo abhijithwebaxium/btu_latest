@@ -131,7 +131,7 @@ export function parseAndValidateStudentJson(rawContent: string | unknown): Valid
       return {
         isValid: false,
         records: [],
-        error: 'No valid student records found in JSON file. Expected a BTU student export structure.',
+        error: 'No valid student records found in JSON file. Expected a SVU student export structure.',
       }
     }
 

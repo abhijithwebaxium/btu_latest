@@ -89,7 +89,7 @@ function convertToWord() {
       #headContent { text-align: center; }
     </style></head><body>
     <div style="text-align:center;">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToFFNUCoazvSbbf1igCrkT8fL9KMixc2YVKQ&s" width="75" height="75" alt="University Logo" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToFFNUCoazvSbbf1igCrkT8fL9KMixc2YVKQ&s" width="75" height="75" alt="SVU" />
     </div>
     ${tableClone.outerHTML}</body></html>`
   const converted = window.htmlDocx.asBlob(content)
@@ -217,9 +217,9 @@ function CreditEvaluationReport() {
 
           {/* University Header */}
           <div className="d-flex justify-content-center gap-1">
-            <img src="/image/btu_logo.png" style={{ height: 100, width: 115 }} alt="University Logo" />
+            <img src="/image/svu-mark.svg" style={{ height: 100, width: 115 }} alt="SVU" />
             <div className="text-center">
-              <h2 className="mt-3 text-uppercase">Bir Tikendrajit University</h2>
+              <h2 className="mt-3 text-uppercase">Swami Vivekanand University</h2>
               <h6 className="mb-0">
                 (A State Private University established Under Section 2(f) of UGC Act, 1956)
               </h6>
@@ -315,7 +315,7 @@ function CreditEvaluationReport() {
               <tr>
                 <th className="color">SEMESTER</th>
                 <th className="color">COURSE CODE</th>
-                <th className="color">COURSE TITLE AT BTU</th>
+                <th className="color">COURSE TITLE AT SVU</th>
                 <th className="color">PREVIOUS UNIVERSITY COURSE CODE</th>
                 <th className="color">PREVIOUS UNIVERSITY EQUALIZED COURSE</th>
                 <th className="color">CREDIT</th>
@@ -361,7 +361,7 @@ function CreditEvaluationReport() {
               <tr>
                 <th className="color">SEMESTER</th>
                 <th className="color">COURSE CODE</th>
-                <th className="color">COURSE TITLE AT BTU</th>
+                <th className="color">COURSE TITLE AT SVU</th>
                 <th className="color">CREDIT</th>
                 <th className="color">EXAM BATCH</th>
                 <th className="color">SEMESTER SET</th>
@@ -394,11 +394,11 @@ function CreditEvaluationReport() {
               <thead>
                 <tr>
                   <th rowSpan={3} className="color vertical-align">
-                    Equalize credits Transfer to <strong>BTU</strong>
+                    Equalize credits Transfer to <strong>SVU</strong>
                   </th>
                   <th colSpan={6} className="color vertical-align">
                     Credit requirement for Graduation completion as per{' '}
-                    <strong>BTU syllabus Syllabus credits - 166 Credits</strong>
+                    <strong>SVU syllabus Syllabus credits - 166 Credits</strong>
                   </th>
                   <th colSpan={4} className="color vertical-align">
                     Total Credits
@@ -409,10 +409,10 @@ function CreditEvaluationReport() {
                   <th colSpan={2} className="color vertical-align">Lab</th>
                   <th colSpan={3} className="color vertical-align">Project</th>
                   <th colSpan={2} rowSpan={2} className="color vertical-align">
-                    Total Credit Requirement as per BTU syllabus
+                    Total Credit Requirement as per SVU syllabus
                   </th>
                   <th colSpan={2} rowSpan={2} className="color vertical-align">
-                    Additional Credit Requirement as per BTU Regulation
+                    Additional Credit Requirement as per SVU Regulation
                   </th>
                 </tr>
                 <tr>
@@ -493,7 +493,7 @@ function CreditEvaluationReport() {
             </p>
             <p>
               Self-Attested copies of detailed Grade Card of the courses qualified in qualifying examination, from
-              the accredited University/Institution and opted for Credit Transfer in the Bir Tikendrajit University
+              the accredited University/Institution and opted for Credit Transfer in the Swami Vivekanand University
               Graduate Programme
             </p>
           </div>
@@ -517,7 +517,7 @@ function CreditEvaluationReport() {
           <p style={{ textAlign: 'start' }}>
             I declare that information submitted on and this form is complete and accurate in all aspects. I
             acknowledge that the provision of incorrect information may result in the Rejection of preliminary
-            application form for credit transfer by Bir Tikendrajit University Student's Signature
+            application form for credit transfer by Swami Vivekanand University Student's Signature
             ____________________________________________ Date ____
           </p>
 

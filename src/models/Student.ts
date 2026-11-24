@@ -87,7 +87,7 @@ export interface IStudent {
 const StudentSchema = new Schema<IStudent>(
   {
     _id: { type: String, required: true },
-    university: { type: String, default: 'BTU', index: true },
+    university: { type: String, default: 'SVU', index: true },
     status: { type: String, default: 'student', index: true },
     studyMode: { type: String, default: 'Credit Transfer' },
     applicationID: { type: String, index: true },

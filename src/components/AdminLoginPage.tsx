@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
   return (
     <main className="relative min-h-screen overflow-hidden flex items-center justify-center p-4 sm:p-6">
       {/* Background image */}
-      <img src="/image/btu.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+      <img src="/image/svu.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px]" />
 
       {/* Two-panel card */}
@@ -57,9 +57,9 @@ export default function AdminLoginPage() {
               <ShieldCheck className="h-7 w-7 text-[#ed143d]" />
             </div>
             <h1 className="text-xl font-black text-slate-900 leading-snug">
-              Bir Tikendrajit<br />University
+              Swami Vivekanand<br />University
             </h1>
-            <p className="mt-1.5 text-xs font-medium text-slate-500">Staff Portal — BTU Campus OS</p>
+            <p className="mt-1.5 text-xs font-medium text-slate-500">Staff Portal — SVU Campus OS</p>
           </div>
 
           {/* Feature list */}
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
             </span>
             <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900">Staff Dashboard</h2>
             <p className="mt-1 text-xs text-slate-500">
-              Access the Bir Tikendrajit University staff portal.
+              Access the Swami Vivekanand University staff portal.
             </p>
           </div>
 
@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="staff@btu.ac.in"
+                  placeholder="staff@svu.ac.in"
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#ed143d] focus:ring-2 focus:ring-[#ed143d]/20 focus:bg-white"
                 />
               </div>
@@ -154,7 +154,7 @@ export default function AdminLoginPage() {
           </form>
 
           <p className="text-center text-[11px] text-slate-400">
-            Protected by BTU Staff Authentication
+            Protected by SVU Staff Authentication
           </p>
         </div>
 

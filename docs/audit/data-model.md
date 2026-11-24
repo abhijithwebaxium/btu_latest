@@ -1,4 +1,4 @@
-# Data Model Audit — BTU Campus OS
+# Data Model Audit — SVU Campus OS
 
 14 MongoDB collections, all accessed via Mongoose 9. Connection is cached on `globalThis.mongooseCache` (`src/lib/db.ts:11-17`). Uses Cloudflare/Google DNS fallback for SRV lookup on Windows (`src/lib/db.ts:22-28`). 8 s server-selection timeout.
 
@@ -8,14 +8,14 @@
 
 Schema: `src/models/Student.ts`
 
-Uses `_id: String` (not ObjectId) — the string ID from BTU ERP, or a synthesized `STU_<uuid>` (`src/lib/studentParser.ts:123`).
+Uses `_id: String` (not ObjectId) — the string ID from SVU ERP, or a synthesized `STU_<uuid>` (`src/lib/studentParser.ts:123`).
 
 ### Top-level fields
 
 | Field | Type | Default | Indexed |
 |---|---|---|---|
 | `_id` | String | — | PK |
-| `university` | String | `'BTU'` | ✓ |
+| `university` | String | `'SVU'` | ✓ |
 | `status` | String | `'student'` | ✓ |
 | `studyMode` | String | `'Credit Transfer'` | — |
 | `applicationID` | String | — | ✓ |
@@ -112,7 +112,7 @@ Schema: `src/models/Branch.ts`
 | `shortCode` | String | required, trim |
 | `course` | ObjectId → Course | — |
 | `status` | Boolean | default true |
-| `subjects` | `[{ semester, subjectTitle, subjectCode, credit, status }]` | BTU syllabus subjects |
+| `subjects` | `[{ semester, subjectTitle, subjectCode, credit, status }]` | SVU syllabus subjects |
 
 Unique compound: `{ course: 1, name: 1 }`. Written by `studentService.ts:119-129` on import.
 

@@ -1,4 +1,4 @@
-# Gaps, Inconsistencies, Hacks & Dead Code — BTU Campus OS
+# Gaps, Inconsistencies, Hacks & Dead Code — SVU Campus OS
 
 This document enumerates everything that is incomplete, broken, inconsistent, or potentially harmful. Use it to avoid rebuilding the same issues into the new stack.
 
@@ -27,7 +27,7 @@ This document enumerates everything that is incomplete, broken, inconsistent, or
 
 | Issue | Location | Detail |
 |---|---|---|
-| `POST /api/evaluation/update-subjects` unauthenticated | `vite.config.ts:112-128` | Anyone (in dev) can stamp arbitrary BTU codes onto evaluation subjects. No prod equivalent. |
+| `POST /api/evaluation/update-subjects` unauthenticated | `vite.config.ts:112-128` | Anyone (in dev) can stamp arbitrary SVU codes onto evaluation subjects. No prod equivalent. |
 | Student DOB as password with no lockout | `studentService.ts:9-84` | Last-10 digits of phone + DOB; no rate limit; matched against 4 phone fields per student. |
 
 ### Low
@@ -95,7 +95,7 @@ This document enumerates everything that is incomplete, broken, inconsistent, or
 | `SupportTicketView` "resolution_pending" filter visible to student | `SupportTicketView.tsx:388` | Students can filter by `resolution_pending` status but no student action can put a thread in that state (only admin can). |
 | Ticket `closed` status unreachable | All | `closed` is in the schema enum but no code path sets it. |
 | `ASSIGNMENT_DATES` tripled | `report.tsx:15-33`, `students.tsx:75-79`, `StudentDashboard.tsx:217-221` | Same static map defined in 3 files with slightly different key coverage. |
-| Hard-coded "BTU syllabus - 166 Credits" | `report.tsx:402` | Not a configurable value. |
+| Hard-coded "SVU syllabus - 166 Credits" | `report.tsx:402` | Not a configurable value. |
 | Hard-coded threshold `83` | `report.tsx:442` | Additional Credit Requirement = `max(0, 83 - totalCredits)`. Not documented or configurable. |
 | Google Static image in Word export | `report.tsx:92` | Hard-coded `encrypted-tbn0.gstatic.com` URL. Brittle external asset. |
 | Bootstrap/MDB CDN for report | `report.tsx:106-129` | Leaks viewer to external CDNs; breaks offline. |
@@ -141,7 +141,7 @@ This document enumerates everything that is incomplete, broken, inconsistent, or
 
 1. **What does `A.E.B.T.U.C` stand for?** Abbreviated exam status codes are not documented; their full names and business meanings are inferred from context. Confirm all codes with the domain owner.
 2. **What is `CERValidation`?** The field is referenced in `report.tsx` but has no schema definition. Was this a planned feature? Who sets it?
-3. **Is `Student._id` always the BTU ERP string, or is the `STU_<uuid>` fallback ever actually used in production?**
+3. **Is `Student._id` always the SVU ERP string, or is the `STU_<uuid>` fallback ever actually used in production?**
 4. **What triggers `isProfileVerified` and `isFeeCompleted` to change?** No write path exists in the app — are these set directly in the database by an external process?
 5. **What is `Student.paymentLevel`? Is it meaningful?** No code reads or writes it via the app.
 6. **Is the 166-credit target and 83-credit threshold ever going to change?** Both are hard-coded.
@@ -149,6 +149,6 @@ This document enumerates everything that is incomplete, broken, inconsistent, or
 8. **What are the full `ASSIGNMENT_DATES` mappings beyond the two keys in `students.tsx`?** `report.tsx` appears to have more entries.
 9. **Is the `closed` ticket status intended for future use, or can it be removed?** Nothing sets it.
 10. **Is `notification.link` navigation planned?** The deep-link routes don't exist. Should they?
-11. **Does BTU plan to have multiple admin users?** Current system is single-credential (`ADMIN_EMAIL`/`ADMIN_PASSWORD`).
+11. **Does SVU plan to have multiple admin users?** Current system is single-credential (`ADMIN_EMAIL`/`ADMIN_PASSWORD`).
 12. **Should `/api/evaluation/update-subjects` exist in production?** It's currently dev-only.
 13. **What determines which exam batches get deadlines?** The `ASSIGNMENT_DATES` map only covers `Dec-2024` and `June-2025`. What happens for other batches?

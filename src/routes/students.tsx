@@ -335,9 +335,9 @@ function StudentDirectoryPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">BTU Student Directory</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">SVU Student Directory</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Real-time student records persisted in MongoDB for Bir Tikendrajit University (BTU).
+            Real-time student records persisted in MongoDB for Swami Vivekanand University (SVU).
           </p>
         </div>
 
@@ -365,7 +365,7 @@ function StudentDirectoryPage() {
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Search BTU students by name, ID, email, or program..."
+            placeholder="Search SVU students by name, ID, email, or program..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#ed143d] focus:ring-1 focus:ring-[#ed143d] transition-all"
@@ -385,12 +385,12 @@ function StudentDirectoryPage() {
       {isLoading && students.length === 0 && (
         <div className="p-8 text-center text-slate-500 bg-slate-900/90 border border-slate-800 rounded-2xl">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#ed143d]" />
-          <span>Loading BTU database records...</span>
+          <span>Loading SVU database records...</span>
         </div>
       )}
       {!isLoading && students.length === 0 && (
         <div className="p-8 text-center text-slate-500 bg-slate-900/90 border border-slate-800 rounded-2xl">
-          No student records found in MongoDB for <strong className="text-slate-300">Bir Tikendrajit University (BTU)</strong>. Use the <strong className="text-slate-300">Import Evaluation</strong> button to add records.
+          No student records found in MongoDB for <strong className="text-slate-300">Swami Vivekanand University (SVU)</strong>. Use the <strong className="text-slate-300">Import Evaluation</strong> button to add records.
         </div>
       )}
 
@@ -464,7 +464,7 @@ function StudentDirectoryPage() {
                     )}
                     <span className="flex items-center gap-1 text-slate-300">
                       <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                      {student.university || 'BTU'}
+                      {'SVU'}
                     </span>
                     <span className="font-mono text-amber-400">{student.studyMode || 'Credit Transfer'}</span>
                     {student.createdAt && (

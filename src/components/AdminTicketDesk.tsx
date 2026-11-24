@@ -157,7 +157,7 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
           threadId: activeThread._id,
           senderType: 'admin',
           senderId: 'admin',
-          senderName: 'BTU Admin',
+          senderName: 'SVU Admin',
           body: reply.trim(),
         }),
       })
@@ -183,7 +183,7 @@ export default function AdminTicketDesk({ initialCategoryFilter, initialStatusFi
           action: 'updateStatus',
           threadId: activeThread._id,
           status,
-          actorName: 'BTU Admin',
+          actorName: 'SVU Admin',
         }),
       })
       const d = await r.json()
